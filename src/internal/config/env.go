@@ -35,7 +35,11 @@ func LoadEnv() {
 		log.Println("Loading environment variables from", envFile)
 
 		if err := godotenv.Load(envFile); err != nil {
-			log.Fatalf("Failed to load %s file: %v", envFile, err)
+			if Config().IsDevelopment {
+				log.Fatalf("Failed to load %s file: %v", envFile, err)
+			}
+
+			log.Printf("No %s file found, proceeding with system environment variables", envFile)
 		}
 
 		if err := env.Parse(&envInstance); err != nil {

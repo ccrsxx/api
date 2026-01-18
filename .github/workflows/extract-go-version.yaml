@@ -1,0 +1,21 @@
+name: Extract Go version
+
+on:
+  workflow_call:
+    outputs:
+      go-version:
+        description: 'Go version from package.json'
+        value: ${{ jobs.extract.outputs.Go-version }}
+
+jobs:
+  extract:
+    runs-on: self-hosted
+    outputs:
+      go-version: ${{ steps.extract.outputs.go-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: extract
+        run: |
+          GO_VERSION=$(go mod edit -json | jq -r .Go)
+          echo "Go-version=$GO_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Go version: $GO_VERSION"

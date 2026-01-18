@@ -10,9 +10,14 @@ permissions:
   contents: read
 
 jobs:
+  setup-go-version:
+    uses: ./.github/workflows/extract-go-version.yaml
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
+
+    needs: setup-go-version
 
     steps:
       - name: Checkout repo
@@ -20,7 +25,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
+          go-version: ${{ needs.setup-go-version.outputs.go-version }}
 
       - name: Check code lint
         uses: golangci/golangci-lint-action@v9
@@ -31,13 +36,15 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
 
+    needs: setup-go-version
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
 
       - uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
+          go-version: ${{ needs.setup-go-version.outputs.go-version }}
 
       - name: Check code format
         run: make format

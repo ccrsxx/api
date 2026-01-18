@@ -1,0 +1,18 @@
+services:
+  api-go:
+    image: ghcr.io/ccrsxx/api-go:latest
+    container_name: api-go
+    restart: unless-stopped
+    ports:
+      - '4001:4000'
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+      - PORT=4000
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - 'no-new-privileges:true'
+    user: '10001:10001'
