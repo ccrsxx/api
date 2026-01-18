@@ -1,20 +1,35 @@
 package utils
 
 import (
+	"net"
 	"net/http"
 	"strings"
 )
 
 func GetIpAddressFromRequest(r *http.Request) string {
-	ipAddress := r.Header.Get("X-Forwarded-For")
-
-	if ipAddress == "" {
-		ipAddress = r.RemoteAddr
+	if cfIP := r.Header.Get("CF-Connecting-IP"); cfIP != "" {
+		return cfIP
 	}
 
-	return ipAddress
-}
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		return realIP
+	}
 
+	forwardedFor := r.Header.Get("X-Forwarded-For")
+
+	if forwardedFor != "" {
+		ips := strings.Split(forwardedFor, ",")
+		return strings.TrimSpace(ips[0])
+	}
+
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+
+	if err != nil {
+		return r.RemoteAddr
+	}
+
+	return ip
+}
 func GetHttpHeadersFromRequest(r *http.Request) map[string]string {
 	flatHeaders := make(map[string]string)
 

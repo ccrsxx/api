@@ -16,7 +16,7 @@ func (w *wrappedWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 }
 
-func Logging(handler http.Handler) http.Handler {
+func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -25,7 +25,7 @@ func Logging(handler http.Handler) http.Handler {
 			statusCode:     http.StatusOK,
 		}
 
-		handler.ServeHTTP(wrapped, r)
+		next.ServeHTTP(wrapped, r)
 
 		log.Println(wrapped.statusCode, r.Method, r.URL.Path, time.Since(start))
 	})

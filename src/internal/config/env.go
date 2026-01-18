@@ -9,9 +9,10 @@ import (
 )
 
 type appEnv struct {
-	Port        string `env:"PORT,required"`
-	SecretKey   string `env:"SECRET_KEY,required"`
-	IpInfoToken string `env:"IPINFO_TOKEN,required"`
+	Port           string   `env:"PORT,required"`
+	SecretKey      string   `env:"SECRET_KEY,required"`
+	IpInfoToken    string   `env:"IPINFO_TOKEN,required"`
+	AllowedOrigins []string `env:"ALLOWED_ORIGINS,required"`
 }
 
 var (

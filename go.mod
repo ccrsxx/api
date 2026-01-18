@@ -9,6 +9,7 @@ require github.com/caarlos0/env/v11 v11.3.1
 require (
 	github.com/google/uuid v1.6.0
 	github.com/ipinfo/go/v2 v2.12.0
+	golang.org/x/time v0.14.0
 )
 
 require (

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api-go/src/internal/config"
-	"github.com/ccrsxx/api-go/src/internal/middleware"
 )
 
 type Server struct {
@@ -20,13 +19,9 @@ func NewServer() *http.Server {
 		port: 4000,
 	}
 
-	middlewares := middleware.CreateStack(
-		middleware.Logging,
-	)
-
 	httpServer := &http.Server{
 		Addr:    ":" + port,
-		Handler: middlewares(server.RegisterRoutes()),
+		Handler: server.RegisterRoutes(),
 	}
 
 	return httpServer
