@@ -8,8 +8,9 @@ services:
     env_file:
       - .env
     environment:
-      - APP_ENV=production
+      - TZ=Asia/Jakarta
       - PORT=4000
+      - APP_ENV=production
     read_only: true
     cap_drop:
       - ALL
