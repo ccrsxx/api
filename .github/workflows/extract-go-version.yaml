@@ -16,6 +16,6 @@ jobs:
       - uses: actions/checkout@v4
       - id: extract
         run: |
-          GO_VERSION=$(go mod edit -json | jq -r .Go)
+          GO_VERSION=$(awk '/^go / {print $2}' go.mod)
           echo "Go-version=$GO_VERSION" >> $GITHUB_OUTPUT
           echo "Detected Go version: $GO_VERSION"
