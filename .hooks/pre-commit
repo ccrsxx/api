@@ -1,4 +1,4 @@
 #!/bin/sh
 
-make vet
 make lint
+make format

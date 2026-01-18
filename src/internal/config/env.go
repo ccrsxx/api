@@ -9,13 +9,15 @@ import (
 )
 
 type appEnv struct {
-	Port      string `env:"PORT,required"`
-	SecretKey string `env:"SECRET_KEY,required"`
+	Port        string `env:"PORT,required"`
+	SecretKey   string `env:"SECRET_KEY,required"`
+	IpInfoToken string `env:"IPINFO_TOKEN,required"`
 }
 
-var envInstance appEnv
-
-var once sync.Once
+var (
+	once        sync.Once
+	envInstance appEnv
+)
 
 func Env() *appEnv {
 	return &envInstance
