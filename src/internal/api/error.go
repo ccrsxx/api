@@ -27,7 +27,13 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	errorId := uuid.New().String()
 
 	if apiErr, ok := err.(*HttpError); ok {
-		slog.Error("Handled error", "error_id", errorId, "message", apiErr.Message, "status_code", apiErr.StatusCode, "method", r.Method, "path", r.URL.Path)
+		slog.Error("handled error",
+			"error_id", errorId,
+			"message", apiErr.Message,
+			"status_code", apiErr.StatusCode,
+			"method", r.Method,
+			"path", r.URL.Path,
+		)
 
 		if err := NewErrorResponse(w, apiErr.StatusCode, apiErr.Message, nil, errorId); err != nil {
 			logErrorResponse(errorId, err)
@@ -36,7 +42,12 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 
-	slog.Error("Unhandled error", "error_id", errorId, "error", err, "method", r.Method, "path", r.URL.Path)
+	slog.Error("unhandled error",
+		"error_id", errorId,
+		"error", err,
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 
 	if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorId); err != nil {
 		logErrorResponse(errorId, err)
@@ -44,5 +55,5 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func logErrorResponse(errorId string, err error) {
-	slog.Error("Failed to send error response", "error_id", errorId, "error", err)
+	slog.Error("send error response failed", "error_id", errorId, "error", err)
 }

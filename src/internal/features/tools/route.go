@@ -8,7 +8,7 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/middleware"
 )
 
-func LoadRoutes(r *api.CustomRouter) {
+func LoadRoutes(router *api.CustomRouter) {
 	mux := &api.CustomRouter{ServeMux: http.NewServeMux()}
 
 	mux.HandleFunc("GET /ip", getIpAddress)
@@ -17,5 +17,5 @@ func LoadRoutes(r *api.CustomRouter) {
 
 	mux.HandleFunc("GET /headers", getHttpHeaders)
 
-	r.Handle("/tools/", http.StripPrefix("/tools", mux))
+	router.Handle("/tools/", http.StripPrefix("/tools", mux))
 }

@@ -4,6 +4,6 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/api"
 )
 
-func LoadRoutes(r *api.CustomRouter) {
-	r.HandleFunc("GET /{$}", ping)
+func LoadRoutes(router *api.CustomRouter) {
+	router.HandleFunc("GET /{$}", ping)
 }

@@ -44,10 +44,10 @@ func newResponse(w http.ResponseWriter, status int, v any) error {
 
 		w.WriteHeader(http.StatusInternalServerError)
 
-		errMarshal := fmt.Errorf("failed to marshal response: %w", err)
+		errMarshal := fmt.Errorf("marshal response error %w", err)
 
 		if _, writeErr := w.Write(fallbackData); writeErr != nil {
-			errFallback := fmt.Errorf("failed to marshal fallback response: %w", writeErr)
+			errFallback := fmt.Errorf("marshal fallback error: %w", writeErr)
 			return errors.Join(errMarshal, errFallback)
 		}
 
@@ -57,7 +57,7 @@ func newResponse(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
 
 	if _, err := w.Write(data); err != nil {
-		return fmt.Errorf("failed to write response: %w", err)
+		return fmt.Errorf("write response error: %w", err)
 	}
 
 	return nil

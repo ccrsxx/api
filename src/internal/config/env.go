@@ -33,21 +33,21 @@ func LoadEnv() {
 			envFile = ".env.local"
 		}
 
-		slog.Info("Loading environment variables", "file", envFile)
+		slog.Info("env loading", "file", envFile)
 
 		if err := godotenv.Load(envFile); err != nil {
 			if Config().IsDevelopment {
-				slog.Error("Failed to load env file", "file", envFile, "error", err)
+				slog.Error("env load error", "file", envFile, "error", err)
 				os.Exit(1)
 			}
 
-			slog.Info("No env file found, proceeding with system environment variables", "file", envFile)
+			slog.Info("env file missing", "action", "using system env")
 		}
 
 		if err := env.Parse(&envInstance); err != nil {
-			slog.Error("Failed to parse env vars", "error", err)
+			slog.Error("env parse error", "error", err)
 		}
 
-		slog.Info("Environment variables loaded successfully")
+		slog.Info("env loaded successfully")
 	})
 }

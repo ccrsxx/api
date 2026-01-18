@@ -15,10 +15,10 @@ func main() {
 
 	server := server.NewServer()
 
-	slog.Info("Server starting", "addr", server.Addr)
+	slog.Info("server started", "port", server.Addr)
 
 	if err := server.ListenAndServe(); err != nil {
-		slog.Error("Cannot start server", "error", err)
+		slog.Error("server failed to start", "error", err)
 		os.Exit(1)
 	}
 }
