@@ -14,4 +14,5 @@ format:
 	go fmt ./...
 
 setup-hooks:
+	npm i -g @commitlint/cli @commitlint/config-conventional
 	git config core.hooksPath ./.hooks
