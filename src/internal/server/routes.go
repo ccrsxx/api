@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api-go/src/internal/api"
+	"github.com/ccrsxx/api-go/src/internal/features/home"
+	"github.com/ccrsxx/api-go/src/internal/features/tools"
 	"github.com/ccrsxx/api-go/src/internal/middleware"
-	"github.com/ccrsxx/api-go/src/modules/home"
-	"github.com/ccrsxx/api-go/src/modules/tools"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
