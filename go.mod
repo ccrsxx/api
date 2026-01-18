@@ -1,4 +1,4 @@
-module github.com/ccrsxx/rest-api-go
+module github.com/ccrsxx/api-go
 
 go 1.25.4
 
