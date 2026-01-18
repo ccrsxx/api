@@ -5,7 +5,7 @@ on:
     outputs:
       go-version:
         description: 'Go version from package.json'
-        value: ${{ jobs.extract.outputs.Go-version }}
+        value: ${{ jobs.extract.outputs.go-version }}
 
 jobs:
   extract:
@@ -13,9 +13,9 @@ jobs:
     outputs:
       go-version: ${{ steps.extract.outputs.go-version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: extract
         run: |
           GO_VERSION=$(awk '/^go / {print $2}' go.mod)
-          echo "Go-version=$GO_VERSION" >> $GITHUB_OUTPUT
+          echo "go-version=$GO_VERSION" >> $GITHUB_OUTPUT
           echo "Detected Go version: $GO_VERSION"
