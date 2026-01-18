@@ -13,7 +13,7 @@ func LoadRoutes(router *api.CustomRouter) {
 
 	mux.HandleFunc("GET /ip", getIpAddress)
 
-	mux.HandleFunc("GET /ipinfo", middleware.RateLimitFunc(10, 10*time.Second)(getIpInfo))
+	mux.HandleFunc("GET /ipinfo", middleware.HandlerRateLimit(10, 10*time.Second)(getIpInfo))
 
 	mux.HandleFunc("GET /headers", getHttpHeaders)
 
