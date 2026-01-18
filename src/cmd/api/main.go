@@ -1,17 +1,24 @@
 package main
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
+	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api-go/src/internal/logger"
 	"github.com/ccrsxx/api-go/src/internal/server"
 )
 
 func main() {
+	logger.Init()
+	config.LoadEnv()
+
 	server := server.NewServer()
 
-	log.Printf("Server starting on %s", server.Addr)
+	slog.Info("Server starting", "addr", server.Addr)
 
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("cannot start server: %s", err)
+		slog.Error("Cannot start server", "error", err)
+		os.Exit(1)
 	}
 }

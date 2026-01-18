@@ -13,6 +13,7 @@ type HTTPHandlerWithErr func(http.ResponseWriter, *http.Request) error
 func (r *CustomRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler, pattern := r.Handler(req)
 
+	// If no matching route is found, return a 404 error
 	if pattern == "" {
 		err := NewHttpError(http.StatusNotFound, "Route not found - "+req.URL.Path)
 		HandleHttpError(w, req, err)

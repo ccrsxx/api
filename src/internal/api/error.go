@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -23,15 +23,11 @@ func NewHttpError(statusCode int, message string) *HttpError {
 	}
 }
 
-func logErrorResponse(errorId string, err error) {
-	log.Printf("Failed to send error response for error id %s: %v", errorId, err)
-}
-
 func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	errorId := uuid.New().String()
 
 	if apiErr, ok := err.(*HttpError); ok {
-		log.Printf("Handled error with id %s: %s", errorId, apiErr.Message)
+		slog.Error("Handled error", "error_id", errorId, "message", apiErr.Message, "status_code", apiErr.StatusCode, "method", r.Method, "path", r.URL.Path)
 
 		if err := NewErrorResponse(w, apiErr.StatusCode, apiErr.Message, nil, errorId); err != nil {
 			logErrorResponse(errorId, err)
@@ -40,9 +36,13 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 
-	log.Printf("Unhandled error with id %s: %v", errorId, err)
+	slog.Error("Unhandled error", "error_id", errorId, "error", err, "method", r.Method, "path", r.URL.Path)
 
 	if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorId); err != nil {
 		logErrorResponse(errorId, err)
 	}
+}
+
+func logErrorResponse(errorId string, err error) {
+	slog.Error("Failed to send error response", "error_id", errorId, "error", err)
 }

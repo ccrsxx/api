@@ -11,7 +11,6 @@ type Server struct {
 }
 
 func NewServer() *http.Server {
-	config.LoadEnv()
 
 	port := config.Env().Port
 

@@ -29,9 +29,9 @@ func newLimiterFromConfig(requests int, window time.Duration) *RateLimiter {
 	burst := requests
 
 	limiter := &RateLimiter{
-		visitors: make(map[string]*visitor),
 		limit:    limit,
 		burst:    burst,
+		visitors: make(map[string]*visitor),
 	}
 
 	go limiter.cleanup()

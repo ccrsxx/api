@@ -1,7 +1,8 @@
 package config
 
 import (
-	"log"
+	"log/slog"
+	"os"
 	"sync"
 
 	"github.com/caarlos0/env/v11"
@@ -32,20 +33,21 @@ func LoadEnv() {
 			envFile = ".env.local"
 		}
 
-		log.Println("Loading environment variables from", envFile)
+		slog.Info("Loading environment variables", "file", envFile)
 
 		if err := godotenv.Load(envFile); err != nil {
 			if Config().IsDevelopment {
-				log.Fatalf("Failed to load %s file: %v", envFile, err)
+				slog.Error("Failed to load env file", "file", envFile, "error", err)
+				os.Exit(1)
 			}
 
-			log.Printf("No %s file found, proceeding with system environment variables", envFile)
+			slog.Info("No env file found, proceeding with system environment variables", "file", envFile)
 		}
 
 		if err := env.Parse(&envInstance); err != nil {
-			log.Fatalf("Failed to parse env vars: %v", err)
+			slog.Error("Failed to parse env vars", "error", err)
 		}
 
-		log.Printf("Environment variables loaded successfully")
+		slog.Info("Environment variables loaded successfully")
 	})
 }
