@@ -18,7 +18,7 @@ jobs:
 
   deploy:
     name: Build and deploy via Docker on VPS
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: production
 
     needs:
