@@ -8,10 +8,10 @@ start: build
  	APP_ENV=production ./tmp/main.exe
 
 lint:
-	golangci-lint-v2 run ./...
+	golangci-lint run ./...
 
 format:
 	go fmt ./...
 
 setup-hooks:
-	git config core.hooksPath ./hooks
+	git config core.hooksPath ./.hooks

@@ -1,0 +1,39 @@
+name: Deployment
+
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Manual deploy / {0}', inputs.sha || github.sha) || format('Automatic deploy / {0}', github.event.head_commit.message) }}
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA to deploy'
+        required: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yaml
+
+  deploy:
+    name: Build and deploy via Docker on VPS
+    runs-on: self-hosted
+    environment: production
+
+    needs:
+      - ci
+
+    permissions:
+      packages: write
+
+    env:
+      SHA: ${{ inputs.sha || github.sha }}
+      LATEST_IMAGE: 'ghcr.io/${{ github.repository }}:latest'
+
+      CURRENT_IMAGE: ''
+
+    steps:
+      - name: Set current image tag
+        run: |
+          echo "CURRENT_IMAGE=ghcr.io/${{ github.repository }}:${{ env.SHA }}" >> $GITHUB_ENV
