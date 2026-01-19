@@ -6,21 +6,16 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/config"
 )
 
-type Server struct {
-	port int
-}
-
 func NewServer() *http.Server {
+	RegisterLoaders()
 
-	port := config.Env().Port
+	addr := ":" + config.Env().Port
 
-	server := &Server{
-		port: 4000,
-	}
+	handler := RegisterRoutes()
 
 	httpServer := &http.Server{
-		Addr:    ":" + port,
-		Handler: server.RegisterRoutes(),
+		Addr:    addr,
+		Handler: handler,
 	}
 
 	return httpServer

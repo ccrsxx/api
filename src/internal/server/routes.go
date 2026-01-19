@@ -11,7 +11,7 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/middleware"
 )
 
-func (s *Server) RegisterRoutes() http.Handler {
+func RegisterRoutes() http.Handler {
 	router := &api.CustomRouter{ServeMux: http.NewServeMux()}
 
 	home.LoadRoutes(router)
