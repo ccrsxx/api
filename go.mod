@@ -13,6 +13,8 @@ require (
 )
 
 require (
+	github.com/bdpiprava/scalar-go v0.13.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	golang.org/x/sync v0.19.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

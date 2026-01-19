@@ -39,3 +39,13 @@ func GetHttpHeadersFromRequest(r *http.Request) map[string]string {
 
 	return flatHeaders
 }
+
+func GetPublicUrlFromRequest(r *http.Request) string {
+	scheme := "http"
+
+	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+
+	return scheme + "://" + r.Host
+}

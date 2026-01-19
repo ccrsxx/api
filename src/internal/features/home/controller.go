@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api-go/src/internal/api"
+	"github.com/ccrsxx/api-go/src/internal/utils"
 )
 
 func ping(w http.ResponseWriter, r *http.Request) error {
@@ -14,6 +15,6 @@ func ping(w http.ResponseWriter, r *http.Request) error {
 
 	return api.NewSuccessResponse(w, http.StatusOK, response{
 		Message:          "Welcome to the API! The server is up and running.",
-		DocumentationURL: "https://api.ccrsxx.com/docs",
+		DocumentationURL: utils.GetPublicUrlFromRequest(r) + "/docs",
 	})
 }
