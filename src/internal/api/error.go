@@ -36,6 +36,7 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 			"error_id", errorId,
 			"message", httpErr.Message,
 			"status_code", httpErr.StatusCode,
+			"details", httpErr.Details,
 			"method", r.Method,
 			"path", r.URL.Path,
 		)
