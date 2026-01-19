@@ -14,7 +14,7 @@ COPY src src
 
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./src/cmd/api/main.go
 
-FROM scratch as final
+FROM scratch AS final
 
 COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 
@@ -30,4 +30,3 @@ LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
     org.opencontainers.image.source="https://github.com/ccrsxx/api-go" \
     org.opencontainers.image.description="My personal API for my projects" \
     org.opencontainers.image.licenses="GPL-3.0"
-
