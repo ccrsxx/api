@@ -21,7 +21,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	middlewares := middleware.CreateStack(
 		middleware.Cors,
 		middleware.Logging,
-		middleware.GlobalRateLimit(120, 1*time.Minute),
+		middleware.GlobalRateLimit(100, 1*time.Minute),
 	)
 
 	return middlewares(router)
