@@ -27,7 +27,7 @@ jobs:
         with:
           go-version: ${{ needs.setup-go-version.outputs.go-version }}
 
-      - name: Check code lint
+      - name: Run linter
         uses: golangci/golangci-lint-action@v9
         with:
           version: v2.8.0
@@ -63,5 +63,5 @@ jobs:
         with:
           go-version: ${{ needs.setup-go-version.outputs.go-version }}
 
-      - name: Check code format
+      - name: Run formatter
         run: make format
