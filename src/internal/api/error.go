@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -28,23 +29,25 @@ func NewHttpError(statusCode int, message string, details []string) *HttpError {
 func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	errorId := uuid.New().String()
 
-	if err, ok := err.(*HttpError); ok {
-		slog.Error("api error handled",
+	var httpErr *HttpError
+
+	if errors.As(err, &httpErr) {
+		slog.Error("http error handled",
 			"error_id", errorId,
-			"message", err.Message,
-			"status_code", err.StatusCode,
+			"message", httpErr.Message,
+			"status_code", httpErr.StatusCode,
 			"method", r.Method,
 			"path", r.URL.Path,
 		)
 
-		if err := NewErrorResponse(w, err.StatusCode, err.Message, err.Details, errorId); err != nil {
+		if err := NewErrorResponse(w, httpErr.StatusCode, httpErr.Message, httpErr.Details, errorId); err != nil {
 			logErrorResponse(errorId, err)
 		}
 
 		return
 	}
 
-	slog.Error("api error unhandled",
+	slog.Error("http error unhandled",
 		"error_id", errorId,
 		"error", err,
 		"method", r.Method,
