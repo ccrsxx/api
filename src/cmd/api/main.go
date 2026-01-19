@@ -11,7 +11,7 @@ import (
 func main() {
 	server := server.NewServer()
 
-	slog.Info("server started", "port", server.Addr, "env", config.Env().AppEnv, "best_girl", config.Env().SecretKey)
+	slog.Info("server started", "port", server.Addr, "env", config.Env().AppEnv)
 
 	if err := server.ListenAndServe(); err != nil {
 		slog.Error("server failed", "error", err)
