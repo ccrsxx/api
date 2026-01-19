@@ -31,7 +31,7 @@ func GetIpAddressFromRequest(r *http.Request) string {
 	return ip
 }
 func GetHttpHeadersFromRequest(r *http.Request) map[string]string {
-	flatHeaders := make(map[string]string)
+	flatHeaders := map[string]string{}
 
 	for k, v := range r.Header {
 		flatHeaders[k] = strings.Join(v, ", ")

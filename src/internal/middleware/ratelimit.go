@@ -37,7 +37,7 @@ func newLimiterFromConfig(requests int, window time.Duration) *RateLimiter {
 		burst:    burst,
 		policy:   policy,
 		window:   window,
-		visitors: make(map[string]*visitor),
+		visitors: map[string]*visitor{},
 	}
 
 	go rl.cleanup()
