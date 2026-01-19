@@ -11,7 +11,12 @@ import (
 func GetIpAddress(w http.ResponseWriter, r *http.Request) error {
 	ipAddress := utils.GetIpAddressFromRequest(r)
 
-	return api.NewSuccessResponse(w, http.StatusOK, ipAddress)
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+
+	_, err := w.Write([]byte(ipAddress))
+
+	return err
 }
 
 func GetIpInfo(w http.ResponseWriter, r *http.Request) error {
