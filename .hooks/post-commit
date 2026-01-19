@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# The exact commit message your npm script uses.
+AUTO_COMMIT_MSG="docs(api): update OpenAPI spec"
+
+# Get the subject line of the most recent commit.
+LAST_COMMIT_MSG=$(git log -1 --pretty=%s)
+
+# Check if the last commit was made by the auto-update script.
+if [ "$LAST_COMMIT_MSG" = "$AUTO_COMMIT_MSG" ]; then
+  # If it was, print a message and exit successfully to prevent a loop.
+  echo "Last commit was an auto-update. Skipping hook."
+  exit 0
+else
+  # If it was a manual commit, run the generator script.
+  echo "Post-commit hook: Running OpenAPI generator..."
+  npm run openapi:generate:commit
+fi

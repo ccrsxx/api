@@ -34,3 +34,6 @@ go.work.sum
 
 # Build directories
 tmp/
+
+# Node modules
+node_modules/
