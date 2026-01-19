@@ -10,32 +10,34 @@ import (
 type HttpError struct {
 	StatusCode int
 	Message    string
+	Details    []string
 }
 
 func (e *HttpError) Error() string {
 	return e.Message
 }
 
-func NewHttpError(statusCode int, message string) *HttpError {
+func NewHttpError(statusCode int, message string, details []string) *HttpError {
 	return &HttpError{
 		StatusCode: statusCode,
 		Message:    message,
+		Details:    details,
 	}
 }
 
 func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	errorId := uuid.New().String()
 
-	if apiErr, ok := err.(*HttpError); ok {
+	if err, ok := err.(*HttpError); ok {
 		slog.Error("api error handled",
 			"error_id", errorId,
-			"message", apiErr.Message,
-			"status_code", apiErr.StatusCode,
+			"message", err.Message,
+			"status_code", err.StatusCode,
 			"method", r.Method,
 			"path", r.URL.Path,
 		)
 
-		if err := NewErrorResponse(w, apiErr.StatusCode, apiErr.Message, nil, errorId); err != nil {
+		if err := NewErrorResponse(w, err.StatusCode, err.Message, err.Details, errorId); err != nil {
 			logErrorResponse(errorId, err)
 		}
 

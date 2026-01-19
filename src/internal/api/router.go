@@ -15,7 +15,7 @@ func (r *CustomRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// If no matching route is found, return a 404 error
 	if pattern == "" {
-		err := NewHttpError(http.StatusNotFound, "Route not found - "+req.URL.Path)
+		err := NewHttpError(http.StatusNotFound, "Route not found - "+req.URL.Path, nil)
 		HandleHttpError(w, req, err)
 		return
 	}

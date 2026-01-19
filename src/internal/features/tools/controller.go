@@ -19,7 +19,7 @@ func GetIpInfo(w http.ResponseWriter, r *http.Request) error {
 
 	if queryIp != "" {
 		if net.ParseIP(queryIp) == nil {
-			return api.NewHttpError(http.StatusBadRequest, "Invalid IP address")
+			return api.NewHttpError(http.StatusBadRequest, "Invalid IP address", nil)
 		}
 	}
 

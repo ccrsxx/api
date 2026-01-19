@@ -26,7 +26,7 @@ func getDocs(w http.ResponseWriter, r *http.Request) error {
 	)
 
 	if err != nil {
-		return api.NewHttpError(http.StatusInternalServerError, "docs render failure")
+		return api.NewHttpError(http.StatusInternalServerError, "docs render failure", nil)
 	}
 
 	w.Header().Set("Content-Type", "text/html")

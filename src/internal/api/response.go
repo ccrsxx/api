@@ -14,14 +14,14 @@ type SuccessResponse[T any] struct {
 	Data T `json:"data"`
 }
 
+type ErrorResponse struct {
+	Error ErrorObject `json:"error"`
+}
+
 type ErrorObject struct {
 	ID      string   `json:"id"`
 	Message string   `json:"message"`
 	Details []string `json:"details"`
-}
-
-type ErrorResponse struct {
-	Error ErrorObject `json:"error"`
 }
 
 func newResponse(w http.ResponseWriter, status int, v any) error {
