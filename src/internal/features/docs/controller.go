@@ -32,9 +32,7 @@ func getDocs(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
-	if _, err := w.Write([]byte(html)); err != nil {
-		return api.NewHttpError(http.StatusInternalServerError, "docs send failure")
-	}
+	_, err = w.Write([]byte(html))
 
-	return nil
+	return err
 }
