@@ -9,7 +9,7 @@ import (
 )
 
 // Shared rate-limited handler for GetIpInfo. Limits to 10 requests per 10 seconds.
-var SharedGetIpInfo = middleware.HandlerRateLimit(1, 10*time.Second)(GetIpInfo)
+var SharedGetIpInfo = middleware.HandlerRateLimit(10, 10*time.Second)(GetIpInfo)
 
 func LoadRoutes(router *api.CustomRouter) {
 	mux := &api.CustomRouter{ServeMux: http.NewServeMux()}
