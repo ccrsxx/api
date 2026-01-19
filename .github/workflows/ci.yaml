@@ -32,6 +32,23 @@ jobs:
         with:
           version: v2.8.0
 
+  test:
+    name: Test
+    runs-on: self-hosted
+
+    needs: setup-go-version
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ needs.setup-go-version.outputs.go-version }}
+
+      - name: Run tests
+        run: make test
+
   format:
     name: Format
     runs-on: self-hosted
