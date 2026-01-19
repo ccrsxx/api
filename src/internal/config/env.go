@@ -46,6 +46,7 @@ func LoadEnv() {
 
 		if err := env.Parse(&envInstance); err != nil {
 			slog.Error("env parse error", "error", err)
+			os.Exit(1)
 		}
 
 		slog.Info("env loaded")
