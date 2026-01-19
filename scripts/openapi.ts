@@ -18,8 +18,9 @@ async function main(): Promise<void> {
     !postmanEnvSchema.POSTMAN_COLLECTION_ID;
 
   if (isPostmanEnvMissing) {
-    console.log('Skipping OpenAPI generation. Postman env vars are missing.');
-    return;
+    throw new Error(
+      'Missing Postman environment variables. Please set POSTMAN_API_KEY and POSTMAN_COLLECTION_ID.'
+    );
   }
 
   const postmanCollectionResponse = await fetch(
