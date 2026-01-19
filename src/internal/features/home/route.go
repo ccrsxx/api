@@ -16,7 +16,7 @@ func LoadRoutes(router *api.CustomRouter) {
 		case strings.HasPrefix(hostname, "ip."):
 			return tools.GetIpAddress(w, r)
 		case strings.HasPrefix(hostname, "ipinfo."):
-			return tools.GetIpInfo(w, r)
+			return tools.SharedGetIpInfo(w, r)
 		case strings.HasPrefix(hostname, "headers."):
 			return tools.GetHttpHeaders(w, r)
 		}
