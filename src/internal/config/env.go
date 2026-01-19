@@ -49,14 +49,19 @@ func Env() *appEnv {
 func LoadEnv() {
 	once.Do(func() {
 		// 1. Try to load .env.local first (Dev/Overrides)
+		// Use case: running development locally.
 		// We ignore errors because in Production, this file won't exist.
 		_ = godotenv.Load(".env.local")
 
 		// 2. Try to load .env (Defaults)
+		// Use case: running production locally without Docker.
 		// If .env.local already set a var, this line WON'T overwrite it.
 		// If on Docker (Production), these might fail but System Envs will take over.
 		_ = godotenv.Load(".env")
 
+		// 3. Parse & Validate (The final check)
+		// This reads from the actual environment (System + Loaded Files).
+		// If "APP_ENV" is invalid or "PORT" is missing, this crashes the app HERE.
 		if err := env.Parse(&envInstance); err != nil {
 			slog.Error("env parse error", "error", err)
 			os.Exit(1)
