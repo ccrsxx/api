@@ -13,7 +13,7 @@ func Init() {
 		return
 	}
 
-	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	opts := slog.HandlerOptions{
 		Level: slog.LevelInfo,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.LevelKey {
@@ -32,8 +32,9 @@ func Init() {
 
 			return a
 		},
-	})
+	}
 
-	slog.SetDefault(slog.New(handler))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &opts))
 
+	slog.SetDefault(logger)
 }
