@@ -1,4 +1,5 @@
 #!/bin/sh
 
+make tidy
 make lint
 make format

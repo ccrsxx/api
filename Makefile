@@ -7,6 +7,9 @@ build:
 start: build
 	APP_ENV=production ./tmp/main.exe
 
+tidy:
+	go mod tidy
+
 lint:
 	golangci-lint run ./...
 
