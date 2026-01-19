@@ -30,6 +30,7 @@ func GetIpAddressFromRequest(r *http.Request) string {
 
 	return ip
 }
+
 func GetHttpHeadersFromRequest(r *http.Request) map[string]string {
 	flatHeaders := map[string]string{}
 

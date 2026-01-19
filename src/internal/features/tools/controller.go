@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 
@@ -14,9 +15,11 @@ func GetIpAddress(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 
-	_, err := w.Write([]byte(ipAddress))
+	if _, err := w.Write([]byte(ipAddress)); err != nil {
+		return fmt.Errorf("ip response error: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func GetIpInfo(w http.ResponseWriter, r *http.Request) error {
@@ -34,10 +37,18 @@ func GetIpInfo(w http.ResponseWriter, r *http.Request) error {
 		ipAddress = utils.GetIpAddressFromRequest(r)
 	}
 
-	ipInfo, err := utils.IPInfo().GetIPInfo(net.ParseIP(ipAddress))
+	parsedIp := net.ParseIP(ipAddress)
+
+	// Should never happen since request always contains IP address
+	// But just in case, we handle it, in case library panic on nil input in future
+	if parsedIp == nil {
+		return api.NewHttpError(http.StatusBadRequest, "Invalid IP address", nil)
+	}
+
+	ipInfo, err := utils.IPInfo().GetIPInfo(parsedIp)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("get ip info error: %w", err)
 	}
 
 	return api.NewSuccessResponse(w, http.StatusOK, ipInfo)

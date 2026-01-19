@@ -158,6 +158,7 @@ func HandlerRateLimit(requests int, window time.Duration) func(api.HTTPHandlerWi
 	return func(next api.HTTPHandlerWithErr) api.HTTPHandlerWithErr {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			if err := rl.handleRateLimit(w, r); err != nil {
+				// No need to wrap error, as it's already returning http error from handleRateLimit
 				return err
 			}
 

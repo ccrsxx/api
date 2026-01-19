@@ -2,6 +2,7 @@ package docs
 
 import (
 	_ "embed"
+	"fmt"
 	"net/http"
 
 	scalargo "github.com/bdpiprava/scalar-go"
@@ -32,7 +33,9 @@ func getDocs(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
-	_, err = w.Write([]byte(html))
+	if _, err = w.Write([]byte(html)); err != nil {
+		return fmt.Errorf("docs response error: %w", err)
+	}
 
-	return err
+	return nil
 }
