@@ -28,8 +28,13 @@ type RateLimiter struct {
 }
 
 func newLimiterFromConfig(requests int, window time.Duration) *RateLimiter {
+	// Convert requests/window to requests/second (Token Bucket Rate)
+	// Example: 100 reqs / 60s = 1.666 reqs/sec
 	limit := rate.Limit(float64(requests) / window.Seconds())
 	burst := requests
+
+	// RFC RateLimit-Policy format: "limit; w=window_in_seconds"
+	// Example: "100; w=60"
 	policy := fmt.Sprintf("%d; w=%d", requests, int(window.Seconds()))
 
 	rl := &RateLimiter{
@@ -77,11 +82,14 @@ func (rl *RateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 
 	currentTokens := limiter.Tokens()
 
+	// Ensure we don't display negative tokens due to float precision
 	remaining := int(math.Max(0, currentTokens))
 
 	resetTime := 0.0
 
 	if rl.limit > 0 {
+		// Calculate time until the bucket is completely full again
+		// Formula: (Capacity - CurrentTokens) / RefillRate
 		resetTime = (float64(rl.burst) - currentTokens) / float64(rl.limit)
 	}
 
@@ -91,7 +99,11 @@ func (rl *RateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 	w.Header().Set("RateLimit-Remaining", strconv.Itoa(remaining))
 
 	if !allowed {
+		// Calculate exact wait time to regenerate ONE new token
+		// Formula: 1.0 / RefillRate (tokens per second)
 		retryAfter := 1.0 / float64(rl.limit)
+
+		// Round up to ensure the server has definitely refilled by the time they retry
 		waitSecs := int(math.Max(1, math.Ceil(retryAfter)))
 
 		w.Header().Set("Retry-After", strconv.Itoa(waitSecs))
@@ -103,6 +115,8 @@ func (rl *RateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 }
 
 func (rl *RateLimiter) cleanup() {
+	// Optimization: Scan less frequently (4x window) to save CPU/Lock contention.
+	// Enforce a minimum interval of 1 minute to prevent hot loops on short windows.
 	interval := max(rl.window*4, time.Minute)
 
 	ticker := time.NewTicker(interval)
@@ -113,6 +127,7 @@ func (rl *RateLimiter) cleanup() {
 		rl.mu.Lock()
 
 		for ip, v := range rl.visitors {
+			// Remove visitors who haven't been seen since the last check
 			if time.Since(v.lastSeen) > interval {
 				delete(rl.visitors, ip)
 			}
