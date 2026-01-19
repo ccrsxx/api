@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/features/tools" // Import your tools package
+	"github.com/ccrsxx/api-go/src/internal/features/tools"
 )
 
 func LoadRoutes(router *api.CustomRouter) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/ccrsxx/api-go/src/internal/api"
 	"github.com/ccrsxx/api-go/src/internal/features/docs"
+	"github.com/ccrsxx/api-go/src/internal/features/favicon"
 	"github.com/ccrsxx/api-go/src/internal/features/home"
 	"github.com/ccrsxx/api-go/src/internal/features/tools"
 	"github.com/ccrsxx/api-go/src/internal/middleware"
@@ -17,6 +18,7 @@ func RegisterRoutes() http.Handler {
 	home.LoadRoutes(router)
 	docs.LoadRoutes(router)
 	tools.LoadRoutes(router)
+	favicon.LoadRoutes(router)
 
 	middlewares := middleware.CreateStack(
 		middleware.Cors,
