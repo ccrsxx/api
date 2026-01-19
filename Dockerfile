@@ -17,6 +17,7 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./src/cmd/api/main
 FROM scratch as final
 
 COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
+
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=build /app/main /main
