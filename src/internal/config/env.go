@@ -48,6 +48,6 @@ func LoadEnv() {
 			slog.Error("env parse error", "error", err)
 		}
 
-		slog.Info("env loaded successfully")
+		slog.Info("env loaded")
 	})
 }

@@ -27,7 +27,7 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	errorId := uuid.New().String()
 
 	if apiErr, ok := err.(*HttpError); ok {
-		slog.Error("handled error",
+		slog.Error("api error handled",
 			"error_id", errorId,
 			"message", apiErr.Message,
 			"status_code", apiErr.StatusCode,
@@ -42,7 +42,7 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 
-	slog.Error("unhandled error",
+	slog.Error("api error unhandled",
 		"error_id", errorId,
 		"error", err,
 		"method", r.Method,

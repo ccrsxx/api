@@ -21,7 +21,7 @@ func main() {
 	slog.Info("server started", "port", server.Addr, "env", config.Config().AppEnv)
 
 	if err := server.ListenAndServe(); err != nil {
-		slog.Error("server failed to start", "error", err)
+		slog.Error("server failed", "error", err)
 		os.Exit(1)
 	}
 }
