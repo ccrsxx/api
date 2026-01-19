@@ -14,5 +14,5 @@ if [ "$LAST_COMMIT_MSG" = "$AUTO_COMMIT_MSG" ]; then
 else
   # If it was a manual commit, run the generator script.
   echo "Post-commit hook: Running OpenAPI generator..."
-  npm run openapi:generate:commit
+  make generate-openapi
 fi

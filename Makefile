@@ -21,7 +21,7 @@ setup-scripts:
 	cd scripts && npm i
 
 generate-openapi: setup-scripts
-	npm run start --prefix .\scripts\
-
-generate-openapi-no-commit: setup-scripts
 	npm run start:no-commit --prefix .\scripts\
+
+generate-openapi-commit: setup-scripts
+	npm run start --prefix .\scripts\
