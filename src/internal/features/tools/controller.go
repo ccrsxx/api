@@ -8,13 +8,13 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/utils"
 )
 
-func getIpAddress(w http.ResponseWriter, r *http.Request) error {
+func GetIpAddress(w http.ResponseWriter, r *http.Request) error {
 	ipAddress := utils.GetIpAddressFromRequest(r)
 
 	return api.NewSuccessResponse(w, http.StatusOK, ipAddress)
 }
 
-func getIpInfo(w http.ResponseWriter, r *http.Request) error {
+func GetIpInfo(w http.ResponseWriter, r *http.Request) error {
 	queryIp := r.URL.Query().Get("ip")
 
 	if queryIp != "" {
@@ -38,7 +38,7 @@ func getIpInfo(w http.ResponseWriter, r *http.Request) error {
 	return api.NewSuccessResponse(w, http.StatusOK, ipInfo)
 }
 
-func getHttpHeaders(w http.ResponseWriter, r *http.Request) error {
+func GetHttpHeaders(w http.ResponseWriter, r *http.Request) error {
 	headers := utils.GetHttpHeadersFromRequest(r)
 
 	return api.NewSuccessResponse(w, http.StatusOK, headers)
