@@ -48,6 +48,12 @@ func Env() *appEnv {
 
 func LoadEnv() {
 	once.Do(func() {
+		// System Environment Variables have the highest priority.
+		// They override any loaded .env files.
+
+		// Must load each .env files separately.
+		// If we use godotenv.Load(".env.local", ".env"), it won't load .env if .env.local is missing.
+
 		// 1. Try to load .env.local first (Dev/Overrides)
 		// Use case: running development locally.
 		// We ignore errors because in Production, this file won't exist.
@@ -55,7 +61,6 @@ func LoadEnv() {
 
 		// 2. Try to load .env (Defaults)
 		// Use case: running production locally without Docker.
-		// If .env.local already set a var, this line WON'T overwrite it.
 		// If on Docker (Production), these might fail but System Envs will take over.
 		_ = godotenv.Load(".env")
 
