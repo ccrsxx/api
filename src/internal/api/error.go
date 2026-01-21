@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/ccrsxx/api-go/src/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -29,16 +30,20 @@ func NewHttpError(statusCode int, message string, details []string) *HttpError {
 func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	errorId := uuid.New().String()
 
+	ipAddress := utils.GetIpAddressFromRequest(r)
+
 	var httpErr *HttpError
 
 	if errors.As(err, &httpErr) {
 		slog.Error("http error handled",
-			"error_id", errorId,
 			"message", httpErr.Message,
 			"status_code", httpErr.StatusCode,
 			"details", httpErr.Details,
-			"method", r.Method,
+			"error", err,
+			"error_id", errorId,
 			"path", r.URL.Path,
+			"method", r.Method,
+			"ip_address", ipAddress,
 		)
 
 		if err := NewErrorResponse(w, httpErr.StatusCode, httpErr.Message, httpErr.Details, errorId); err != nil {
@@ -49,10 +54,11 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	slog.Error("http error unhandled",
-		"error_id", errorId,
 		"error", err,
-		"method", r.Method,
+		"error_id", errorId,
 		"path", r.URL.Path,
+		"method", r.Method,
+		"ip_address", ipAddress,
 	)
 
 	if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorId); err != nil {

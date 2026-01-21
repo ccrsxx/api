@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/ccrsxx/api-go/src/internal/utils"
 )
 
 type wrappedWriter struct {
@@ -27,11 +29,16 @@ func Logging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(wrapped, r)
 
+		ipAddress := utils.GetIpAddressFromRequest(r)
+
+		end := time.Since(start)
+
 		slog.Info("http request",
 			"path", r.URL.Path,
-			"status", wrapped.statusCode,
 			"method", r.Method,
-			"duration", time.Since(start),
+			"status_code", wrapped.statusCode,
+			"duration", end,
+			"ip_address", ipAddress,
 		)
 	})
 }
