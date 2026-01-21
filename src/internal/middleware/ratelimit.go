@@ -137,22 +137,7 @@ func (rl *RateLimiter) cleanup() {
 	}
 }
 
-func GlobalRateLimit(requests int, window time.Duration) func(http.Handler) http.Handler {
-	rl := newLimiterFromConfig(requests, window)
-
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if err := rl.handleRateLimit(w, r); err != nil {
-				api.HandleHttpError(w, r, err)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func HandlerRateLimit(requests int, window time.Duration) func(next http.Handler) http.Handler {
+func RateLimit(requests int, window time.Duration) func(next http.Handler) http.Handler {
 	rl := newLimiterFromConfig(requests, window)
 
 	return func(next http.Handler) http.Handler {

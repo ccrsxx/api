@@ -23,7 +23,7 @@ func RegisterRoutes() http.Handler {
 
 	routes := middleware.Cors(
 		middleware.Logging(
-			middleware.GlobalRateLimit(100, 1*time.Minute)(
+			middleware.RateLimit(100, 1*time.Minute)(
 				router,
 			),
 		),
