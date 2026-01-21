@@ -1,4 +1,4 @@
-package utils
+package ipinfo
 
 import (
 	"sync"
@@ -14,7 +14,7 @@ var (
 	ipInfo *ipinfo.Client
 )
 
-func IPInfo() *ipinfo.Client {
+func Client() *ipinfo.Client {
 	once.Do(func() {
 		token := config.Env().IpInfoToken
 
