@@ -4,27 +4,31 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
 	"github.com/ccrsxx/api-go/src/internal/features/docs"
 	"github.com/ccrsxx/api-go/src/internal/features/favicon"
 	"github.com/ccrsxx/api-go/src/internal/features/home"
+	"github.com/ccrsxx/api-go/src/internal/features/spotify"
 	"github.com/ccrsxx/api-go/src/internal/features/tools"
 	"github.com/ccrsxx/api-go/src/internal/middleware"
 )
 
 func RegisterRoutes() http.Handler {
-	router := &api.CustomRouter{ServeMux: http.NewServeMux()}
+	router := http.NewServeMux()
 
 	home.LoadRoutes(router)
 	docs.LoadRoutes(router)
 	tools.LoadRoutes(router)
 	favicon.LoadRoutes(router)
+	spotify.LoadRoutes(router)
 
-	middlewares := middleware.CreateStack(
-		middleware.Cors,
-		middleware.Logging,
-		middleware.GlobalRateLimit(100, 1*time.Minute),
+	routes := middleware.Cors(
+		middleware.Logging(
+			middleware.GlobalRateLimit(100, 1*time.Minute)(
+				router,
+			),
+		),
 	)
 
-	return middlewares(router)
+	return routes
+
 }

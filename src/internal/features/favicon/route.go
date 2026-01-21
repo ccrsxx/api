@@ -1,9 +1,9 @@
 package favicon
 
 import (
-	"github.com/ccrsxx/api-go/src/internal/api"
+	"net/http"
 )
 
-func LoadRoutes(router *api.CustomRouter) {
-	router.HandleFunc("GET /favicon.ico", getFavicon)
+func LoadRoutes(router *http.ServeMux) {
+	router.HandleFunc("GET /favicon.ico", Controller.getFavicon)
 }

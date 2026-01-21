@@ -10,10 +10,14 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/utils"
 )
 
+type controller struct{}
+
+var Controller = &controller{}
+
 //go:embed openapi.json
 var openapiSpec []byte
 
-func getDocs(w http.ResponseWriter, r *http.Request) error {
+func (c *controller) getDocs(w http.ResponseWriter, r *http.Request) {
 	serverOverride := scalargo.ServerOverride{
 		URL:         utils.GetPublicUrlFromRequest(r),
 		Description: "Production server",
@@ -27,15 +31,15 @@ func getDocs(w http.ResponseWriter, r *http.Request) error {
 	)
 
 	if err != nil {
-		return api.NewHttpError(http.StatusInternalServerError, "Docs render error", nil)
+		api.HandleHttpError(w, r, fmt.Errorf("docs render error: %w", err))
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
 	if _, err = w.Write([]byte(html)); err != nil {
-		return fmt.Errorf("docs response error: %w", err)
+		api.HandleHttpError(w, r, fmt.Errorf("docs response error: %w", err))
+		return
 	}
-
-	return nil
 }

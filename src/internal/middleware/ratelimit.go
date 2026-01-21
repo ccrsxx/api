@@ -152,17 +152,18 @@ func GlobalRateLimit(requests int, window time.Duration) func(http.Handler) http
 	}
 }
 
-func HandlerRateLimit(requests int, window time.Duration) func(api.HTTPHandlerWithErr) api.HTTPHandlerWithErr {
+func HandlerRateLimit(requests int, window time.Duration) func(next http.Handler) http.Handler {
 	rl := newLimiterFromConfig(requests, window)
 
-	return func(next api.HTTPHandlerWithErr) api.HTTPHandlerWithErr {
-		return func(w http.ResponseWriter, r *http.Request) error {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := rl.handleRateLimit(w, r); err != nil {
 				// No need to wrap error, as it's already returning http error from handleRateLimit
-				return err
+				api.HandleHttpError(w, r, err)
+				return
 			}
 
-			return next(w, r)
-		}
+			next.ServeHTTP(w, r)
+		})
 	}
 }

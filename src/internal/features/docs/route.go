@@ -1,9 +1,9 @@
 package docs
 
 import (
-	"github.com/ccrsxx/api-go/src/internal/api"
+	"net/http"
 )
 
-func LoadRoutes(router *api.CustomRouter) {
-	router.HandleFunc("GET /docs", getDocs)
+func LoadRoutes(router *http.ServeMux) {
+	router.HandleFunc("GET /docs", Controller.getDocs)
 }
