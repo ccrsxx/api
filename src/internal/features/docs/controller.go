@@ -38,7 +38,7 @@ func (c *controller) getDocs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
-	if _, err = w.Write([]byte(html)); err != nil {
+	if _, err := w.Write([]byte(html)); err != nil {
 		api.HandleHttpError(w, r, fmt.Errorf("docs response error: %w", err))
 		return
 	}

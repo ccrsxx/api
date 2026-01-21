@@ -13,9 +13,12 @@ var Middleware = &middleware{}
 
 func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := Service.getAuthorizationFromBearerToken(r)
+		headerToken := r.Header.Get("Authorization")
+
+		token, err := Service.getAuthorizationFromBearerToken(r.Context(), headerToken)
 
 		if err != nil {
+			// No need to wrap error, service already return proper error
 			api.HandleHttpError(w, r, err)
 			return
 		}
@@ -23,6 +26,7 @@ func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
 		isValidSecretKey := config.Env().SecretKey == token
 
 		if !isValidSecretKey {
+			// No need to wrap error, service already return proper error
 			api.HandleHttpError(w, r, err)
 			return
 		}
@@ -34,7 +38,9 @@ func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
 
 func (m *middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := Service.getAuthorizationFromQuery(r)
+		queryToken := r.URL.Query().Get("token")
+
+		token, err := Service.getAuthorizationFromQuery(r.Context(), queryToken)
 
 		if err != nil {
 			// No need to wrap error, service already return proper error
