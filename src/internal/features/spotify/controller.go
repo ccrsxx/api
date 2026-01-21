@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/clients/spotify"
 )
 
 type controller struct{}
@@ -13,7 +12,7 @@ type controller struct{}
 var Controller = &controller{}
 
 func (c *controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
-	data, err := spotify.Client().GetNowCurrentlyPlaying(r.Context())
+	data, err := Service.GetCurrentlyPlaying(r.Context())
 
 	if err != nil {
 		api.HandleHttpError(w, r, err)
