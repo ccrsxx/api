@@ -30,11 +30,14 @@ func (e *Environment) UnmarshalText(text []byte) error {
 }
 
 type appEnv struct {
-	Port           string      `env:"PORT,required"`
-	AppEnv         Environment `env:"APP_ENV,required"`
-	SecretKey      string      `env:"SECRET_KEY,required"`
-	IpInfoToken    string      `env:"IPINFO_TOKEN,required"`
-	AllowedOrigins []string    `env:"ALLOWED_ORIGINS,required"`
+	Port                string      `env:"PORT,required"`
+	AppEnv              Environment `env:"APP_ENV,required"`
+	SecretKey           string      `env:"SECRET_KEY,required"`
+	IpInfoToken         string      `env:"IPINFO_TOKEN,required"`
+	AllowedOrigins      []string    `env:"ALLOWED_ORIGINS,required"`
+	SpotifyClientID     string      `env:"SPOTIFY_CLIENT_ID,required"`
+	SpotifyClientSecret string      `env:"SPOTIFY_CLIENT_SECRET,required"`
+	SpotifyRefreshToken string      `env:"SPOTIFY_REFRESH_TOKEN,required"`
 }
 
 var (
