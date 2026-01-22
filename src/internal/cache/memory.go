@@ -67,9 +67,7 @@ func (m *MemoryCache) cleanup() {
 
 	defer ticker.Stop()
 
-	for {
-		<-ticker.C
-
+	for range ticker.C {
 		m.mu.Lock()
 
 		now := time.Now()
