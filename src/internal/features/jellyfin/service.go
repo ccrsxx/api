@@ -11,21 +11,15 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/model"
 )
 
+var Service = &service{}
+
 type service struct {
-	*spotifyService
-}
-
-var Service = &service{
-	spotifyService: &spotifyService{},
-}
-
-type spotifyService struct {
 	mu            sync.Mutex
 	lastState     *model.CurrentlyPlaying
 	lastStateTime time.Time
 }
 
-func (ss *spotifyService) GetCurrentlyPlaying(ctx context.Context, useCache bool) (*model.CurrentlyPlaying, error) {
+func (s *service) GetCurrentlyPlaying(ctx context.Context) (*model.CurrentlyPlaying, error) {
 	sessions, err := jellyfin.Client().GetSessions(ctx)
 
 	if err != nil {
@@ -59,52 +53,52 @@ func (ss *spotifyService) GetCurrentlyPlaying(ctx context.Context, useCache bool
 	}
 
 	if playingItem == nil {
-		return ss.getCachedStateOrEmpty(), nil
+		return s.getCachedStateOrEmpty(), nil
 	}
 
-	ss.mu.Lock()
+	s.mu.Lock()
 
-	ss.lastState = playingItem
-	ss.lastStateTime = time.Now()
+	s.lastState = playingItem
+	s.lastStateTime = time.Now()
 
-	ss.mu.Unlock()
+	s.mu.Unlock()
 
 	return playingItem, nil
 }
 
-func (ss *spotifyService) getCachedStateOrEmpty() *model.CurrentlyPlaying {
-	ss.mu.Lock()
-	defer ss.mu.Unlock()
+func (s *service) getCachedStateOrEmpty() *model.CurrentlyPlaying {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	const gracePeriod = 5 * time.Second
 
-	shouldUseCache := ss.lastState != nil &&
-		ss.lastState.IsPlaying &&
-		time.Since(ss.lastStateTime) < gracePeriod
+	shouldUseCache := s.lastState != nil &&
+		s.lastState.IsPlaying &&
+		time.Since(s.lastStateTime) < gracePeriod
 
 	if shouldUseCache {
-		return ss.getExtrapolatedState()
+		return s.getExtrapolatedState()
 	}
 
-	return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify)
+	return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 }
 
-func (ss *spotifyService) getExtrapolatedState() *model.CurrentlyPlaying {
-	if ss.lastState == nil || ss.lastState.Item == nil {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify)
+func (s *service) getExtrapolatedState() *model.CurrentlyPlaying {
+	if s.lastState == nil || s.lastState.Item == nil {
+		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 	}
 
-	elapsed := int(time.Since(ss.lastStateTime).Milliseconds())
-	extrapolatedProgress := ss.lastState.Item.ProgressMs + elapsed
+	elapsed := int(time.Since(s.lastStateTime).Milliseconds())
+	extrapolatedProgress := s.lastState.Item.ProgressMs + elapsed
 
-	progressMs := min(extrapolatedProgress, ss.lastState.Item.DurationMs)
+	progressMs := min(extrapolatedProgress, s.lastState.Item.DurationMs)
 
-	itemCopy := *ss.lastState.Item
+	itemCopy := *s.lastState.Item
 	itemCopy.ProgressMs = progressMs
 
 	return &model.CurrentlyPlaying{
-		Platform:  model.PlatformSpotify,
-		IsPlaying: ss.lastState.IsPlaying,
+		Platform:  model.PlatformJellyfin,
+		IsPlaying: s.lastState.IsPlaying,
 		Item:      &itemCopy,
 	}
 }
