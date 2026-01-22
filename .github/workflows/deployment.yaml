@@ -78,9 +78,8 @@ jobs:
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
           echo "JELLYFIN_API_KEY=${{ secrets.JELLYFIN_API_KEY }}" >> .env
           echo "JELLYFIN_USERNAME=${{ secrets.JELLYFIN_USERNAME }}" >> .env
-          echo "JELLYFIN_IMAGE_URL=${{ secrets.JELLYFIN_IMAGE_URL }}" >> .env
-
           echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" >> .env
+          echo "JELLYFIN_IMAGE_URL=${{ secrets.JELLYFIN_IMAGE_URL }}" >> .env
           echo "SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}" >> .env
           echo "SPOTIFY_REFRESH_TOKEN=${{ secrets.SPOTIFY_REFRESH_TOKEN }}" >> .env
 
