@@ -18,7 +18,7 @@ type item struct {
 
 func NewMemoryCache() *MemoryCache {
 	store := &MemoryCache{
-		items: make(map[string]item),
+		items: map[string]item{},
 	}
 
 	go store.cleanup()
