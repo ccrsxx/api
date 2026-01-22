@@ -108,7 +108,10 @@ func (rl *RateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 
 		w.Header().Set("Retry-After", strconv.Itoa(waitSecs))
 
-		return api.NewHttpError(http.StatusTooManyRequests, "Too many requests, please try again later.", nil)
+		return &api.HttpError{
+			StatusCode: http.StatusTooManyRequests,
+			Message:    "Too many requests, please try again later.", Details: nil,
+		}
 	}
 
 	return nil

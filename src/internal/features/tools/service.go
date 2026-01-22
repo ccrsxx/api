@@ -16,7 +16,10 @@ var Service = &service{}
 
 func (s *service) GetIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
 	if queryIp != "" && net.ParseIP(queryIp) == nil {
-		return nil, api.NewHttpError(http.StatusBadRequest, "Invalid IP address", nil)
+		return nil, &api.HttpError{
+			Message: "Invalid IP address", Details: nil,
+			StatusCode: http.StatusBadRequest,
+		}
 	}
 
 	ipAddress := queryIp
@@ -28,7 +31,10 @@ func (s *service) GetIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, 
 	parsedIp := net.ParseIP(ipAddress)
 
 	if parsedIp == nil {
-		return nil, api.NewHttpError(http.StatusBadRequest, "Invalid IP address", nil)
+		return nil, &api.HttpError{
+			Message: "Invalid IP address", Details: nil,
+			StatusCode: http.StatusBadRequest,
+		}
 	}
 
 	info, err := ipinfo.Client().GetIPInfo(parsedIp)

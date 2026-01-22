@@ -4,9 +4,10 @@ import (
 	"strings"
 
 	"github.com/ccrsxx/api-go/src/internal/clients/spotify"
+	"github.com/ccrsxx/api-go/src/internal/model"
 )
 
-func mapSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *CurrentlyPlaying {
+func mapSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *model.CurrentlyPlaying {
 	item := raw.Item
 
 	var artistNames []string
@@ -34,10 +35,10 @@ func mapSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *Currently
 	}
 
 	// 5. Construct and Return
-	return &CurrentlyPlaying{
-		Platform:  PlatformSpotify,
+	return &model.CurrentlyPlaying{
+		Platform:  "emilia",
 		IsPlaying: raw.IsPlaying,
-		Item: &Track{
+		Item: &model.Track{
 			TrackName:     item.Name,
 			AlbumName:     item.Album.Name,
 			ArtistName:    artistStr,
@@ -46,13 +47,5 @@ func mapSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *Currently
 			TrackURL:      trackUrl, // string | null
 			AlbumImageURL: imageUrl, // string | null
 		},
-	}
-}
-
-func getDefaultCurrentlyPlaying() *CurrentlyPlaying {
-	return &CurrentlyPlaying{
-		Platform:  PlatformSpotify,
-		IsPlaying: false,
-		Item:      nil,
 	}
 }
