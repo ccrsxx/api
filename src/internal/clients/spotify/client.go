@@ -32,16 +32,16 @@ func Client() *client {
 	once.Do(func() {
 		instance = client{
 			clientID:     config.Env().SpotifyClientID,
+			httpClient:   &http.Client{Timeout: 60 * time.Second},
 			clientSecret: config.Env().SpotifyClientSecret,
 			refreshToken: config.Env().SpotifyRefreshToken,
-			httpClient:   &http.Client{},
 		}
 	})
 
 	return &instance
 }
 
-func (c *client) GetNowCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlaying, error) {
+func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlaying, error) {
 	token, err := c.getAccessToken(ctx)
 
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *client) GetNowCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyP
 
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	resp, err := c.httpClient.Do(req)
+	res, err := c.httpClient.Do(req)
 
 	if err != nil {
 		slog.Warn("spotify currently playing request call error", "error", err)
@@ -65,27 +65,27 @@ func (c *client) GetNowCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyP
 	}
 
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
+		if err := res.Body.Close(); err != nil {
 			slog.Warn("spotify currently playing close body error", "error", err)
 		}
 	}()
 
 	// 204 No Content means nothing is currently playing
-	if resp.StatusCode == http.StatusNoContent {
+	if res.StatusCode == http.StatusNoContent {
 		slog.Info("spotify currently playing no content")
 
 		return nil, nil
 	}
 
-	if resp.StatusCode/100 != 2 {
-		slog.Warn("spotify currently playing request status error", "status", resp.Status)
+	if res.StatusCode/100 != 2 {
+		slog.Warn("spotify currently playing request status error", "status", res.Status)
 
 		return nil, nil
 	}
 
 	var data SpotifyCurrentlyPlaying
 
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
 		return nil, fmt.Errorf("spotify currently playing decode error: %w", err)
 	}
 

@@ -14,7 +14,7 @@ type service struct{}
 var Service = &service{}
 
 func (s *service) GetCurrentlyPlaying(ctx context.Context) (*CurrentlyPlaying, error) {
-	data, err := spotify.Client().GetNowCurrentlyPlaying(ctx)
+	data, err := spotify.Client().GetCurrentlyPlaying(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("spotify get currently playing error: %w", err)
