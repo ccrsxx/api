@@ -7,7 +7,7 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/model"
 )
 
-func mapSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *model.CurrentlyPlaying {
+func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *model.CurrentlyPlaying {
 	item := raw.Item
 
 	var artistNames []string
@@ -34,9 +34,8 @@ func mapSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *model.Cur
 		}
 	}
 
-	// 5. Construct and Return
 	return &model.CurrentlyPlaying{
-		Platform:  "emilia",
+		Platform:  model.PlatformSpotify,
 		IsPlaying: raw.IsPlaying,
 		Item: &model.Track{
 			TrackName:     item.Name,

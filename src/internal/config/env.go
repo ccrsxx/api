@@ -34,8 +34,12 @@ type appEnv struct {
 	AppEnv              Environment `env:"APP_ENV,required"`
 	SecretKey           string      `env:"SECRET_KEY,required"`
 	IpInfoToken         string      `env:"IPINFO_TOKEN,required"`
+	JellyfinUrl         string      `env:"JELLYFIN_URL,required"`
 	AllowedOrigins      []string    `env:"ALLOWED_ORIGINS,required"`
+	JellyfinApiKey      string      `env:"JELLYFIN_API_KEY,required"`
 	SpotifyClientID     string      `env:"SPOTIFY_CLIENT_ID,required"`
+	JellyfinUsername    string      `env:"JELLYFIN_USERNAME,required"`
+	JellyfinImageUrl    string      `env:"JELLYFIN_IMAGE_URL,required"`
 	SpotifyClientSecret string      `env:"SPOTIFY_CLIENT_SECRET,required"`
 	SpotifyRefreshToken string      `env:"SPOTIFY_REFRESH_TOKEN,required"`
 }

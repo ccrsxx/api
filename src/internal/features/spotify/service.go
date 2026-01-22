@@ -7,13 +7,14 @@ import (
 	"fmt"
 
 	"github.com/ccrsxx/api-go/src/internal/clients/spotify"
+	"github.com/ccrsxx/api-go/src/internal/model"
 )
 
 type service struct{}
 
 var Service = &service{}
 
-func (s *service) GetCurrentlyPlaying(ctx context.Context) (*CurrentlyPlaying, error) {
+func (s *service) GetCurrentlyPlaying(ctx context.Context) (*model.CurrentlyPlaying, error) {
 	data, err := spotify.Client().GetCurrentlyPlaying(ctx)
 
 	if err != nil {
@@ -21,8 +22,8 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (*CurrentlyPlaying, e
 	}
 
 	if data == nil {
-		return getDefaultCurrentlyPlaying(), nil
+		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
 	}
 
-	return mapSpotifyCurrentlyPlaying(data), nil
+	return parseSpotifyCurrentlyPlaying(data), nil
 }

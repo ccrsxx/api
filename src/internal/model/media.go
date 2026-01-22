@@ -1,4 +1,4 @@
-package spotify
+package model
 
 type Platform string
 
@@ -7,20 +7,26 @@ const (
 	PlatformJellyfin Platform = "jellyfin"
 )
 
-// Track matches your TS 'Track' type
 type Track struct {
-	TrackURL      *string `json:"trackUrl"` // pointer allows null
+	TrackURL      *string `json:"trackUrl"`
 	TrackName     string  `json:"trackName"`
 	AlbumName     string  `json:"albumName"`
 	ArtistName    string  `json:"artistName"`
 	ProgressMs    int     `json:"progressMs"`
 	DurationMs    int     `json:"durationMs"`
-	AlbumImageURL *string `json:"albumImageUrl"` // pointer allows null
+	AlbumImageURL *string `json:"albumImageUrl"`
 }
 
-// CurrentlyPlaying matches your TS 'CurrentlyPlaying' type
 type CurrentlyPlaying struct {
-	Item      *Track   `json:"item"` // nil if nothing playing
+	Item      *Track   `json:"item"`
 	Platform  Platform `json:"platform"`
 	IsPlaying bool     `json:"isPlaying"`
+}
+
+func NewDefaultCurrentlyPlaying(platform Platform) *CurrentlyPlaying {
+	return &CurrentlyPlaying{
+		Platform:  platform,
+		IsPlaying: false,
+		Item:      nil,
+	}
 }
