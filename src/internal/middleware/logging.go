@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -33,11 +34,13 @@ func Logging(next http.Handler) http.Handler {
 
 		end := time.Since(start)
 
+		parsedEnd := fmt.Sprintf("%v", end)
+
 		slog.Info("http request",
 			"path", r.URL.Path,
 			"method", r.Method,
 			"status_code", wrapped.statusCode,
-			"duration", end,
+			"duration", parsedEnd,
 			"ip_address", ipAddress,
 		)
 	})
