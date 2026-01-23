@@ -9,11 +9,11 @@ import (
 
 var ErrCacheMiss = errors.New("cache miss")
 
-type ProviderType string
+type ProviderCache string
 
 const (
-	ProviderMemory     ProviderType = "memory"
-	ProviderCloudflare ProviderType = "cloudflare-kv"
+	ProviderMemory     ProviderCache = "memory"
+	ProviderCloudflare ProviderCache = "cloudflare-kv"
 )
 
 type cache interface {
@@ -23,7 +23,7 @@ type cache interface {
 }
 
 var cacheManager = &CacheManager{
-	memory: NewMemoryCache(),
+	memory: newMemoryCache(),
 }
 
 type CacheManager struct {
@@ -40,7 +40,7 @@ func StaticTTL[T any](d time.Duration) func(T) time.Duration {
 func GetCachedData[T any](
 	ctx context.Context,
 	key string,
-	provider ProviderType,
+	provider ProviderCache,
 	fetcher func() (T, error),
 	ttlFunc func(T) time.Duration,
 ) (T, error) {

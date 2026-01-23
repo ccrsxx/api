@@ -28,7 +28,7 @@ func (c *controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
 	queryIp := r.URL.Query().Get("ip")
 	requestIp := utils.GetIpAddressFromRequest(r)
 
-	ipInfo, err := Service.GetIpInfo(queryIp, requestIp)
+	ipInfo, err := Service.getIpInfo(queryIp, requestIp)
 
 	if err != nil {
 		api.HandleHttpError(w, r, err)

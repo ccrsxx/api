@@ -13,7 +13,7 @@ type service struct{}
 
 var Service = &service{}
 
-func (s *service) getAuthorizationFromBearerToken(_ context.Context, headerToken string) (string, error) {
+func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerToken string) (string, error) {
 	if headerToken == "" {
 		return "", &api.HttpError{
 			Message:    "invalid token",
@@ -33,7 +33,7 @@ func (s *service) getAuthorizationFromBearerToken(_ context.Context, headerToken
 	return parts[1], nil
 }
 
-func (s *service) getAuthorizationFromQuery(_ context.Context, queryToken string) (string, error) {
+func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken string) (string, error) {
 	if queryToken == "" {
 		return "", &api.HttpError{
 			Message:    "invalid token",

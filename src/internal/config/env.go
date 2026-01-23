@@ -10,18 +10,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Environment string
+type EnvironmentApp string
 
 const (
-	EnvProduction  Environment = "production"
-	EnvDevelopment Environment = "development"
+	EnvironmentProduction  EnvironmentApp = "production"
+	EnvironmentDevelopment EnvironmentApp = "development"
 )
 
-func (e *Environment) UnmarshalText(text []byte) error {
-	val := Environment(text)
+func (e *EnvironmentApp) UnmarshalText(text []byte) error {
+	val := EnvironmentApp(text)
 
 	switch val {
-	case EnvDevelopment, EnvProduction:
+	case EnvironmentDevelopment, EnvironmentProduction:
 		*e = val
 		return nil
 	default:
@@ -30,18 +30,18 @@ func (e *Environment) UnmarshalText(text []byte) error {
 }
 
 type appEnv struct {
-	Port                string      `env:"PORT,required"`
-	AppEnv              Environment `env:"APP_ENV,required"`
-	SecretKey           string      `env:"SECRET_KEY,required"`
-	IpInfoToken         string      `env:"IPINFO_TOKEN,required"`
-	JellyfinUrl         string      `env:"JELLYFIN_URL,required"`
-	AllowedOrigins      []string    `env:"ALLOWED_ORIGINS,required"`
-	JellyfinApiKey      string      `env:"JELLYFIN_API_KEY,required"`
-	SpotifyClientID     string      `env:"SPOTIFY_CLIENT_ID,required"`
-	JellyfinUsername    string      `env:"JELLYFIN_USERNAME,required"`
-	JellyfinImageUrl    string      `env:"JELLYFIN_IMAGE_URL,required"`
-	SpotifyClientSecret string      `env:"SPOTIFY_CLIENT_SECRET,required"`
-	SpotifyRefreshToken string      `env:"SPOTIFY_REFRESH_TOKEN,required"`
+	Port                string         `env:"PORT,required"`
+	AppEnv              EnvironmentApp `env:"APP_ENV,required"`
+	SecretKey           string         `env:"SECRET_KEY,required"`
+	IpInfoToken         string         `env:"IPINFO_TOKEN,required"`
+	JellyfinUrl         string         `env:"JELLYFIN_URL,required"`
+	AllowedOrigins      []string       `env:"ALLOWED_ORIGINS,required"`
+	JellyfinApiKey      string         `env:"JELLYFIN_API_KEY,required"`
+	SpotifyClientID     string         `env:"SPOTIFY_CLIENT_ID,required"`
+	JellyfinUsername    string         `env:"JELLYFIN_USERNAME,required"`
+	JellyfinImageUrl    string         `env:"JELLYFIN_IMAGE_URL,required"`
+	SpotifyClientSecret string         `env:"SPOTIFY_CLIENT_SECRET,required"`
+	SpotifyRefreshToken string         `env:"SPOTIFY_REFRESH_TOKEN,required"`
 }
 
 var (

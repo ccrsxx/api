@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type MemoryCache struct {
+type memoryCache struct {
 	mu    sync.RWMutex
 	items map[string]item
 }
@@ -16,8 +16,8 @@ type item struct {
 	expiresAt time.Time
 }
 
-func NewMemoryCache() *MemoryCache {
-	store := &MemoryCache{
+func newMemoryCache() *memoryCache {
+	store := &memoryCache{
 		items: map[string]item{},
 	}
 
@@ -26,7 +26,7 @@ func NewMemoryCache() *MemoryCache {
 	return store
 }
 
-func (m *MemoryCache) Get(ctx context.Context, key string) (any, error) {
+func (m *memoryCache) Get(ctx context.Context, key string) (any, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -39,7 +39,7 @@ func (m *MemoryCache) Get(ctx context.Context, key string) (any, error) {
 	return val.value, nil
 }
 
-func (m *MemoryCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
+func (m *memoryCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -51,7 +51,7 @@ func (m *MemoryCache) Set(ctx context.Context, key string, value any, ttl time.D
 	return nil
 }
 
-func (m *MemoryCache) Delete(ctx context.Context, key string) error {
+func (m *memoryCache) Delete(ctx context.Context, key string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -60,7 +60,7 @@ func (m *MemoryCache) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (m *MemoryCache) cleanup() {
+func (m *memoryCache) cleanup() {
 	const cleanupInterval = 5 * time.Minute
 
 	ticker := time.NewTicker(cleanupInterval)

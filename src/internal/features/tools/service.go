@@ -14,7 +14,7 @@ type service struct{}
 
 var Service = &service{}
 
-func (s *service) GetIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
+func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
 	if queryIp != "" && net.ParseIP(queryIp) == nil {
 		return nil, &api.HttpError{
 			Message: "Invalid IP address", Details: nil,

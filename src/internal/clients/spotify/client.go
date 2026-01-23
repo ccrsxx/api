@@ -96,13 +96,13 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 	return &data, nil
 }
 
-type TokenResponse struct {
-	ExpiresIn   int    `json:"expires_in"`
-	AccessToken string `json:"access_token"` // expiry time in seconds
-}
-
 func (c *client) getAccessToken(ctx context.Context) (string, error) {
-	fetcher := func() (TokenResponse, error) {
+	type tokenResponse struct {
+		ExpiresIn   int    `json:"expires_in"`
+		AccessToken string `json:"access_token"` // expiry time in seconds
+	}
+
+	fetcher := func() (tokenResponse, error) {
 		requestBody := url.Values{
 			"grant_type":    {"refresh_token"},
 			"refresh_token": {c.refreshToken},
@@ -111,7 +111,7 @@ func (c *client) getAccessToken(ctx context.Context) (string, error) {
 		req, err := http.NewRequestWithContext(ctx, "POST", "https://accounts.spotify.com/api/token", strings.NewReader(requestBody.Encode()))
 
 		if err != nil {
-			return TokenResponse{}, fmt.Errorf("spotify access token request creation error: %w", err)
+			return tokenResponse{}, fmt.Errorf("spotify access token request creation error: %w", err)
 		}
 
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -125,7 +125,7 @@ func (c *client) getAccessToken(ctx context.Context) (string, error) {
 		res, err := c.httpClient.Do(req)
 
 		if err != nil {
-			return TokenResponse{}, fmt.Errorf("spotify access token request call error: %w", err)
+			return tokenResponse{}, fmt.Errorf("spotify access token request call error: %w", err)
 		}
 
 		defer func() {
@@ -135,7 +135,7 @@ func (c *client) getAccessToken(ctx context.Context) (string, error) {
 		}()
 
 		if res.StatusCode/100 != 2 {
-			return TokenResponse{}, fmt.Errorf("spotify access token request status error: %s", res.Status)
+			return tokenResponse{}, fmt.Errorf("spotify access token request status error: %s", res.Status)
 		}
 
 		type spotifyTokenResponse struct {
@@ -148,16 +148,16 @@ func (c *client) getAccessToken(ctx context.Context) (string, error) {
 		var tokenResp spotifyTokenResponse
 
 		if err := json.NewDecoder(res.Body).Decode(&tokenResp); err != nil {
-			return TokenResponse{}, fmt.Errorf("spotify access token decode error: %w", err)
+			return tokenResponse{}, fmt.Errorf("spotify access token decode error: %w", err)
 		}
 
-		return TokenResponse{
+		return tokenResponse{
 			ExpiresIn:   tokenResp.ExpiresIn,
 			AccessToken: tokenResp.AccessToken,
 		}, nil
 	}
 
-	ttlFunc := func(data TokenResponse) time.Duration {
+	ttlFunc := func(data tokenResponse) time.Duration {
 		// Add 60 seconds buffer to avoid using expired tokens
 		bufferExpiryOffset := 60 * time.Second
 

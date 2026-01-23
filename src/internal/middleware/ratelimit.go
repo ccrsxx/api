@@ -18,7 +18,7 @@ type visitor struct {
 	lastSeen time.Time
 }
 
-type RateLimiter struct {
+type rateLimiter struct {
 	mu       sync.Mutex
 	limit    rate.Limit
 	burst    int
@@ -27,7 +27,7 @@ type RateLimiter struct {
 	visitors map[string]*visitor
 }
 
-func newLimiterFromConfig(requests int, window time.Duration) *RateLimiter {
+func newLimiterFromConfig(requests int, window time.Duration) *rateLimiter {
 	// Convert requests/window to requests/second (Token Bucket Rate)
 	// Example: 100 reqs / 60s = 1.666 reqs/sec
 	limit := rate.Limit(float64(requests) / window.Seconds())
@@ -37,7 +37,7 @@ func newLimiterFromConfig(requests int, window time.Duration) *RateLimiter {
 	// Example: "100; w=60"
 	policy := fmt.Sprintf("%d; w=%d", requests, int(window.Seconds()))
 
-	rl := &RateLimiter{
+	rl := &rateLimiter{
 		limit:    limit,
 		burst:    burst,
 		policy:   policy,
@@ -50,7 +50,7 @@ func newLimiterFromConfig(requests int, window time.Duration) *RateLimiter {
 	return rl
 }
 
-func (rl *RateLimiter) getVisitor(ip string) *rate.Limiter {
+func (rl *rateLimiter) getVisitor(ip string) *rate.Limiter {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 
@@ -73,7 +73,7 @@ func (rl *RateLimiter) getVisitor(ip string) *rate.Limiter {
 	return v.limiter
 }
 
-func (rl *RateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) error {
+func (rl *rateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) error {
 	ip := utils.GetIpAddressFromRequest(r)
 
 	limiter := rl.getVisitor(ip)
@@ -117,7 +117,7 @@ func (rl *RateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 	return nil
 }
 
-func (rl *RateLimiter) cleanup() {
+func (rl *rateLimiter) cleanup() {
 	// Optimization: Scan less frequently (4x window) to save CPU/Lock contention.
 	// Enforce a minimum interval of 1 minute to prevent hot loops on short windows.
 	interval := max(rl.window*4, time.Minute)

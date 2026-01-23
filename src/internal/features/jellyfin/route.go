@@ -11,7 +11,7 @@ func LoadRoutes(router *http.ServeMux) {
 
 	mux.Handle("GET /currently-playing",
 		auth.Middleware.IsAuthorized(
-			http.HandlerFunc(Controller.GetCurrentlyPlaying),
+			http.HandlerFunc(Controller.getCurrentlyPlaying),
 		),
 	)
 

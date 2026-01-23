@@ -11,7 +11,7 @@ type controller struct{}
 
 var Controller = &controller{}
 
-func (c *controller) GetCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
+func (c *controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
 	data, err := Service.GetCurrentlyPlaying(r.Context())
 
 	if err != nil {

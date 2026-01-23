@@ -15,7 +15,7 @@ func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headerToken := r.Header.Get("Authorization")
 
-		token, err := Service.getAuthorizationFromBearerToken(r.Context(), headerToken)
+				token, err := Service.getAuthorizationFromBearerToken(r.Context(), headerToken)
 
 		if err != nil {
 			// No need to wrap error, service already return proper error
@@ -40,7 +40,7 @@ func (m *middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		queryToken := r.URL.Query().Get("token")
 
-		token, err := Service.getAuthorizationFromQuery(r.Context(), queryToken)
+				token, err := Service.getAuthorizationFromQuery(r.Context(), queryToken)
 
 		if err != nil {
 			// No need to wrap error, service already return proper error

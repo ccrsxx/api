@@ -1,7 +1,7 @@
 package config
 
 type appConfig struct {
-	AppEnv        Environment
+	AppEnv        EnvironmentApp
 	IsProduction  bool
 	IsDevelopment bool
 }
@@ -12,8 +12,8 @@ func LoadConfig() {
 	env := Env().AppEnv
 
 	configInstance = appConfig{
-		IsProduction:  env == EnvProduction,
-		IsDevelopment: env == EnvDevelopment,
+		IsProduction:  env == EnvironmentProduction,
+		IsDevelopment: env == EnvironmentDevelopment,
 	}
 }
 
