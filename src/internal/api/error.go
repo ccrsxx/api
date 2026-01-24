@@ -36,27 +36,6 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 
 	ipAddress := utils.GetIpAddressFromRequest(r)
 
-	var httpErr *HttpError
-
-	if errors.As(err, &httpErr) {
-		slog.Error("http handled error",
-			"message", httpErr.Message,
-			"status_code", httpErr.StatusCode,
-			"details", httpErr.Details,
-			"error", err,
-			"error_id", errorId,
-			"path", r.URL.Path,
-			"method", r.Method,
-			"ip_address", ipAddress,
-		)
-
-		if err := NewErrorResponse(w, httpErr.StatusCode, httpErr.Message, httpErr.Details, errorId); err != nil {
-			logErrorResponse(err, errorId)
-		}
-
-		return
-	}
-
 	var panicErr *PanicError
 
 	if errors.As(err, &panicErr) {
@@ -86,7 +65,28 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 
-	// Unhandled error
+	var httpErr *HttpError
+
+	if errors.As(err, &httpErr) {
+		slog.Error("http handled error",
+			"message", httpErr.Message,
+			"status_code", httpErr.StatusCode,
+			"details", httpErr.Details,
+			"error", err,
+			"error_id", errorId,
+			"path", r.URL.Path,
+			"method", r.Method,
+			"ip_address", ipAddress,
+		)
+
+		if err := NewErrorResponse(w, httpErr.StatusCode, httpErr.Message, httpErr.Details, errorId); err != nil {
+			logErrorResponse(err, errorId)
+		}
+
+		return
+	}
+
+	// Any unhandled errors
 
 	slog.Error("http unhandled error",
 		"error", err,
