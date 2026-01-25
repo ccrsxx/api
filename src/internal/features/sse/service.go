@@ -65,7 +65,9 @@ func (s *service) IsConnectionAllowed(ip string) error {
 	return nil
 }
 
-func (s *service) AddClient(clientChan chan string, r *http.Request, ip string) {
+func (s *service) AddClient(ctx context.Context, clientChan chan string, r *http.Request, ip string) {
+	sseData := getSSEData(ctx)
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -88,14 +90,17 @@ func (s *service) AddClient(clientChan chan string, r *http.Request, ip string) 
 
 	welcomeMsg := `data: {"data":{"message":"Connection established. Waiting for updates..."}}` + "\n\n"
 
+	// Send initial data immediately upon connection
 	clientChan <- welcomeMsg
+	clientChan <- sseData.spotify
+	clientChan <- sseData.jellyfin
 
 	if s.stopChan == nil {
 		s.startWorkerLocked()
 	}
 }
 
-func (s *service) RemoveClient(clientChan chan string) {
+func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -178,6 +183,35 @@ func (s *service) pollLoop(stopChan chan struct{}) {
 }
 
 func (s *service) pollAndBroadcast(ctx context.Context) {
+	sseData := getSSEData(ctx)
+
+	// Protect map iteration with read lock
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for clientChan := range s.clients {
+		select {
+		case clientChan <- sseData.spotify:
+		default:
+			// If the client channel is full, skip sending to avoid blocking other clients
+			// Happens when the client has a slow connection
+		}
+
+		select {
+		case clientChan <- sseData.jellyfin:
+		default:
+			// If the client channel is full, skip sending to avoid blocking other clients
+			// Happens when the client has a slow connection
+		}
+	}
+}
+
+type sseData struct {
+	spotify  string
+	jellyfin string
+}
+
+func getSSEData(ctx context.Context) sseData {
 	var wg sync.WaitGroup
 
 	var spotifyData, jellyfinData model.CurrentlyPlaying
@@ -218,23 +252,8 @@ func (s *service) pollAndBroadcast(ctx context.Context) {
 	msgSpotify := fmt.Sprintf("event: spotify\ndata: %s\n\n", spotifyJSON)
 	msgJellyfin := fmt.Sprintf("event: jellyfin\ndata: %s\n\n", jellyfinJSON)
 
-	// Protect map iteration with read lock
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	for clientChan := range s.clients {
-		select {
-		case clientChan <- msgSpotify:
-		default:
-			// If the client channel is full, skip sending to avoid blocking other clients
-			// Happens when the client has a slow connection
-		}
-
-		select {
-		case clientChan <- msgJellyfin:
-		default:
-			// If the client channel is full, skip sending to avoid blocking other clients
-			// Happens when the client has a slow connection
-		}
+	return sseData{
+		spotify:  msgSpotify,
+		jellyfin: msgJellyfin,
 	}
 }

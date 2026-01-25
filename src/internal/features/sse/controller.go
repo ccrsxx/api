@@ -14,14 +14,15 @@ var Controller = &controller{}
 
 func (c *controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request) {
 	rc := http.NewResponseController(w)
+	ctx := r.Context()
 
 	clientChan := make(chan string, 4)
 
 	ipAddress := utils.GetIpAddressFromRequest(r)
 
-	Service.AddClient(clientChan, r, ipAddress)
+	Service.AddClient(ctx, clientChan, r, ipAddress)
 
-	defer Service.RemoveClient(clientChan)
+	defer Service.RemoveClient(ctx, clientChan)
 
 	clientDisconnected := r.Context().Done()
 
