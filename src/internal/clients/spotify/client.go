@@ -130,7 +130,7 @@ func (c *client) getAccessToken(ctx context.Context) (string, error) {
 			}
 		}()
 
-		if res.StatusCode/100 != 2 {
+		if res.StatusCode != http.StatusOK {
 			return tokenResponse{}, fmt.Errorf("spotify access token request status error: %s", res.Status)
 		}
 
