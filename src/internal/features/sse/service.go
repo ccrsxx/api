@@ -17,11 +17,11 @@ import (
 )
 
 const (
-	MaxGlobalClients = 100
-	MaxClientsPerIP  = 10
+	maxGlobalClients = 100
+	maxClientsPerIP  = 10
 )
 
-type ClientMetadata struct {
+type clientMetadata struct {
 	ID          string
 	IpAddress   string
 	UserAgent   string
@@ -30,13 +30,13 @@ type ClientMetadata struct {
 
 type service struct {
 	mu              sync.RWMutex
-	clients         map[chan string]ClientMetadata
+	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
 	ipAddressCounts map[string]int
 }
 
 var Service = &service{
-	clients:         map[chan string]ClientMetadata{},
+	clients:         map[chan string]clientMetadata{},
 	ipAddressCounts: map[string]int{},
 }
 
@@ -44,7 +44,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	isGlobalClientLimitReached := len(s.clients) >= MaxGlobalClients
+	isGlobalClientLimitReached := len(s.clients) >= maxGlobalClients
 
 	if isGlobalClientLimitReached {
 		return &api.HttpError{
@@ -53,7 +53,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 		}
 	}
 
-	isClientIPLimitReached := s.ipAddressCounts[ip] >= MaxClientsPerIP
+	isClientIPLimitReached := s.ipAddressCounts[ip] >= maxClientsPerIP
 
 	if isClientIPLimitReached {
 		return &api.HttpError{
@@ -76,7 +76,7 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	meta := ClientMetadata{
+	meta := clientMetadata{
 		ID:          uuid.New().String(),
 		IpAddress:   ipAddress,
 		UserAgent:   userAgent,
