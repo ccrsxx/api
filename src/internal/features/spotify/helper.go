@@ -7,7 +7,7 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/model"
 )
 
-func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *model.CurrentlyPlaying {
+func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) model.CurrentlyPlaying {
 	item := raw.Item
 
 	var artistNames []string
@@ -34,7 +34,7 @@ func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) *model.C
 		}
 	}
 
-	return &model.CurrentlyPlaying{
+	return model.CurrentlyPlaying{
 		Platform:  model.PlatformSpotify,
 		IsPlaying: raw.IsPlaying,
 		Item: &model.Track{

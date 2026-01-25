@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -19,6 +18,13 @@ func (w *wrappedWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 }
 
+// Unwrap provides access to the underlying ResponseWriter
+// To reserve compatibility with http.ResponseWriter wrappers
+// Like http.CloseNotifier, http.Flusher, etc.
+func (w *wrappedWriter) Unwrap() http.ResponseWriter {
+	return w.ResponseWriter
+}
+
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -32,15 +38,13 @@ func Logging(next http.Handler) http.Handler {
 
 		ipAddress := utils.GetIpAddressFromRequest(r)
 
-		end := time.Since(start)
-
-		parsedEnd := fmt.Sprintf("%v", end)
+		end := time.Since(start).String()
 
 		slog.Info("http request",
 			"path", r.URL.Path,
 			"method", r.Method,
 			"status_code", wrapped.statusCode,
-			"duration", parsedEnd,
+			"duration", end,
 			"ip_address", ipAddress,
 		)
 	})

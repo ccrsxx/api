@@ -9,7 +9,7 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/model"
 )
 
-func parseJellyfinSessions(session *jellyfin.SessionInfo) *model.CurrentlyPlaying {
+func parseJellyfinSessions(session *jellyfin.SessionInfo) model.CurrentlyPlaying {
 	item := session.NowPlayingItem
 	playState := session.PlayState
 
@@ -53,7 +53,7 @@ func parseJellyfinSessions(session *jellyfin.SessionInfo) *model.CurrentlyPlayin
 		progressMs = int(*playState.PositionTicks / 10000)
 	}
 
-	return &model.CurrentlyPlaying{
+	return model.CurrentlyPlaying{
 		Platform:  model.PlatformJellyfin,
 		IsPlaying: !playState.IsPaused,
 		Item: &model.Track{

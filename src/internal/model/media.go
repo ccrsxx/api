@@ -23,8 +23,8 @@ type CurrentlyPlaying struct {
 	IsPlaying bool     `json:"isPlaying"`
 }
 
-func NewDefaultCurrentlyPlaying(platform Platform) *CurrentlyPlaying {
-	return &CurrentlyPlaying{
+func NewDefaultCurrentlyPlaying(platform Platform) CurrentlyPlaying {
+	return CurrentlyPlaying{
 		Platform:  platform,
 		IsPlaying: false,
 		Item:      nil,

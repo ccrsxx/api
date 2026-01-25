@@ -19,11 +19,11 @@ type service struct {
 	lastStateTime time.Time
 }
 
-func (s *service) GetCurrentlyPlaying(ctx context.Context) (*model.CurrentlyPlaying, error) {
+func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
 	sessions, err := jellyfin.Client().GetSessions(ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("jellyfin get sessions error: %w", err)
+		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), fmt.Errorf("jellyfin get sessions error: %w", err)
 	}
 
 	var playingItem *model.CurrentlyPlaying
@@ -47,7 +47,8 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (*model.CurrentlyPlay
 			continue
 		}
 
-		playingItem = parseJellyfinSessions(&session)
+		parsedValue := parseJellyfinSessions(&session)
+		playingItem = &parsedValue
 
 		break
 	}
@@ -63,10 +64,10 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (*model.CurrentlyPlay
 
 	s.mu.Unlock()
 
-	return playingItem, nil
+	return *playingItem, nil
 }
 
-func (s *service) getCachedStateOrEmpty() *model.CurrentlyPlaying {
+func (s *service) getCachedStateOrEmpty() model.CurrentlyPlaying {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -83,7 +84,7 @@ func (s *service) getCachedStateOrEmpty() *model.CurrentlyPlaying {
 	return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 }
 
-func (s *service) getExtrapolatedState() *model.CurrentlyPlaying {
+func (s *service) getExtrapolatedState() model.CurrentlyPlaying {
 	if s.lastState == nil || s.lastState.Item == nil {
 		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 	}
@@ -96,7 +97,7 @@ func (s *service) getExtrapolatedState() *model.CurrentlyPlaying {
 	itemCopy := *s.lastState.Item
 	itemCopy.ProgressMs = progressMs
 
-	return &model.CurrentlyPlaying{
+	return model.CurrentlyPlaying{
 		Platform:  model.PlatformJellyfin,
 		IsPlaying: s.lastState.IsPlaying,
 		Item:      &itemCopy,

@@ -59,9 +59,7 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 	res, err := c.httpClient.Do(req)
 
 	if err != nil {
-		slog.Warn("spotify currently playing request call error", "error", err)
-
-		return nil, nil
+		return nil, fmt.Errorf("spotify currently playing request call error: %w", err)
 	}
 
 	defer func() {
@@ -77,10 +75,8 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 		return nil, nil
 	}
 
-	if res.StatusCode/100 != 2 {
-		slog.Warn("spotify currently playing request status error", "status", res.Status)
-
-		return nil, nil
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("spotify currently playing request status error: %s", res.Status)
 	}
 
 	var data SpotifyCurrentlyPlaying
@@ -90,7 +86,7 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 	}
 
 	if data.Item == nil || data.Item.Type != "track" {
-		return nil, nil
+		return nil, fmt.Errorf("spotify currently playing invalid item type: %v", data.Item)
 	}
 
 	return &data, nil

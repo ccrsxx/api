@@ -12,7 +12,7 @@ type controller struct{}
 var Controller = &controller{}
 
 func (c *controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
-	data, err := Service.getCurrentlyPlaying(r.Context())
+	data, err := Service.GetCurrentlyPlaying(r.Context())
 
 	if err != nil {
 		api.HandleHttpError(w, r, err)

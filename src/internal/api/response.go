@@ -74,7 +74,7 @@ func NewSuccessResponse[T any](w http.ResponseWriter, statusCode int, data T) er
 	}
 
 	if kind == reflect.Struct {
-		response = &SuccessResponse[T]{
+		response = SuccessResponse[T]{
 			Data: data,
 		}
 	}
