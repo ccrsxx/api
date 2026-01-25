@@ -29,15 +29,15 @@ type ClientMetadata struct {
 }
 
 type service struct {
-	mu       sync.RWMutex
-	clients  map[chan string]ClientMetadata
-	ipCounts map[string]int
-	stopChan chan struct{}
+	mu              sync.RWMutex
+	clients         map[chan string]ClientMetadata
+	stopChan        chan struct{}
+	ipAddressCounts map[string]int
 }
 
 var Service = &service{
-	clients:  map[chan string]ClientMetadata{},
-	ipCounts: map[string]int{},
+	clients:         map[chan string]ClientMetadata{},
+	ipAddressCounts: map[string]int{},
 }
 
 func (s *service) IsConnectionAllowed(ip string) error {
@@ -53,7 +53,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 		}
 	}
 
-	isClientIPLimitReached := s.ipCounts[ip] >= MaxClientsPerIP
+	isClientIPLimitReached := s.ipAddressCounts[ip] >= MaxClientsPerIP
 
 	if isClientIPLimitReached {
 		return &api.HttpError{
@@ -65,11 +65,11 @@ func (s *service) IsConnectionAllowed(ip string) error {
 	return nil
 }
 
-func (s *service) AddClient(ctx context.Context, clientChan chan string, r *http.Request, ip string) {
+func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddress string, userAgent string) {
 	sseData := getSSEData(ctx)
 
 	if ctx.Err() != nil {
-		slog.Warn("sse client addition cancelled", "ip", ip)
+		slog.Warn("sse client cancelled", "ip_address", ipAddress)
 		return
 	}
 
@@ -78,13 +78,13 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, r *http
 
 	meta := ClientMetadata{
 		ID:          uuid.New().String(),
-		IpAddress:   ip,
-		UserAgent:   r.UserAgent(),
+		IpAddress:   ipAddress,
+		UserAgent:   userAgent,
 		ConnectedAt: time.Now(),
 	}
 
 	s.clients[clientChan] = meta
-	s.ipCounts[ip]++
+	s.ipAddressCounts[ipAddress]++
 
 	slog.Info("sse client connected",
 		"id", meta.ID,
@@ -121,10 +121,10 @@ func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
 
 	close(clientChan)
 
-	s.ipCounts[meta.IpAddress]--
+	s.ipAddressCounts[meta.IpAddress]--
 
-	if s.ipCounts[meta.IpAddress] <= 0 {
-		delete(s.ipCounts, meta.IpAddress)
+	if s.ipAddressCounts[meta.IpAddress] <= 0 {
+		delete(s.ipAddressCounts, meta.IpAddress)
 	}
 
 	slog.Info("sse client disconnected",

@@ -19,8 +19,9 @@ func (c *controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request
 	clientChan := make(chan string, 4)
 
 	ipAddress := utils.GetIpAddressFromRequest(r)
+	userAgent := r.UserAgent()
 
-	Service.AddClient(ctx, clientChan, r, ipAddress)
+	Service.AddClient(ctx, clientChan, ipAddress, userAgent)
 
 	defer Service.RemoveClient(ctx, clientChan)
 
