@@ -134,11 +134,11 @@ func (s *service) RemoveClient(clientChan chan string) {
 
 func (s *service) startWorkerLocked() {
 	if s.stopChan != nil {
-		slog.Warn("Attempted to start SSE poller, but it's already running")
+		slog.Warn("sse poller already running")
 		return
 	}
 
-	slog.Info("SSE System woke up: Starting background poller")
+	slog.Info("sse poller starting")
 
 	s.stopChan = make(chan struct{})
 
@@ -147,11 +147,11 @@ func (s *service) startWorkerLocked() {
 
 func (s *service) stopWorkerLocked() {
 	if s.stopChan == nil {
-		slog.Warn("Attempted to stop SSE poller, but it's not running")
+		slog.Warn("sse poller not running")
 		return
 	}
 
-	slog.Info("SSE System idle: Stopping background poller")
+	slog.Info("stopping sse poller")
 
 	close(s.stopChan)
 
