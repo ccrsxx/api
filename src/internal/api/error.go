@@ -11,16 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type HttpError struct {
-	Message    string
-	Details    []string
-	StatusCode int
-}
-
-func (e *HttpError) Error() string {
-	return e.Message
-}
-
 type PanicError struct {
 	Value   any
 	Stack   string
@@ -28,6 +18,16 @@ type PanicError struct {
 }
 
 func (e *PanicError) Error() string {
+	return e.Message
+}
+
+type HttpError struct {
+	Message    string
+	Details    []string
+	StatusCode int
+}
+
+func (e *HttpError) Error() string {
 	return e.Message
 }
 

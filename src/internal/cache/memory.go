@@ -61,9 +61,9 @@ func (m *memoryCache) Delete(ctx context.Context, key string) error {
 }
 
 func (m *memoryCache) cleanup() {
-	const cleanupInterval = 5 * time.Minute
+	const interval = 5 * time.Minute
 
-	ticker := time.NewTicker(cleanupInterval)
+	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 

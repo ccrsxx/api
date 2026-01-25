@@ -17,7 +17,7 @@ var Service = &service{}
 func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
 	if queryIp != "" && net.ParseIP(queryIp) == nil {
 		return nil, &api.HttpError{
-			Message: "Invalid IP address", Details: nil,
+			Message:    "Invalid IP address",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
@@ -32,7 +32,7 @@ func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, 
 
 	if parsedIp == nil {
 		return nil, &api.HttpError{
-			Message: "Invalid IP address", Details: nil,
+			Message:    "Invalid IP address",
 			StatusCode: http.StatusBadRequest,
 		}
 	}

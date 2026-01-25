@@ -159,7 +159,9 @@ func (s *service) stopWorkerLocked() {
 }
 
 func (s *service) pollLoop(stopChan chan struct{}) {
-	ticker := time.NewTicker(1 * time.Second)
+	const interval = 1 * time.Second
+
+	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 
@@ -210,19 +212,8 @@ func (s *service) pollAndBroadcast(ctx context.Context) {
 
 	wg.Wait()
 
-	spotifyJSON, err := json.Marshal(map[string]model.CurrentlyPlaying{"data": spotifyData})
-
-	if err != nil {
-		slog.Error("sse marshal response error spotify", "error", err)
-		return
-	}
-
-	jellyfinJSON, err := json.Marshal(map[string]model.CurrentlyPlaying{"data": jellyfinData})
-
-	if err != nil {
-		slog.Error("sse marshal response error spotify", "error", err)
-		return
-	}
+	spotifyJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": spotifyData})
+	jellyfinJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": jellyfinData})
 
 	msgSpotify := fmt.Sprintf("event: spotify\ndata: %s\n\n", spotifyJSON)
 	msgJellyfin := fmt.Sprintf("event: jellyfin\ndata: %s\n\n", jellyfinJSON)

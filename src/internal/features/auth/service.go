@@ -16,7 +16,7 @@ var Service = &service{}
 func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerToken string) (string, error) {
 	if headerToken == "" {
 		return "", &api.HttpError{
-			Message:    "invalid token",
+			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,
 		}
 	}
@@ -25,7 +25,7 @@ func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerTok
 
 	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
 		return "", &api.HttpError{
-			Message:    "invalid token",
+			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,
 		}
 	}
@@ -36,7 +36,7 @@ func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerTok
 func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken string) (string, error) {
 	if queryToken == "" {
 		return "", &api.HttpError{
-			Message:    "invalid token",
+			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,
 		}
 	}
@@ -45,7 +45,7 @@ func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken stri
 
 	if !match {
 		return "", &api.HttpError{
-			Message:    "invalid token",
+			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,
 		}
 	}
