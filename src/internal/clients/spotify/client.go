@@ -32,7 +32,7 @@ func Client() *client {
 	once.Do(func() {
 		instance = client{
 			clientID:     config.Env().SpotifyClientID,
-			httpClient:   &http.Client{Timeout: 60 * time.Second},
+			httpClient:   &http.Client{Timeout: 8 * time.Second},
 			clientSecret: config.Env().SpotifyClientSecret,
 			refreshToken: config.Env().SpotifyRefreshToken,
 		}
