@@ -18,5 +18,4 @@ func LoadRoutes(router *http.ServeMux) {
 			),
 		),
 	)
-
 }
