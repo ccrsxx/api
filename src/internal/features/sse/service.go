@@ -68,6 +68,11 @@ func (s *service) IsConnectionAllowed(ip string) error {
 func (s *service) AddClient(ctx context.Context, clientChan chan string, r *http.Request, ip string) {
 	sseData := getSSEData(ctx)
 
+	if ctx.Err() != nil {
+		slog.Warn("context cancelled before adding SSE client", "ip", ip)
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
