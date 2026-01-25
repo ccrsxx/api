@@ -9,6 +9,7 @@ import (
 	"github.com/ccrsxx/api-go/src/internal/features/home"
 	"github.com/ccrsxx/api-go/src/internal/features/jellyfin"
 	"github.com/ccrsxx/api-go/src/internal/features/spotify"
+	"github.com/ccrsxx/api-go/src/internal/features/sse"
 	"github.com/ccrsxx/api-go/src/internal/features/tools"
 	"github.com/ccrsxx/api-go/src/internal/middleware"
 )
@@ -16,6 +17,7 @@ import (
 func RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
+	sse.LoadRoutes(router)
 	home.LoadRoutes(router)
 	docs.LoadRoutes(router)
 	tools.LoadRoutes(router)
