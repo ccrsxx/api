@@ -69,7 +69,7 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, r *http
 	sseData := getSSEData(ctx)
 
 	if ctx.Err() != nil {
-		slog.Warn("context cancelled before adding SSE client", "ip", ip)
+		slog.Warn("sse client addition cancelled", "ip", ip)
 		return
 	}
 
