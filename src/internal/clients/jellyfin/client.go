@@ -31,7 +31,7 @@ func Client() *client {
 			apiKey:     config.Env().JellyfinApiKey,
 			imageUrl:   config.Env().JellyfinImageUrl,
 			username:   config.Env().JellyfinUsername,
-			httpClient: &http.Client{Timeout: 8 * time.Second},
+			httpClient: &http.Client{Timeout: 1 * time.Second},
 		}
 	})
 
