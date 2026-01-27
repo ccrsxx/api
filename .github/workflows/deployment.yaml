@@ -109,9 +109,9 @@ jobs:
 
       - name: Setup env for OG
         run: |
-          echo "OWNER_NAME=${{ secrets.OWNER_NAME }}" >> .env.go
-          echo "FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}" >> .env.go
-          echo "CLOUDFLARE_CDN_URL=${{ secrets.CLOUDFLARE_CDN_URL }}" >> .env.go
+          echo "OWNER_NAME=${{ secrets.OWNER_NAME }}" >> .env.og
+          echo "FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}" >> .env.og
+          echo "CLOUDFLARE_CDN_URL=${{ secrets.CLOUDFLARE_CDN_URL }}" >> .env.og
 
       - name: Deploy with Docker Compose
         run: |
