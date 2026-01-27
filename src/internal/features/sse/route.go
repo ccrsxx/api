@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/src/internal/features/auth"
-	middlewarePackage "github.com/ccrsxx/api/src/internal/middleware"
+	middlewarepackage "github.com/ccrsxx/api/src/internal/middleware"
 )
 
 func LoadRoutes(router *http.ServeMux) {
 	router.Handle("GET /sse",
 		auth.Middleware.IsAuthorizedFromQuery(
-			middlewarePackage.RateLimit(10, 10*time.Second)(
+			middlewarepackage.RateLimit(10, 10*time.Second)(
 				Middleware.IsConnectionAllowed(
 					http.HandlerFunc(Controller.getCurrentPlayingSSE),
 				),
