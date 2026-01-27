@@ -22,4 +22,11 @@ function main(): void {
   });
 }
 
+/** Listen for termination signal */
+process.on('SIGTERM', () => {
+  // Clean up resources on shutdown
+  logger.info('Caught SIGTERM.');
+  logger.flush();
+});
+
 main();
