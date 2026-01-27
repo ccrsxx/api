@@ -27,6 +27,6 @@ EXPOSE 4000
 
 # OCI-compliant labels
 LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
-    org.opencontainers.image.source="https://github.com/ccrsxx/api" \
+    org.opencontainers.image.source="https://github.com/ccrsxx/og" \
     org.opencontainers.image.description="My personal API for my projects" \
     org.opencontainers.image.licenses="GPL-3.0"
