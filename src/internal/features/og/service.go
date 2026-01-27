@@ -19,14 +19,6 @@ var Service = &service{
 	httpClient: &http.Client{Timeout: 8 * time.Second},
 }
 
-type ogParams struct {
-	Title       string `url:"title"`
-	Description string
-	IconUrl     string
-	ImageUrl    string
-	ThemeColor  string
-}
-
 func (s *service) getOg(ctx context.Context, query string) (io.ReadCloser, error) {
 	ogUrl := "http://og:4444/og"
 
