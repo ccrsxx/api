@@ -80,7 +80,7 @@ function errorHandler(
   if (appError) {
     logger.warn(logContext, `Handled application error - ${err.message}`);
 
-    res.status(400).json({
+    res.status(500).json({
       error: { id: errorId, message: err.message, details: [] }
     });
 
