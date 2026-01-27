@@ -25,12 +25,23 @@ jobs:
   extract-node-version:
     uses: ./.github/workflows/extract-node-version.yaml
 
+  request-approval:
+    name: Manual approval before deployment
+    runs-on: self-hosted
+    environment: production
+
+    needs: ci
+
+    steps:
+      - name: Await Approval
+        run: echo "Deployment approved. Starting builds..."
+
   build-api:
     name: Build and push Docker API image
     runs-on: self-hosted
 
     needs:
-      - ci
+      - request-approval
       - extract-go-version
 
     permissions:
@@ -78,7 +89,7 @@ jobs:
     runs-on: self-hosted
 
     needs:
-      - ci
+      - request-approval
       - extract-node-version
 
     permissions:
@@ -125,15 +136,10 @@ jobs:
   deploy:
     name: Build and deploy via Docker on VPS
     runs-on: self-hosted
-    environment: production
 
     needs:
-      - ci
       - build-api
       - build-og
-
-    permissions:
-      packages: write
 
     steps:
       - name: Checkout repository
