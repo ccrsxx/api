@@ -1,5 +1,3 @@
-// src/features/spotify/service.go
-
 package spotify
 
 import (
