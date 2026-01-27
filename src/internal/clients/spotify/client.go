@@ -70,7 +70,7 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 
 	// 204 No Content means nothing is currently playing
 	if res.StatusCode == http.StatusNoContent {
-		slog.Info("spotify currently playing no content")
+		slog.Debug("spotify currently playing no content")
 
 		return nil, nil
 	}
