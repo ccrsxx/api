@@ -3,8 +3,9 @@ import satori from 'satori';
 import { html } from 'satori-html';
 import { Resvg } from '@resvg/resvg-js';
 import { appEnv } from '../../config/env.ts';
-import type { ParsedQs } from 'qs';
+import { AppError } from '../../api/error.ts';
 import { validStringSchema } from '../../utils/validation.ts';
+import type { ParsedQs } from 'qs';
 
 const emiliaImageUrl = `${appEnv.CLOUDFLARE_CDN_URL}/assets/emilia.png`;
 
@@ -25,8 +26,6 @@ export type ValidOgQuery = z.infer<typeof validOgQuery>;
 async function getOg(query: ParsedQs): Promise<Buffer> {
   const { type, title, image, article, description } =
     validOgQuery.safeParse(query).data ?? {};
-
-  console.log({ image });
 
   const isHomepage = title === appEnv.OWNER_NAME;
 
@@ -90,27 +89,36 @@ async function getOg(query: ParsedQs): Promise<Buffer> {
     </div>
   `);
 
-  const svg = await satori(markup, {
-    width: 1200,
-    height: 600,
-    fonts: [
-      {
-        name: 'Inter',
-        data: interRegular,
-        weight: 400
-      },
-      {
-        name: 'Inter',
-        data: interMedium,
-        weight: 500
-      },
-      {
-        name: 'Inter',
-        data: interSemibold,
-        weight: 600
-      }
-    ]
-  });
+  let svg: string;
+
+  try {
+    svg = await satori(markup, {
+      width: 1200,
+      height: 600,
+      fonts: [
+        {
+          name: 'Inter',
+          data: interRegular,
+          weight: 400
+        },
+        {
+          name: 'Inter',
+          data: interMedium,
+          weight: 500
+        },
+        {
+          name: 'Inter',
+          data: interSemibold,
+          weight: 600
+        }
+      ]
+    });
+  } catch (err) {
+    throw new AppError({
+      message: 'Failed to generate OG image SVG.',
+      cause: err
+    });
+  }
 
   const resvg = new Resvg(svg);
 
