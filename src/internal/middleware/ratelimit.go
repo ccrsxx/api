@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/utils"
+	"github.com/ccrsxx/api/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/utils"
 	"golang.org/x/time/rate"
 )
 

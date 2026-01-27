@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/cache"
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/cache"
+	"github.com/ccrsxx/api/src/internal/config"
 )
 
 type client struct {

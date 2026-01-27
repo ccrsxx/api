@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/features/docs"
-	"github.com/ccrsxx/api-go/src/internal/features/favicon"
-	"github.com/ccrsxx/api-go/src/internal/features/home"
-	"github.com/ccrsxx/api-go/src/internal/features/jellyfin"
-	"github.com/ccrsxx/api-go/src/internal/features/og"
-	"github.com/ccrsxx/api-go/src/internal/features/spotify"
-	"github.com/ccrsxx/api-go/src/internal/features/sse"
-	"github.com/ccrsxx/api-go/src/internal/features/tools"
-	"github.com/ccrsxx/api-go/src/internal/middleware"
+	"github.com/ccrsxx/api/src/internal/features/docs"
+	"github.com/ccrsxx/api/src/internal/features/favicon"
+	"github.com/ccrsxx/api/src/internal/features/home"
+	"github.com/ccrsxx/api/src/internal/features/jellyfin"
+	"github.com/ccrsxx/api/src/internal/features/og"
+	"github.com/ccrsxx/api/src/internal/features/spotify"
+	"github.com/ccrsxx/api/src/internal/features/sse"
+	"github.com/ccrsxx/api/src/internal/features/tools"
+	"github.com/ccrsxx/api/src/internal/middleware"
 )
 
 func RegisterRoutes() http.Handler {

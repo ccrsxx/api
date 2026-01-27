@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/config"
 )
 
 func Init() {

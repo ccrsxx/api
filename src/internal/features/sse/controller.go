@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/ccrsxx/api-go/src/internal/utils"
+	"github.com/ccrsxx/api/src/internal/utils"
 )
 
 type controller struct{}

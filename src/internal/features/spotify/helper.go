@@ -3,8 +3,8 @@ package spotify
 import (
 	"strings"
 
-	"github.com/ccrsxx/api-go/src/internal/clients/spotify"
-	"github.com/ccrsxx/api-go/src/internal/model"
+	"github.com/ccrsxx/api/src/internal/clients/spotify"
+	"github.com/ccrsxx/api/src/internal/model"
 )
 
 func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) model.CurrentlyPlaying {

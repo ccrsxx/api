@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/clients/ipinfo"
+	"github.com/ccrsxx/api/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/clients/ipinfo"
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 

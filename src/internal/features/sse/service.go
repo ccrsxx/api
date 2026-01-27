@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/features/jellyfin"
-	"github.com/ccrsxx/api-go/src/internal/features/spotify"
-	"github.com/ccrsxx/api-go/src/internal/model"
+	"github.com/ccrsxx/api/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/features/jellyfin"
+	"github.com/ccrsxx/api/src/internal/features/spotify"
+	"github.com/ccrsxx/api/src/internal/model"
 	"github.com/google/uuid"
 )
 

@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/config"
-	"github.com/ccrsxx/api-go/src/internal/server"
+	"github.com/ccrsxx/api/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/server"
 )
 
 func main() {

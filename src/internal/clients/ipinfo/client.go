@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/config"
 	"github.com/ipinfo/go/v2/ipinfo"
 	"github.com/ipinfo/go/v2/ipinfo/cache"
 )

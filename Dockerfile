@@ -27,6 +27,6 @@ USER 10001:10001
 CMD [ "/main" ]
 
 LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
-    org.opencontainers.image.source="https://github.com/ccrsxx/api-go" \
+    org.opencontainers.image.source="https://github.com/ccrsxx/api" \
     org.opencontainers.image.description="My personal API for my projects" \
     org.opencontainers.image.licenses="GPL-3.0"

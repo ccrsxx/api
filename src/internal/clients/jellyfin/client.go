@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/config"
 )
 
 type client struct {

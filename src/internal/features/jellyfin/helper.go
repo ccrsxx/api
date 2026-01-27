@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ccrsxx/api-go/src/internal/clients/jellyfin"
-	"github.com/ccrsxx/api-go/src/internal/config"
-	"github.com/ccrsxx/api-go/src/internal/model"
+	"github.com/ccrsxx/api/src/internal/clients/jellyfin"
+	"github.com/ccrsxx/api/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/model"
 )
 
 func parseJellyfinSessions(session *jellyfin.SessionInfo) model.CurrentlyPlaying {

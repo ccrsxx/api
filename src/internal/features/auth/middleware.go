@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/config"
 )
 
 type middleware struct{}

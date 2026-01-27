@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/api"
 )
 
 var Controller = &controller{}

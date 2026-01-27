@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/config"
 )
 
 func NewServer() *http.Server {

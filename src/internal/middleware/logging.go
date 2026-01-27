@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/utils"
+	"github.com/ccrsxx/api/src/internal/utils"
 )
 
 type wrappedWriter struct {

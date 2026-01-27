@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ccrsxx/api-go/src/internal/clients/spotify"
-	"github.com/ccrsxx/api-go/src/internal/model"
+	"github.com/ccrsxx/api/src/internal/clients/spotify"
+	"github.com/ccrsxx/api/src/internal/model"
 )
 
 type service struct{}

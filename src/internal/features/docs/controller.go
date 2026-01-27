@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	scalargo "github.com/bdpiprava/scalar-go"
-	"github.com/ccrsxx/api-go/src/internal/api"
-	"github.com/ccrsxx/api-go/src/internal/utils"
+	"github.com/ccrsxx/api/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/utils"
 )
 
 type controller struct{}

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/features/auth"
-	middlewarePackage "github.com/ccrsxx/api-go/src/internal/middleware"
+	"github.com/ccrsxx/api/src/internal/features/auth"
+	middlewarePackage "github.com/ccrsxx/api/src/internal/middleware"
 )
 
 func LoadRoutes(router *http.ServeMux) {

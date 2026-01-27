@@ -3,7 +3,7 @@ package spotify
 import (
 	"net/http"
 
-	"github.com/ccrsxx/api-go/src/internal/features/auth"
+	"github.com/ccrsxx/api/src/internal/features/auth"
 )
 
 func LoadRoutes(router *http.ServeMux) {

@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/clients/jellyfin"
-	"github.com/ccrsxx/api-go/src/internal/config"
-	"github.com/ccrsxx/api-go/src/internal/model"
+	"github.com/ccrsxx/api/src/internal/clients/jellyfin"
+	"github.com/ccrsxx/api/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/model"
 )
 
 var Service = &service{}

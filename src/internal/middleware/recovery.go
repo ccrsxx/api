@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/ccrsxx/api-go/src/internal/api"
+	"github.com/ccrsxx/api/src/internal/api"
 )
 
 func Recovery(next http.Handler) http.Handler {

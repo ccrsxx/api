@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/ccrsxx/api-go/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/config"
 )
 
 func Cors(next http.Handler) http.Handler {

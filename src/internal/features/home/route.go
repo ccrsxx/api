@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ccrsxx/api-go/src/internal/features/tools"
+	"github.com/ccrsxx/api/src/internal/features/tools"
 )
 
 func LoadRoutes(router *http.ServeMux) {

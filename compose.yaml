@@ -1,7 +1,7 @@
 services:
-  api-go:
-    image: ghcr.io/ccrsxx/api-go:latest
-    container_name: api-go
+  api:
+    image: ghcr.io/ccrsxx/api:latest
+    container_name: api
     restart: unless-stopped
     ports:
       - '4001:4000'

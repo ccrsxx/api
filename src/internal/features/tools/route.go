@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ccrsxx/api-go/src/internal/middleware"
+	"github.com/ccrsxx/api/src/internal/middleware"
 )
 
 // Shared rate-limited handler for GetIpInfo. Limits to 10 requests per 10 seconds.
