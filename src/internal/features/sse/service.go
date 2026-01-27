@@ -148,11 +148,11 @@ func (s *service) startWorkerLocked() {
 		return
 	}
 
-	slog.Info("sse poller starting")
-
 	s.stopChan = make(chan struct{})
 
 	go s.pollLoop(s.stopChan)
+
+	slog.Info("sse poller started")
 }
 
 func (s *service) stopWorkerLocked() {
@@ -161,11 +161,11 @@ func (s *service) stopWorkerLocked() {
 		return
 	}
 
-	slog.Info("stopping sse poller")
-
 	close(s.stopChan)
 
 	s.stopChan = nil
+
+	slog.Info("sse poller stopped")
 }
 
 func (s *service) pollLoop(stopChan chan struct{}) {
@@ -229,7 +229,10 @@ func getSSEData(ctx context.Context) sseData {
 		data, err := spotify.Service.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
+			slog.Warn("sse spotify fetch error", "error", err)
+
 			spotifyData = model.NewDefaultCurrentlyPlaying(model.PlatformSpotify)
+
 			return
 		}
 
@@ -242,7 +245,10 @@ func getSSEData(ctx context.Context) sseData {
 		data, err := jellyfin.Service.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
+			slog.Warn("sse jellyfin fetch error", "error", err)
+
 			jellyfinData = model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
+
 			return
 		}
 
