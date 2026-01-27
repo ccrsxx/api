@@ -32,6 +32,10 @@ jobs:
 
     needs: ci
 
+    steps:
+      - name: Await approval
+        run: echo "Deployment approved."
+
   build-api:
     name: Build Docker API image
     runs-on: self-hosted
