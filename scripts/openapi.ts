@@ -6,7 +6,6 @@ import { execSync } from 'child_process';
 import { transpile } from 'postman2openapi';
 import type { OpenAPIV3 } from 'openapi-types';
 
-
 async function main(): Promise<void> {
   console.log('Generating OpenAPI documentation...');
 
@@ -14,8 +13,6 @@ async function main(): Promise<void> {
     POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
     POSTMAN_COLLECTION_ID: process.env.POSTMAN_COLLECTION_ID
   };
-
-  console.log({ env: process.env});
 
   const isPostmanEnvMissing =
     !postmanEnvSchema.POSTMAN_API_KEY ||
