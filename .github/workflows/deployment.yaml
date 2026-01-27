@@ -81,6 +81,7 @@ jobs:
       - name: Build and push Docker OG image
         uses: docker/build-push-action@v6
         with:
+          context: ./og
           platforms: linux/arm64
           build-args: |
             NODE_VERSION=${{ needs.extract-node-version.outputs.node-version }}
