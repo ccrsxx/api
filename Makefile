@@ -1,5 +1,10 @@
-dev:
+dev: dev-api dev-og
+
+dev-api:
 	APP_ENV=development air
+
+dev-og: setup-og
+	npm run dev --prefix ./og
 
 build:
 	go build -o ./tmp/main.exe ./src/cmd/api/main.go
@@ -18,6 +23,9 @@ lint:
 
 format:
 	go fmt ./...
+
+setup-og:
+	cd og && npm i
 
 setup-hooks:
 	npm i -g @commitlint/cli @commitlint/config-conventional

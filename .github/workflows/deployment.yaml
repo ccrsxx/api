@@ -19,6 +19,9 @@ jobs:
   extract-go-version:
     uses: ./.github/workflows/extract-go-version.yaml
 
+  extract-node-version:
+    uses: ./.github/workflows/extract-node-version.yaml
+
   deploy:
     name: Build and deploy via Docker on VPS
     runs-on: self-hosted
@@ -27,20 +30,25 @@ jobs:
     needs:
       - ci
       - extract-go-version
+      - extract-node-version
 
     permissions:
       packages: write
 
     env:
       SHA: ${{ inputs.sha || github.sha }}
-      LATEST_IMAGE: 'ghcr.io/${{ github.repository }}:latest'
 
-      CURRENT_IMAGE: ''
+      API_LATEST_IMAGE: 'ghcr.io/${{ github.repository }}:latest'
+      OG_LATEST_IMAGE: 'ghcr.io/${{ github.repository_owner }}/og:latest'
+
+      API_CURRENT_IMAGE: ''
+      OG_CURRENT_IMAGE: ''
 
     steps:
       - name: Set current image tag
         run: |
-          echo "CURRENT_IMAGE=ghcr.io/${{ github.repository }}:${{ env.SHA }}" >> $GITHUB_ENV
+          echo "API_CURRENT_IMAGE=ghcr.io/${{ github.repository }}:${{ env.SHA }}" >> $GITHUB_ENV
+          echo "OG_CURRENT_IMAGE=ghcr.io/${{ github.repository_owner }}/og:${{ env.SHA }}" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -57,7 +65,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build and push Docker API image
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
@@ -65,23 +73,45 @@ jobs:
             GO_VERSION=${{ needs.extract-go-version.outputs.go-version }}
           push: true
           tags: |
-            ${{ env.LATEST_IMAGE }}
-            ${{ env.CURRENT_IMAGE }}
-          cache-from: type=registry,ref=${{ env.LATEST_IMAGE }}
+            ${{ env.API_LATEST_IMAGE }}
+            ${{ env.API_CURRENT_IMAGE }}
+          cache-from: type=registry,ref=${{ env.API_LATEST_IMAGE }}
           cache-to: type=inline
 
-      - name: Setup env
+      - name: Build and push Docker OG image
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/arm64
+          build-args: |
+            NODE_VERSION=${{ needs.extract-node-version.outputs.node-version }}
+          push: true
+          tags: |
+            ${{ env.OG_LATEST_IMAGE }}
+            ${{ env.OG_CURRENT_IMAGE }}
+          cache-from: type=registry,ref=${{ env.OG_LATEST_IMAGE }}
+          cache-to: type=inline
+
+      - name: Setup env for API
         run: |
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-          echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
-          echo "JELLYFIN_URL=${{ secrets.JELLYFIN_URL }}" >> .env
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
+
+          echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
+
+          echo "JELLYFIN_URL=${{ secrets.JELLYFIN_URL }}" >> .env
           echo "JELLYFIN_API_KEY=${{ secrets.JELLYFIN_API_KEY }}" >> .env
           echo "JELLYFIN_USERNAME=${{ secrets.JELLYFIN_USERNAME }}" >> .env
-          echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" >> .env
           echo "JELLYFIN_IMAGE_URL=${{ secrets.JELLYFIN_IMAGE_URL }}" >> .env
+
+          echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" >> .env
           echo "SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}" >> .env
           echo "SPOTIFY_REFRESH_TOKEN=${{ secrets.SPOTIFY_REFRESH_TOKEN }}" >> .env
+
+      - name: Setup env for OG
+        run: |
+          echo "OWNER_NAME=${{ secrets.OWNER_NAME }}" >> .env.go
+          echo "FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}" >> .env.go
+          echo "CLOUDFLARE_CDN_URL=${{ secrets.CLOUDFLARE_CDN_URL }}" >> .env.go
 
       - name: Deploy with Docker Compose
         run: |

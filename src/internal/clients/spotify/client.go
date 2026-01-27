@@ -76,7 +76,7 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("spotify currently playing request status error: %s", res.Status)
+		return nil, fmt.Errorf("spotify currently playing request status error: %d", res.StatusCode)
 	}
 
 	var data SpotifyCurrentlyPlaying

@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "dotenv -e .env.local -- node openapi.ts",
-    "start:no-commit": "dotenv -e .env.local -- node openapi.ts --no-commit"
+    "start": "node openapi.ts",
+    "start:no-commit": "node openapi.ts --no-commit"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +19,7 @@
     "openapi-types": "^12.1.3"
   },
   "dependencies": {
-    "dotenv-cli": "^11.0.0",
+    "dotenv": "^17.2.3",
     "postman2openapi": "^1.2.1"
   }
 }
