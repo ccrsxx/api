@@ -25,23 +25,23 @@ jobs:
   extract-node-version:
     uses: ./.github/workflows/extract-node-version.yaml
 
-  request-approval:
-    name: Manual approval before deployment
+  deployment-approval:
+    name: Deployment approval
     runs-on: self-hosted
     environment: production
 
     needs: ci
 
     steps:
-      - name: Await Approval
-        run: echo "Deployment approved. Starting builds..."
+      - name: Await approval
+        run: echo "Deployment approved."
 
   build-api:
-    name: Build and push Docker API image
+    name: Build Docker API image
     runs-on: self-hosted
 
     needs:
-      - request-approval
+      - deployment-approval
       - extract-go-version
 
     permissions:
@@ -71,7 +71,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker API image
+      - name: Build Docker API image
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
@@ -85,11 +85,11 @@ jobs:
           cache-to: type=inline
 
   build-og:
-    name: Build and push Docker OG image
+    name: Build Docker OG image
     runs-on: self-hosted
 
     needs:
-      - request-approval
+      - deployment-approval
       - extract-node-version
 
     permissions:
@@ -119,7 +119,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker OG image
+      - name: Build Docker OG image
         uses: docker/build-push-action@v6
         with:
           context: ./og
@@ -134,7 +134,7 @@ jobs:
           cache-to: type=inline
 
   deploy:
-    name: Build and deploy via Docker on VPS
+    name: Deploy Docker to Server
     runs-on: self-hosted
 
     needs:
