@@ -17,18 +17,3 @@ services:
     security_opt:
       - 'no-new-privileges:true'
     user: '10001:10001'
-
-  og:
-    image: ghcr.io/ccrsxx/og:latest
-    container_name: og
-    restart: unless-stopped
-    env_file:
-      - .env.og
-    environment:
-      - TZ=Asia/Jakarta
-      - NODE_ENV=production
-    read_only: true
-    cap_drop:
-      - ALL
-    security_opt:
-      - 'no-new-privileges:true'
