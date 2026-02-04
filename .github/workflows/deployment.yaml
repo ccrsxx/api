@@ -12,9 +12,6 @@ on:
         description: 'Commit SHA to deploy'
         required: false
 
-env:
-  SHA: ${{ inputs.sha || github.sha }}
-
 jobs:
   ci:
     uses: ./.github/workflows/ci.yaml
@@ -22,39 +19,28 @@ jobs:
   extract-go-version:
     uses: ./.github/workflows/extract-go-version.yaml
 
-  extract-node-version:
-    uses: ./.github/workflows/extract-node-version.yaml
-
-  deployment-approval:
-    name: Deployment approval
+  deploy:
+    name: Build and deploy via Docker on VPS
     runs-on: self-hosted
     environment: production
 
-    needs: ci
-
-    steps:
-      - name: Await approval
-        run: echo "Deployment approved."
-
-  build-api:
-    name: Build Docker API image
-    runs-on: self-hosted
-
     needs:
-      - deployment-approval
+      - ci
       - extract-go-version
 
     permissions:
       packages: write
 
     env:
-      API_LATEST_IMAGE: 'ghcr.io/${{ github.repository }}:latest'
-      API_CURRENT_IMAGE: ''
+      SHA: ${{ inputs.sha || github.sha }}
+      LATEST_IMAGE: 'ghcr.io/${{ github.repository }}:latest'
+
+      CURRENT_IMAGE: ''
 
     steps:
       - name: Set current image tag
         run: |
-          echo "API_CURRENT_IMAGE=ghcr.io/${{ github.repository }}:${{ env.SHA }}" >> $GITHUB_ENV
+          echo "CURRENT_IMAGE=ghcr.io/${{ github.repository }}:${{ env.SHA }}" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -71,7 +57,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker API image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
@@ -79,75 +65,12 @@ jobs:
             GO_VERSION=${{ needs.extract-go-version.outputs.go-version }}
           push: true
           tags: |
-            ${{ env.API_LATEST_IMAGE }}
-            ${{ env.API_CURRENT_IMAGE }}
-          cache-from: type=registry,ref=${{ env.API_LATEST_IMAGE }}
+            ${{ env.LATEST_IMAGE }}
+            ${{ env.CURRENT_IMAGE }}
+          cache-from: type=registry,ref=${{ env.LATEST_IMAGE }}
           cache-to: type=inline
 
-  build-og:
-    name: Build Docker OG image
-    runs-on: self-hosted
-
-    needs:
-      - deployment-approval
-      - extract-node-version
-
-    permissions:
-      packages: write
-
-    env:
-      OG_LATEST_IMAGE: 'ghcr.io/${{ github.repository_owner }}/og:latest'
-      OG_CURRENT_IMAGE: ''
-
-    steps:
-      - name: Set current image tag
-        run: |
-          echo "OG_CURRENT_IMAGE=ghcr.io/${{ github.repository_owner }}/og:${{ env.SHA }}" >> $GITHUB_ENV
-
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ env.SHA }}
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker OG image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./og
-          platforms: linux/arm64
-          build-args: |
-            NODE_VERSION=${{ needs.extract-node-version.outputs.node-version }}
-          push: true
-          tags: |
-            ${{ env.OG_LATEST_IMAGE }}
-            ${{ env.OG_CURRENT_IMAGE }}
-          cache-from: type=registry,ref=${{ env.OG_LATEST_IMAGE }}
-          cache-to: type=inline
-
-  deploy:
-    name: Deploy Docker to Server
-    runs-on: self-hosted
-
-    needs:
-      - build-api
-      - build-og
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ env.SHA }}
-
-      - name: Setup env for API
+      - name: Setup env
         run: |
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
@@ -162,12 +85,6 @@ jobs:
           echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" >> .env
           echo "SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}" >> .env
           echo "SPOTIFY_REFRESH_TOKEN=${{ secrets.SPOTIFY_REFRESH_TOKEN }}" >> .env
-
-      - name: Setup env for OG
-        run: |
-          echo "OWNER_NAME=${{ secrets.OWNER_NAME }}" >> .env.og
-          echo "FRONTEND_DOMAIN=${{ secrets.FRONTEND_DOMAIN }}" >> .env.og
-          echo "CLOUDFLARE_CDN_URL=${{ secrets.CLOUDFLARE_CDN_URL }}" >> .env.og
 
       - name: Deploy with Docker Compose
         run: |
