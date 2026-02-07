@@ -15,7 +15,7 @@ var Controller = &controller{}
 func (c *controller) ping(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Message          string `json:"message"`
-		DocumentationURL string `json:"documentation_url"`
+		DocumentationURL string `json:"documentationUrl"`
 	}
 
 	err := api.NewSuccessResponse(w, http.StatusOK, response{
