@@ -29,21 +29,21 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 	var playingItem *model.CurrentlyPlaying
 
 	for _, session := range *sessions {
-		isValidUsername := session.UserName != nil || *session.UserName != config.Env().JellyfinUsername
+		isNotValidUsername := session.UserName == nil || *session.UserName != config.Env().JellyfinUsername
 
-		if !isValidUsername {
+		if isNotValidUsername {
 			continue
 		}
 
-		isNonPlayingSession := session.NowPlayingItem == nil || session.PlayState == nil
+		isNotPlayingSession := session.NowPlayingItem == nil || session.PlayState == nil
 
-		if isNonPlayingSession {
+		if isNotPlayingSession {
 			continue
 		}
 
-		isNonAudioSession := session.NowPlayingItem.Type != jellyfin.KindAudio
+		isNotAudioSession := session.NowPlayingItem.Type != jellyfin.KindAudio
 
-		if isNonAudioSession {
+		if isNotAudioSession {
 			continue
 		}
 
