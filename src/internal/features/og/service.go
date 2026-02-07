@@ -34,19 +34,19 @@ func (s *service) getOg(ctx context.Context, query string) (io.ReadCloser, error
 		return nil, fmt.Errorf("og request creation error: %w", err)
 	}
 
-	resp, err := s.httpClient.Do(req)
+	res, err := s.httpClient.Do(req)
 
 	if err != nil {
 		return nil, fmt.Errorf("og request call error: %w", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		if err := resp.Body.Close(); err != nil {
+	if res.StatusCode != http.StatusOK {
+		if err := res.Body.Close(); err != nil {
 			slog.Warn("og response close body error", "error", err)
 		}
 
-		return nil, fmt.Errorf("og request status error: %d", resp.StatusCode)
+		return nil, fmt.Errorf("og request status error: %d", res.StatusCode)
 	}
 
-	return resp.Body, nil
+	return res.Body, nil
 }
