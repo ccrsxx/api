@@ -63,27 +63,44 @@ func TestGetIpAddressFromRequest(t *testing.T) {
 			got := GetIpAddressFromRequest(r)
 
 			if got != tt.want {
-				t.Errorf("GetIpAddressFromRequest() = %v, want %v", got, tt.want)
+				t.Errorf("got %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestGetHttpHeadersFromRequest(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
-
-	r.Header.Set("Content-Type", "application/json")
-	r.Header.Add("X-Custom", "Value1")
-	r.Header.Add("X-Custom", "Value2")
-
-	got := GetHttpHeadersFromRequest(r)
-
-	if got["Content-Type"] != "application/json" {
-		t.Errorf("Expected Content-Type application/json, got %s", got["Content-Type"])
+	tests := []struct {
+		name    string
+		headers map[string]string
+		want    map[string]string
+	}{
+		{
+			name:    "Single Headers",
+			headers: map[string]string{"Content-Type": "application/json"},
+			want:    map[string]string{"Content-Type": "application/json"},
+		},
+		{
+			name:    "Multiple Values for Same Header",
+			headers: map[string]string{"X-Multi": "Value1, Value2"},
+			want:    map[string]string{"X-Multi": "Value1, Value2"},
+		},
 	}
 
-	if got["X-Custom"] != "Value1, Value2" {
-		t.Errorf("Expected X-Custom 'Value1, Value2', got %s", got["X-Custom"])
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+			setHttpHeaders(r, tt.headers)
+
+			got := GetHttpHeadersFromRequest(r)
+
+			for k, v := range tt.want {
+				if got[k] != v {
+					t.Errorf("got %v, want %v", got[k], v)
+				}
+			}
+		})
 	}
 }
 
@@ -133,7 +150,7 @@ func TestGetPublicUrlFromRequest(t *testing.T) {
 			got := GetPublicUrlFromRequest(r)
 
 			if got != tt.want {
-				t.Errorf("GetPublicUrlFromRequest() = %v, want %v", got, tt.want)
+				t.Errorf("got %v, want %v", got, tt.want)
 			}
 		})
 	}
