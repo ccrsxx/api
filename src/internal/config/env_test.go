@@ -43,10 +43,9 @@ func TestEnvironmentApp_UnmarshalText(t *testing.T) {
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("got %v, want %v", err, tt.wantErr)
-				return
 			}
 
-			if !tt.wantErr && e != tt.want {
+			if e != tt.want {
 				t.Errorf("got %v, want %v", e, tt.want)
 			}
 		})
