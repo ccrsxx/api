@@ -1,0 +1,16 @@
+# Directories
+.git/
+.hooks/
+.github/
+tmp/
+vendor/
+scripts/
+node_modules/
+
+# Files
+.*
+compose.yaml
+Dockerfile
+LICENSE
+Makefile
+README.md
