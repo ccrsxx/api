@@ -23,7 +23,7 @@ func TestEnvironmentApp_UnmarshalText(t *testing.T) {
 		},
 		{
 			name:    "Invalid Typo",
-			input:   "dev", // Should fail
+			input:   "dev",
 			want:    "",
 			wantErr: true,
 		},
@@ -42,7 +42,7 @@ func TestEnvironmentApp_UnmarshalText(t *testing.T) {
 			err := e.UnmarshalText([]byte(tt.input))
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("got %v, want %v", err, tt.wantErr)
+				t.Fatalf("got %v, want %v", err, tt.wantErr)
 			}
 
 			if e != tt.want {

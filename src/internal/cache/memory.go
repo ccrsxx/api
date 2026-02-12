@@ -60,10 +60,11 @@ func (m *memoryCache) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (m *memoryCache) cleanup() {
-	const interval = 5 * time.Minute
+var cleanupInterval = 5 * time.Minute
 
-	ticker := time.NewTicker(interval)
+func (m *memoryCache) cleanup() {
+
+	ticker := time.NewTicker(cleanupInterval)
 
 	defer ticker.Stop()
 
