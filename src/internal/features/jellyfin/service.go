@@ -20,7 +20,7 @@ type service struct {
 }
 
 func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
-	sessions, err := jellyfin.Client().GetSessions(ctx)
+	sessions, err := jellyfin.DefaultClient().GetSessions(ctx)
 
 	if err != nil {
 		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), fmt.Errorf("jellyfin get sessions error: %w", err)
@@ -28,7 +28,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 
 	var playingItem *model.CurrentlyPlaying
 
-	for _, session := range *sessions {
+	for _, session := range sessions {
 		isNotValidUsername := session.UserName == nil || *session.UserName != config.Env().JellyfinUsername
 
 		if isNotValidUsername {

@@ -11,7 +11,7 @@ import (
 	"github.com/ccrsxx/api/src/internal/config"
 )
 
-type client struct {
+type Client struct {
 	url        string
 	apiKey     string
 	imageUrl   string
@@ -20,25 +20,34 @@ type client struct {
 }
 
 var (
-	once     sync.Once
-	instance client
+	once   sync.Once
+	client *Client
 )
 
-func Client() *client {
-	once.Do(func() {
-		instance = client{
-			url:        config.Env().JellyfinUrl,
-			apiKey:     config.Env().JellyfinApiKey,
-			imageUrl:   config.Env().JellyfinImageUrl,
-			username:   config.Env().JellyfinUsername,
-			httpClient: &http.Client{Timeout: 8 * time.Second},
-		}
-	})
-
-	return &instance
+func New(url, apiKey, imageUrl, username string) *Client {
+	return &Client{
+		url:        url,
+		apiKey:     apiKey,
+		imageUrl:   imageUrl,
+		username:   username,
+		httpClient: &http.Client{Timeout: 8 * time.Second},
+	}
 }
 
-func (c *client) GetSessions(ctx context.Context) (*[]SessionInfo, error) {
+func DefaultClient() *Client {
+	once.Do(func() {
+		client = New(
+			config.Env().JellyfinUrl,
+			config.Env().JellyfinApiKey,
+			config.Env().JellyfinImageUrl,
+			config.Env().JellyfinUsername,
+		)
+	})
+
+	return client
+}
+
+func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", c.url+"/Sessions", nil)
 
 	if err != nil {
@@ -70,5 +79,5 @@ func (c *client) GetSessions(ctx context.Context) (*[]SessionInfo, error) {
 		return nil, fmt.Errorf("jellyfin currently playing decode response error: %w", err)
 	}
 
-	return &sessions, nil
+	return sessions, nil
 }

@@ -11,21 +11,23 @@ import (
 
 var (
 	once   sync.Once
-	ipInfo *ipinfo.Client
+	client *ipinfo.Client
 )
 
-func Client() *ipinfo.Client {
+func New(token string) *ipinfo.Client {
+	clientCache := ipinfo.NewCache(cache.NewInMemory().WithExpiration(5 * time.Minute))
+
+	return ipinfo.NewClient(
+		nil,
+		clientCache,
+		token,
+	)
+}
+
+func DefaultClient() *ipinfo.Client {
 	once.Do(func() {
-		token := config.Env().IpInfoToken
-
-		clientCache := ipinfo.NewCache(cache.NewInMemory().WithExpiration(5 * time.Minute))
-
-		ipInfo = ipinfo.NewClient(
-			nil,
-			clientCache,
-			token,
-		)
+		client = New(config.Env().IpInfoToken)
 	})
 
-	return ipInfo
+	return client
 }

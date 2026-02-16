@@ -37,7 +37,7 @@ func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, 
 		}
 	}
 
-	info, err := ipinfo.Client().GetIPInfo(parsedIp)
+	info, err := ipinfo.DefaultClient().GetIPInfo(parsedIp)
 
 	if err != nil {
 		return nil, fmt.Errorf("get ip info error: %w", err)

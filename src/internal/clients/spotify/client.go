@@ -16,39 +16,61 @@ import (
 	"github.com/ccrsxx/api/src/internal/config"
 )
 
-type client struct {
+const (
+	defaultAuthURL = "https://accounts.spotify.com/api/token"
+	defaultApiURL  = "https://api.spotify.com/v1/me/player/currently-playing"
+)
+
+type Client struct {
+	apiURL       string
+	authURL      string
 	clientID     string
-	httpClient   *http.Client
 	clientSecret string
 	refreshToken string
+	httpClient   *http.Client
 }
 
 var (
 	once     sync.Once
-	instance client
+	instance *Client
 )
 
-func Client() *client {
-	once.Do(func() {
-		instance = client{
-			clientID:     config.Env().SpotifyClientID,
-			httpClient:   &http.Client{Timeout: 8 * time.Second},
-			clientSecret: config.Env().SpotifyClientSecret,
-			refreshToken: config.Env().SpotifyRefreshToken,
-		}
-	})
-
-	return &instance
+// New creates a pure client instance.
+// Use this for TESTING (passing mock URLs).
+func New(clientID, clientSecret, refreshToken, authURL, apiURL string) *Client {
+	return &Client{
+		apiURL:       apiURL,
+		authURL:      authURL,
+		clientID:     clientID,
+		clientSecret: clientSecret,
+		refreshToken: refreshToken,
+		httpClient:   &http.Client{Timeout: 8 * time.Second},
+	}
 }
 
-func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlaying, error) {
+// Client returns the singleton instance using Global Config.
+func DefaultClient() *Client {
+	once.Do(func() {
+		instance = New(
+			config.Env().SpotifyClientID,
+			config.Env().SpotifyClientSecret,
+			config.Env().SpotifyRefreshToken,
+			defaultAuthURL,
+			defaultApiURL,
+		)
+	})
+
+	return instance
+}
+
+func (c *Client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlaying, error) {
 	token, err := c.getAccessToken(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.spotify.com/v1/me/player/currently-playing", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.apiURL, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("spotify currently playing request creation error: %w", err)
@@ -92,7 +114,7 @@ func (c *client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 	return &data, nil
 }
 
-func (c *client) getAccessToken(ctx context.Context) (string, error) {
+func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 	type tokenResponse struct {
 		ExpiresIn   int    `json:"expires_in"`
 		AccessToken string `json:"access_token"` // expiry time in seconds
@@ -104,7 +126,7 @@ func (c *client) getAccessToken(ctx context.Context) (string, error) {
 			"refresh_token": {c.refreshToken},
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://accounts.spotify.com/api/token", strings.NewReader(requestBody.Encode()))
+		req, err := http.NewRequestWithContext(ctx, "POST", c.authURL, strings.NewReader(requestBody.Encode()))
 
 		if err != nil {
 			return tokenResponse{}, fmt.Errorf("spotify access token request creation error: %w", err)
