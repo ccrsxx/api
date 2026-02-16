@@ -163,7 +163,6 @@ func TestInternalNewResponse(t *testing.T) {
 		w := &faultyWriter{ResponseRecorder: httptest.NewRecorder()}
 		data := map[string]string{"foo": "bar"}
 
-		// Direct call to internal function
 		err := newResponse(w, http.StatusOK, data)
 
 		if err == nil {
@@ -176,8 +175,6 @@ func TestInternalNewResponse(t *testing.T) {
 	})
 
 	t.Run("Marshal Failure (Fallback Success)", func(t *testing.T) {
-		// Covers response.go line 54 (The missing coverage)
-		// We use a NORMAL writer here, so the fallback write succeeds.
 		w := httptest.NewRecorder()
 
 		data := map[string]float64{"val": math.Inf(1)} // Infinity fails Marshal
@@ -206,6 +203,7 @@ func TestInternalNewResponse(t *testing.T) {
 
 	t.Run("Double Failure (Marshal + Write)", func(t *testing.T) {
 		w := &faultyWriter{ResponseRecorder: httptest.NewRecorder()}
+
 		// Infinity fails json.Marshal, triggering the fallback logic
 		data := map[string]float64{"val": math.Inf(1)}
 

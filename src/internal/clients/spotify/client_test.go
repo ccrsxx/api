@@ -256,13 +256,13 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
 
-		resp, err := c.GetCurrentlyPlaying(ctx)
+		res, err := c.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if resp == nil || resp.Item.Name != "Song" {
+		if res == nil || res.Item.Name != "Song" {
 			t.Error("failed to parse response correctly")
 		}
 	})
@@ -284,13 +284,13 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
 
-		resp, err := c.GetCurrentlyPlaying(ctx)
+		res, err := c.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if resp != nil {
+		if res != nil {
 			t.Error("expected nil response for 204 No Content")
 		}
 	})
