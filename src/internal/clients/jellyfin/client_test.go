@@ -25,6 +25,7 @@ func TestDefaultClient(t *testing.T) {
 	}
 
 	c2 := DefaultClient()
+
 	if c1 != c2 {
 		t.Error("DefaultClient should return the same singleton instance")
 	}
@@ -46,8 +47,12 @@ func TestClient_GetSessions(t *testing.T) {
 
 		sessions, err := c.GetSessions(context.Background())
 
-		if err != nil || len(sessions) != 1 {
+		if err != nil {
 			t.Fatalf("expected success, got err: %v", err)
+		}
+
+		if len(sessions) != 1 {
+			t.Errorf("expected 1 session, got %d", len(sessions))
 		}
 	})
 

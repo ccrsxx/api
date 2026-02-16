@@ -32,7 +32,9 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	t.Run("Token Network Error", func(t *testing.T) {
 		c := New("id", "sec", "ref", "http://127.0.0.1:0", "http://api")
 
-		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
+		_, err := c.GetCurrentlyPlaying(ctx)
+
+		if err == nil {
 			t.Error("expected network error")
 		}
 	})
@@ -46,8 +48,10 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 
 		c := New("id", "sec", "ref", s.URL, "http://api")
 
-		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
-			t.Error("expected error from 401 status")
+		_, err := c.GetCurrentlyPlaying(ctx)
+
+		if err == nil {
+			t.Fatal("expected error from 401 status, got nil")
 		}
 	})
 
@@ -62,8 +66,10 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 
 		c := New("id", "sec", "ref", s.URL, "http://api")
 
-		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
-			t.Error("expected json decode error")
+		_, err := c.GetCurrentlyPlaying(ctx)
+
+		if err == nil {
+			t.Error("expected error from malformed JSON")
 		}
 	})
 
