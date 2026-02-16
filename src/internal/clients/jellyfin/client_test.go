@@ -12,11 +12,6 @@ import (
 	"time"
 )
 
-// Helper for pointer creation
-func stringPtr(s string) *string {
-	return &s
-}
-
 func TestDefaultClient(t *testing.T) {
 	c1 := DefaultClient()
 
@@ -36,7 +31,9 @@ func TestClient_GetSessions(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
-			if err := json.NewEncoder(w).Encode([]SessionInfo{{Id: stringPtr("1")}}); err != nil {
+			id := "1"
+
+			if err := json.NewEncoder(w).Encode([]SessionInfo{{Id: &id}}); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
@@ -57,7 +54,6 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		// A URL with a control character triggers a NewRequest error
 		c := New("http://localhost\x7f", "key", "img", "user")
 
 		_, err := c.GetSessions(context.Background())
@@ -70,7 +66,6 @@ func TestClient_GetSessions(t *testing.T) {
 	t.Run("HTTP Do Error", func(t *testing.T) {
 		c := New("http://invalid.url.local", "key", "img", "user")
 
-		// Short timeout to speed up the failure
 		c.httpClient.Timeout = 10 * time.Millisecond
 
 		_, err := c.GetSessions(context.Background())
@@ -114,7 +109,6 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 }
 
-// Fixed Body Close Error Test to prevent hanging
 type errorCloser struct {
 	io.Reader
 }
@@ -136,7 +130,6 @@ func TestClient_GetSessions_CloseError(t *testing.T) {
 		}, nil
 	})
 
-	// This triggers the defer func() { if err := res.Body.Close() ... }() block
 	_, err := c.GetSessions(context.Background())
 
 	if err != nil {
