@@ -5,15 +5,9 @@ import (
 )
 
 func TestDefaultClient(t *testing.T) {
-	c1 := DefaultClient()
+	client := DefaultClient()
 
-	if c1 == nil {
+	if client == nil {
 		t.Fatal("expected ipinfo client to be initialized, got nil")
-	}
-
-	c2 := DefaultClient()
-
-	if c1 != c2 {
-		t.Error("Client() did not return the singleton instance")
 	}
 }

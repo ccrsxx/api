@@ -11,9 +11,9 @@ import (
 )
 
 func TestDefaultClient(t *testing.T) {
-	c := DefaultClient()
+	client := DefaultClient()
 
-	if c == nil {
+	if client == nil {
 		t.Fatal("expected default client to be initialized")
 	}
 }

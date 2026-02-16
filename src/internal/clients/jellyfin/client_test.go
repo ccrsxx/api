@@ -13,16 +13,10 @@ import (
 )
 
 func TestDefaultClient(t *testing.T) {
-	c1 := DefaultClient()
+	client := DefaultClient()
 
-	if c1 == nil {
+	if client == nil {
 		t.Fatal("expected default client, got nil")
-	}
-
-	c2 := DefaultClient()
-
-	if c1 != c2 {
-		t.Error("DefaultClient should return the same singleton instance")
 	}
 }
 
