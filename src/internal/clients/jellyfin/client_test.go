@@ -27,7 +27,7 @@ func TestDefaultClient(t *testing.T) {
 }
 
 func TestClient_GetSessions(t *testing.T) {
-	t.Run("Success Path", func(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
@@ -63,7 +63,7 @@ func TestClient_GetSessions(t *testing.T) {
 		}
 	})
 
-	t.Run("HTTP Do Error", func(t *testing.T) {
+	t.Run("Network Error", func(t *testing.T) {
 		c := New("http://invalid.url.local", "key", "img", "user")
 
 		c.httpClient.Timeout = 10 * time.Millisecond
@@ -75,7 +75,7 @@ func TestClient_GetSessions(t *testing.T) {
 		}
 	})
 
-	t.Run("Status Not OK Error", func(t *testing.T) {
+	t.Run("Status 401", func(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
@@ -91,7 +91,7 @@ func TestClient_GetSessions(t *testing.T) {
 		}
 	})
 
-	t.Run("JSON Decode Error", func(t *testing.T) {
+	t.Run("Malformed JSON", func(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`invalid-json`))
@@ -107,26 +107,24 @@ func TestClient_GetSessions(t *testing.T) {
 			t.Error("expected decode error")
 		}
 	})
-}
 
-func TestClient_GetSessions_CloseError(t *testing.T) {
-	c := New("http://localhost", "key", "img", "user")
+	t.Run("Body Close Error", func(t *testing.T) {
+		c := New("http://localhost", "key", "img", "user")
 
-	// Inject a response with a body that fails on Close()
-	// We provide an empty JSON array so the decoder finishes immediately and calls Close()
-	c.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       &errorCloser{Reader: strings.NewReader("[]")},
-			Header:     make(http.Header),
-		}, nil
+		c.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       &errorCloser{Reader: strings.NewReader("[]")},
+				Header:     make(http.Header),
+			}, nil
+		})
+
+		_, err := c.GetSessions(context.Background())
+
+		if err != nil {
+			t.Fatalf("expected GetSessions to handle body close error gracefully, got: %v", err)
+		}
 	})
-
-	_, err := c.GetSessions(context.Background())
-
-	if err != nil {
-		t.Fatalf("expected GetSessions to handle body close error gracefully, got: %v", err)
-	}
 }
 
 type errorCloser struct {
