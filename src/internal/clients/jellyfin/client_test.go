@@ -109,14 +109,6 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 }
 
-type errorCloser struct {
-	io.Reader
-}
-
-func (e *errorCloser) Close() error {
-	return errors.New("forced close error")
-}
-
 func TestClient_GetSessions_CloseError(t *testing.T) {
 	c := New("http://localhost", "key", "img", "user")
 
@@ -135,6 +127,14 @@ func TestClient_GetSessions_CloseError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected GetSessions to handle body close error gracefully, got: %v", err)
 	}
+}
+
+type errorCloser struct {
+	io.Reader
+}
+
+func (e *errorCloser) Close() error {
+	return errors.New("forced close error")
 }
 
 type roundTripFunc func(req *http.Request) (*http.Response, error)
