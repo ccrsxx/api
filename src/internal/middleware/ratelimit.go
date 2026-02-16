@@ -45,7 +45,12 @@ func newLimiterFromConfig(requests int, window time.Duration) *rateLimiter {
 		visitors: map[string]*visitor{},
 	}
 
-	go rl.cleanup()
+	// Calculate cleanup interval based on window (min 1 minute)
+	interval := max(window*4, time.Minute)
+
+	// Start the background cleanup routine.
+	// We pass 'nil' for the stop channel so it runs forever in production.
+	go rl.cleanup(interval, nil)
 
 	return rl
 }
@@ -117,26 +122,29 @@ func (rl *rateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 	return nil
 }
 
-func (rl *rateLimiter) cleanup() {
-	// Optimization: Scan less frequently (4x window) to save CPU/Lock contention.
-	// Enforce a minimum interval of 1 minute to prevent hot loops on short windows.
-	interval := max(rl.window*4, time.Minute)
+func (rl *rateLimiter) pruneVisitors(interval time.Duration) {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
 
+	for ip, v := range rl.visitors {
+		if time.Since(v.lastSeen) > interval {
+			delete(rl.visitors, ip)
+		}
+	}
+}
+
+func (rl *rateLimiter) cleanup(interval time.Duration, stop <-chan struct{}) {
 	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 
-	for range ticker.C {
-		rl.mu.Lock()
-
-		for ip, v := range rl.visitors {
-			// Remove visitors who haven't been seen since the last check
-			if time.Since(v.lastSeen) > interval {
-				delete(rl.visitors, ip)
-			}
+	for {
+		select {
+		case <-ticker.C:
+			rl.pruneVisitors(interval)
+		case <-stop:
+			return
 		}
-
-		rl.mu.Unlock()
 	}
 }
 
