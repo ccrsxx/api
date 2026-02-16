@@ -34,7 +34,7 @@ func TestCors(t *testing.T) {
 		if w.Header().Get("Access-Control-Allow-Origin") != "https://allowed.com" {
 			t.Errorf("expected Access-Control-Allow-Origin header")
 		}
-		
+
 		if w.Header().Get("Access-Control-Allow-Credentials") != "true" {
 			t.Errorf("expected Access-Control-Allow-Credentials header")
 		}
