@@ -1,3 +1,5 @@
+PKG ?= ./...
+
 dev:
 	APP_ENV=development air
 
@@ -11,17 +13,21 @@ tidy:
 	go mod tidy
 
 test:
-	go test -cover ./...
+	go test -cover $(PKG)
 
 test-watch:
-	-gotestsum -- -cover ./...
-	gotestsum --watch -- -cover ./...
+	-gotestsum -- -cover $(PKG)
+	gotestsum --watch -- -cover $(PKG)
+
+test-coverage:
+	go test -coverprofile=coverage.out $(PKG)
+	go tool cover -html=coverage.out
 
 lint:
-	golangci-lint run ./...
+	golangci-lint run $(PKG)
 
 format:
-	go fmt ./...
+	go fmt $(PKG)
 
 setup-hooks:
 	npm i -g @commitlint/cli @commitlint/config-conventional
