@@ -11,7 +11,9 @@ import (
 func TestController_getDocs(t *testing.T) {
 	originalSpec := openapiSpec
 
-	defer func() { openapiSpec = originalSpec }()
+	defer func() {
+		openapiSpec = originalSpec
+	}()
 
 	validJSON := []byte(`{"openapi":"3.0.0","info":{"title":"Test","version":"1.0"}}`)
 

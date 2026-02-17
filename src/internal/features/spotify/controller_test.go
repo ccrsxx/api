@@ -16,7 +16,9 @@ import (
 func TestController_getCurrentlyPlaying(t *testing.T) {
 	originalFetcher := Service.fetcher
 
-	defer func() { Service.fetcher = originalFetcher }()
+	defer func() {
+		Service.fetcher = originalFetcher
+	}()
 
 	t.Run("Success", func(t *testing.T) {
 		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {

@@ -43,7 +43,9 @@ func TestController_GetIpAddress(t *testing.T) {
 func TestController_GetIpInfo(t *testing.T) {
 	originalFetcher := Service.fetcher
 
-	defer func() { Service.fetcher = originalFetcher }()
+	defer func() {
+		Service.fetcher = originalFetcher
+	}()
 
 	Service.fetcher = func(ip net.IP) (*ipinfoLib.Core, error) {
 		if ip.String() == "8.8.8.8" {

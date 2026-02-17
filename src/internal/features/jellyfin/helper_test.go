@@ -12,7 +12,9 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	// Setup config for image URL construction
 	originalImgUrl := config.Env().JellyfinImageUrl
 
-	defer func() { config.Env().JellyfinImageUrl = originalImgUrl }()
+	defer func() {
+		config.Env().JellyfinImageUrl = originalImgUrl
+	}()
 
 	config.Env().JellyfinImageUrl = "http://jellyfin.com"
 

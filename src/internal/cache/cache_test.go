@@ -10,7 +10,9 @@ import (
 func TestGetCachedData(t *testing.T) {
 	realCache := cacheManager.memory
 
-	defer func() { cacheManager.memory = realCache }()
+	defer func() {
+		cacheManager.memory = realCache
+	}()
 
 	ctx := context.Background()
 
@@ -137,7 +139,9 @@ func (f *faultyCache) Delete(ctx context.Context, key string) error {
 func TestGetCachedDataCoverage(t *testing.T) {
 	realCache := cacheManager.memory
 
-	defer func() { cacheManager.memory = realCache }()
+	defer func() {
+		cacheManager.memory = realCache
+	}()
 
 	ctx := context.Background()
 

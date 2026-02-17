@@ -47,7 +47,9 @@ func TestHandleHttpError(t *testing.T) {
 		originalDev := cfg.IsDevelopment
 		cfg.IsDevelopment = true
 
-		defer func() { cfg.IsDevelopment = originalDev }()
+		defer func() {
+			cfg.IsDevelopment = originalDev
+		}()
 
 		w := httptest.NewRecorder()
 

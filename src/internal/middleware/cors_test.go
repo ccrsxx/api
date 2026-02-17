@@ -13,7 +13,9 @@ func TestCors(t *testing.T) {
 
 	originalOrigins := cfg.AllowedOrigins
 
-	defer func() { cfg.AllowedOrigins = originalOrigins }()
+	defer func() {
+		cfg.AllowedOrigins = originalOrigins
+	}()
 
 	cfg.AllowedOrigins = []string{"https://allowed.com", "http://localhost:3000"}
 

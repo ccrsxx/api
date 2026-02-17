@@ -14,7 +14,9 @@ func TestService_getIpInfo(t *testing.T) {
 	// Restore original fetcher after tests
 	originalFetcher := Service.fetcher
 
-	defer func() { Service.fetcher = originalFetcher }()
+	defer func() {
+		Service.fetcher = originalFetcher
+	}()
 
 	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
 		if ip.String() == "8.8.8.8" {
