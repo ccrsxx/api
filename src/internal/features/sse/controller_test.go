@@ -34,61 +34,59 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 	Service.pollInterval = 10 * time.Millisecond
 
 	t.Run("Client Channel Closed Externally", func(t *testing.T) {
-		t.Run("Client Channel Closed Externally", func(t *testing.T) {
-			// Clear State
-			Service.mu.Lock()
-			Service.clients = map[chan string]clientMetadata{}
-			Service.mu.Unlock()
+		// Clear State
+		Service.mu.Lock()
+		Service.clients = map[chan string]clientMetadata{}
+		Service.mu.Unlock()
 
-			// Start Controller in Background
-			done := make(chan struct{})
+		// Start Controller in Background
+		done := make(chan struct{})
 
-			go func() {
-				r := httptest.NewRequest(http.MethodGet, "/sse", nil)
-				w := httptest.NewRecorder()
+		go func() {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
-				Controller.getCurrentPlayingSSE(w, r)
+			Controller.getCurrentPlayingSSE(w, r)
 
-				close(done)
-			}()
+			close(done)
+		}()
 
-			// We poll until the client appears. This is faster and safer than Sleep.
-			var targetChan chan string
+		// We poll until the client appears. This is faster and safer than Sleep.
+		var targetChan chan string
 
-			for {
-				Service.mu.RLock()
+		for {
+			Service.mu.RLock()
 
-				for ch := range Service.clients {
-					targetChan = ch
-					break
-				}
-
-				Service.mu.RUnlock()
-
-				if targetChan != nil {
-					break // Found it!
-				}
-
-				select {
-				case <-time.After(1 * time.Second):
-					t.Fatal("timed out waiting for client to register")
-				case <-time.After(5 * time.Millisecond):
-					// Retry per 5ms until we find the channel or timeout
-				}
+			for ch := range Service.clients {
+				targetChan = ch
+				break
 			}
 
-			// Trigger !ok path
-			// We manually close the channel. This causes the controller loop to receive (!ok) and exit.
-			Service.RemoveClient(context.Background(), targetChan)
+			Service.mu.RUnlock()
 
-			// Assert Exit
+			if targetChan != nil {
+				break // Found it!
+			}
+
 			select {
-			case <-done:
-				// Success: Controller exited cleanly
 			case <-time.After(1 * time.Second):
-				t.Fatal("handler did not exit after channel closure")
+				t.Fatal("timed out waiting for client to register")
+			case <-time.After(5 * time.Millisecond):
+				// Retry per 5ms until we find the channel or timeout
 			}
-		})
+		}
+
+		// Trigger !ok path
+		// We manually close the channel. This causes the controller loop to receive (!ok) and exit.
+		Service.RemoveClient(context.Background(), targetChan)
+
+		// Assert Exit
+		select {
+		case <-done:
+			// Success: Controller exited cleanly
+		case <-time.After(1 * time.Second):
+			t.Fatal("handler did not exit after channel closure")
+		}
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
