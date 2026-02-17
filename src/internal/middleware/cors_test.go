@@ -25,11 +25,30 @@ func TestCors(t *testing.T) {
 
 	t.Run("Allowed Origin", func(t *testing.T) {
 		tests := []struct {
-			name   string
-			origin string
+			name    string
+			origin  string
+			allowed bool
 		}{
-			{"Allowed Origin 1", "https://allowed.com"},
-			{"Allowed Origin 2", "http://localhost:3000"},
+			{
+				name:    "Allowed Origin 1",
+				origin:  "https://allowed.com",
+				allowed: true,
+			},
+			{
+				name:    "Allowed Origin 2",
+				origin:  "http://localhost:3000",
+				allowed: true,
+			},
+			{
+				name:    "Disallowed Origin",
+				origin:  "https://hacker.com",
+				allowed: false,
+			},
+			{
+				name:    "No Origin Header",
+				origin:  "",
+				allowed: false,
+			},
 		}
 
 		for _, tt := range tests {
@@ -42,28 +61,24 @@ func TestCors(t *testing.T) {
 
 				Cors(nextHandler).ServeHTTP(w, r)
 
-				if w.Header().Get("Access-Control-Allow-Origin") != tt.origin {
-					t.Errorf("want Access-Control-Allow-Origin header to be %s", tt.origin)
-				}
+				if tt.allowed {
+					if w.Header().Get("Access-Control-Allow-Origin") != tt.origin {
+						t.Errorf("want Access-Control-Allow-Origin header to be %s", tt.origin)
+					}
 
-				if w.Header().Get("Access-Control-Allow-Credentials") != "true" {
-					t.Errorf("want Access-Control-Allow-Credentials header")
+					if w.Header().Get("Access-Control-Allow-Credentials") != "true" {
+						t.Errorf("want Access-Control-Allow-Credentials header")
+					}
+				} else {
+					if w.Header().Get("Access-Control-Allow-Origin") != "" {
+						t.Errorf("want no Access-Control-Allow-Origin header for disallowed origin")
+					}
+
+					if w.Header().Get("Access-Control-Allow-Credentials") != "" {
+						t.Errorf("want no Access-Control-Allow-Credentials header for disallowed origin")
+					}
 				}
 			})
-		}
-	})
-
-	t.Run("Disallowed Origin", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodGet, "/", nil)
-
-		r.Header.Set("Origin", "https://hacker.com")
-
-		w := httptest.NewRecorder()
-
-		Cors(nextHandler).ServeHTTP(w, r)
-
-		if w.Header().Get("Access-Control-Allow-Origin") != "" {
-			t.Errorf("want no Access-Control-Allow-Origin header for disallowed origin")
 		}
 	})
 
