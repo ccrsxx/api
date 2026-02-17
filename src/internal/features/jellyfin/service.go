@@ -11,16 +11,21 @@ import (
 	"github.com/ccrsxx/api/src/internal/model"
 )
 
-var Service = &service{}
-
 type service struct {
 	mu            sync.Mutex
+	fetcher       func(context.Context) ([]jellyfin.SessionInfo, error)
 	lastState     *model.CurrentlyPlaying
 	lastStateTime time.Time
 }
 
+var Service = &service{
+	fetcher: func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+		return jellyfin.DefaultClient().GetSessions(ctx)
+	},
+}
+
 func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
-	sessions, err := jellyfin.DefaultClient().GetSessions(ctx)
+	sessions, err := s.fetcher(ctx)
 
 	if err != nil {
 		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), fmt.Errorf("jellyfin get sessions error: %w", err)

@@ -35,8 +35,6 @@ var (
 	instance *Client
 )
 
-// New creates a pure client instance.
-// Use this for TESTING (passing mock URLs).
 func New(clientID, clientSecret, refreshToken, authURL, apiURL string) *Client {
 	return &Client{
 		apiURL:       apiURL,
@@ -48,7 +46,6 @@ func New(clientID, clientSecret, refreshToken, authURL, apiURL string) *Client {
 	}
 }
 
-// Client returns the singleton instance using Global Config.
 func DefaultClient() *Client {
 	once.Do(func() {
 		instance = New(

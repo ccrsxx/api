@@ -16,18 +16,15 @@ func TestRecovery(t *testing.T) {
 		panic("something went terribly wrong")
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	// Wrap it in recovery middleware
-	Recovery(panicHandler).ServeHTTP(w, req)
+	Recovery(panicHandler).ServeHTTP(w, r)
 
-	// 1. Check Status Code
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("got status %d, want 500", w.Code)
 	}
 
-	// 2. Check JSON Body
 	var resp api.ErrorResponse
 
 	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {

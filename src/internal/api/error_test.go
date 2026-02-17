@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/src/internal/config"
+	"github.com/ccrsxx/api/src/internal/test"
 )
 
 func TestHandleHttpError(t *testing.T) {
@@ -75,7 +76,12 @@ func TestHandleHttpError(t *testing.T) {
 		}
 
 		var resp ErrorResponse
-		_ = json.Unmarshal(w.Body.Bytes(), &resp)
+
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+
+		if err != nil {
+			t.Fatalf("failed to unmarshal response: %v", err)
+		}
 
 		if resp.Error.Message != httpErr.Message {
 			t.Errorf("got message %q, want %q", resp.Error.Message, httpErr.Message)
@@ -94,15 +100,15 @@ func TestHandleHttpError(t *testing.T) {
 	})
 
 	t.Run("Write Failures (Triggers logErrorResponse)", func(t *testing.T) {
-		w1 := &faultyWriter{ResponseRecorder: httptest.NewRecorder()}
+		w1 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
 		HandleHttpError(w1, r, &PanicError{Message: "crash"})
 
-		w2 := &faultyWriter{ResponseRecorder: httptest.NewRecorder()}
+		w2 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
 		HandleHttpError(w2, r, &HttpError{StatusCode: 400, Message: "bad"})
 
-		w3 := &faultyWriter{ResponseRecorder: httptest.NewRecorder()}
+		w3 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
 		HandleHttpError(w3, r, errors.New("generic"))
 	})

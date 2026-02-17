@@ -3,20 +3,20 @@ package jellyfin
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ccrsxx/api/src/internal/test"
 )
 
 func TestDefaultClient(t *testing.T) {
 	client := DefaultClient()
 
 	if client == nil {
-		t.Fatal("expected default client, got nil")
+		t.Fatal("want default client, got nil")
 	}
 }
 
@@ -39,11 +39,11 @@ func TestClient_GetSessions(t *testing.T) {
 		sessions, err := c.GetSessions(context.Background())
 
 		if err != nil {
-			t.Fatalf("expected success, got err: %v", err)
+			t.Fatalf("want success, got err: %v", err)
 		}
 
 		if len(sessions) != 1 {
-			t.Errorf("expected 1 session, got %d", len(sessions))
+			t.Errorf("want 1 session, got %d", len(sessions))
 		}
 	})
 
@@ -53,7 +53,7 @@ func TestClient_GetSessions(t *testing.T) {
 		_, err := c.GetSessions(context.Background())
 
 		if err == nil {
-			t.Error("expected error from NewRequestWithContext")
+			t.Error("want error from NewRequestWithContext")
 		}
 	})
 
@@ -65,7 +65,7 @@ func TestClient_GetSessions(t *testing.T) {
 		_, err := c.GetSessions(context.Background())
 
 		if err == nil {
-			t.Error("expected error from httpClient.Do")
+			t.Error("want error from httpClient.Do")
 		}
 	})
 
@@ -81,7 +81,7 @@ func TestClient_GetSessions(t *testing.T) {
 		_, err := c.GetSessions(context.Background())
 
 		if err == nil {
-			t.Error("expected status error for 401")
+			t.Error("want status error for 401")
 		}
 	})
 
@@ -98,17 +98,17 @@ func TestClient_GetSessions(t *testing.T) {
 		_, err := c.GetSessions(context.Background())
 
 		if err == nil {
-			t.Error("expected decode error")
+			t.Error("want decode error")
 		}
 	})
 
 	t.Run("Body Close Error", func(t *testing.T) {
 		c := New("http://localhost", "key", "img", "user")
 
-		c.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
-				Body:       &errorCloser{Reader: strings.NewReader("[]")},
+				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
 				Header:     make(http.Header),
 			}, nil
 		})
@@ -116,21 +116,7 @@ func TestClient_GetSessions(t *testing.T) {
 		_, err := c.GetSessions(context.Background())
 
 		if err != nil {
-			t.Fatalf("expected GetSessions to handle body close error gracefully, got: %v", err)
+			t.Fatalf("want GetSessions to handle body close error gracefully, got: %v", err)
 		}
 	})
-}
-
-type errorCloser struct {
-	io.Reader
-}
-
-func (e *errorCloser) Close() error {
-	return errors.New("forced close error")
-}
-
-type roundTripFunc func(req *http.Request) (*http.Response, error)
-
-func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req)
 }

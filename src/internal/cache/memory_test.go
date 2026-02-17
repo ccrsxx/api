@@ -71,7 +71,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 	_, err = c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
-		t.Errorf("expected ErrCacheMiss for expired item, got %v", err)
+		t.Errorf("want ErrCacheMiss for expired item, got %v", err)
 	}
 }
 
@@ -98,7 +98,7 @@ func TestMemoryCache_Delete(t *testing.T) {
 	_, err := c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
-		t.Errorf("expected ErrCacheMiss after Delete, got %v", err)
+		t.Errorf("want ErrCacheMiss after Delete, got %v", err)
 	}
 }
 
@@ -109,7 +109,7 @@ func TestMemoryCache_Miss(t *testing.T) {
 	_, err := c.Get(ctx, "ghost-key")
 
 	if err != ErrCacheMiss {
-		t.Errorf("expected ErrCacheMiss for unknown key, got %v", err)
+		t.Errorf("want ErrCacheMiss for unknown key, got %v", err)
 	}
 }
 

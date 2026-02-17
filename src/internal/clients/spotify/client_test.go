@@ -2,19 +2,20 @@ package spotify
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/ccrsxx/api/src/internal/test"
 )
 
 func TestDefaultClient(t *testing.T) {
 	client := DefaultClient()
 
 	if client == nil {
-		t.Fatal("expected default client to be initialized")
+		t.Fatal("want default client to be initialized")
 	}
 }
 
@@ -25,7 +26,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 		c := New("id", "sec", "ref", "http://bad\x7f", "http://api")
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
-			t.Error("expected error from new request creation")
+			t.Error("want error from new request creation")
 		}
 	})
 
@@ -35,7 +36,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Error("expected network error")
+			t.Error("want network error")
 		}
 	})
 
@@ -51,7 +52,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("expected error from 401 status, got nil")
+			t.Fatal("want error from 401 status, got nil")
 		}
 	})
 
@@ -69,17 +70,17 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Error("expected error from malformed JSON")
+			t.Error("want error from malformed JSON")
 		}
 	})
 
 	t.Run("Token Body Close Error", func(t *testing.T) {
 		c := New("id", "sec", "ref", "http://auth", "http://api")
 
-		c.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
-				Body:       &errorCloser{Reader: strings.NewReader(`{}`)},
+				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader(`{}`)},
 				Header:     make(http.Header),
 			}, nil
 		})
@@ -87,7 +88,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("expected error from token body close")
+			t.Fatal("want error from token body close")
 		}
 	})
 }
@@ -111,7 +112,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Error("expected error from new request creation")
+			t.Error("want error from new request creation")
 		}
 	})
 
@@ -125,7 +126,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Error("expected network error")
+			t.Error("want network error")
 		}
 	})
 
@@ -145,11 +146,11 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("expected 500 error, got nil")
+			t.Fatal("want 500 error, got nil")
 		}
 
 		if !strings.Contains(err.Error(), "status error: 500") {
-			t.Errorf("expected status error message, got: %v", err)
+			t.Errorf("want status error message, got: %v", err)
 		}
 	})
 
@@ -171,14 +172,14 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Error("expected error from malformed JSON")
+			t.Error("want error from malformed JSON")
 		}
 	})
 
 	t.Run("API Body Close Error", func(t *testing.T) {
 		c := New("id", "sec", "ref", "http://auth", "http://api")
 
-		c.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 			if strings.Contains(req.URL.String(), "auth") {
 				return &http.Response{
 					StatusCode: http.StatusOK,
@@ -188,14 +189,14 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 			return &http.Response{
 				StatusCode: http.StatusOK,
-				Body:       &errorCloser{Reader: strings.NewReader(`{}`)},
+				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader(`{}`)},
 			}, nil
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("expected error from API body close")
+			t.Fatal("want error from API body close")
 		}
 	})
 }
@@ -227,7 +228,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("expected invalid item type error, got nil")
+			t.Fatal("want invalid item type error, got nil")
 		}
 
 		if !strings.Contains(err.Error(), "invalid item type") {
@@ -259,7 +260,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 		res, err := c.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
 
 		if res == nil || res.Item.Name != "Song" {
@@ -287,25 +288,11 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 		res, err := c.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
 
 		if res != nil {
-			t.Error("expected nil response for 204 No Content")
+			t.Error("want nil response for 204 No Content")
 		}
 	})
-}
-
-type errorCloser struct {
-	io.Reader
-}
-
-func (e *errorCloser) Close() error {
-	return errors.New("forced close error")
-}
-
-type roundTripFunc func(req *http.Request) (*http.Response, error)
-
-func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req)
 }

@@ -20,12 +20,12 @@ func TestRateLimit(t *testing.T) {
 		mw := RateLimit(5, time.Second)
 		server := mw(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.RemoteAddr = "1.1.1.1:1234"
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+		r.RemoteAddr = "1.1.1.1:1234"
 
 		w := httptest.NewRecorder()
 
-		server.ServeHTTP(w, req)
+		server.ServeHTTP(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got status %d, want 200", w.Code)
@@ -36,31 +36,31 @@ func TestRateLimit(t *testing.T) {
 		mw := RateLimit(1, time.Minute)
 		server := mw(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.RemoteAddr = "2.2.2.2:1234"
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+		r.RemoteAddr = "2.2.2.2:1234"
 
 		// 1st request pass
 		w1 := httptest.NewRecorder()
 
-		server.ServeHTTP(w1, req)
+		server.ServeHTTP(w1, r)
 
 		// 2nd request block
 		w2 := httptest.NewRecorder()
 
-		server.ServeHTTP(w2, req)
+		server.ServeHTTP(w2, r)
 
 		if w2.Code != http.StatusTooManyRequests {
 			t.Errorf("second request should fail")
 		}
 
-		var resp api.ErrorResponse
+		var res api.ErrorResponse
 
-		if err := json.Unmarshal(w2.Body.Bytes(), &resp); err != nil {
+		if err := json.Unmarshal(w2.Body.Bytes(), &res); err != nil {
 			t.Fatalf("failed to parse error response: %v", err)
 		}
 
-		if resp.Error.Message == "" {
-			t.Error("expected error message")
+		if res.Error.Message == "" {
+			t.Error("want error message")
 		}
 	})
 
@@ -69,12 +69,13 @@ func TestRateLimit(t *testing.T) {
 
 		server := mw(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.RemoteAddr = "127.0.0.1:5000"
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+		r.RemoteAddr = "127.0.0.1:5000"
 
 		w := httptest.NewRecorder()
 
-		server.ServeHTTP(w, req)
+		server.ServeHTTP(w, r)
 
 		if w.Header().Get("RateLimit-Limit") != "10" {
 			t.Error("Wrong Limit header")
@@ -106,27 +107,32 @@ func TestRateLimiter_PruneVisitors(t *testing.T) {
 	rl.pruneVisitors(time.Minute)
 
 	if _, exists := rl.visitors[staleIP]; exists {
-		t.Errorf("expected stale IP %s to be cleaned up", staleIP)
+		t.Errorf("want stale IP %s to be cleaned up", staleIP)
 	}
 
 	if _, exists := rl.visitors[freshIP]; !exists {
-		t.Errorf("expected fresh IP %s to remain", freshIP)
+		t.Errorf("want fresh IP %s to remain", freshIP)
 	}
 }
 
 // TestRateLimiter_CleanupLoop tests the goroutine lifecycle
 func TestRateLimiter_CleanupLoop(t *testing.T) {
 	rl := &rateLimiter{
-		visitors: make(map[string]*visitor),
+		visitors: map[string]*visitor{},
 	}
 
+	// use separate channels to signal completion and stopping
+	// to make sure we can detect if the loop exits properly after receiving the stop signal
+	done := make(chan struct{})
+
 	stop := make(chan struct{})
-	done := make(chan bool)
 
 	// Start the cleanup loop with a tiny interval (1ms)
 	go func() {
 		rl.cleanup(time.Millisecond, stop)
-		done <- true
+
+		// Signal that the loop has exited cleanly
+		close(done)
 	}()
 
 	// Let it run for a bit to ensure it hits the ticker case
@@ -136,7 +142,7 @@ func TestRateLimiter_CleanupLoop(t *testing.T) {
 
 	select {
 	case <-done:
-		// Success
+		// Success will exit here if the loop exits cleanly after receiving the stop signal
 	case <-time.After(100 * time.Millisecond):
 		t.Fatal("cleanup loop failed to exit after stop signal")
 	}

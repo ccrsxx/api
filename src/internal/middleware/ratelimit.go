@@ -140,10 +140,10 @@ func (rl *rateLimiter) cleanup(interval time.Duration, stop <-chan struct{}) {
 
 	for {
 		select {
-		case <-ticker.C:
-			rl.pruneVisitors(interval)
 		case <-stop:
 			return
+		case <-ticker.C:
+			rl.pruneVisitors(interval)
 		}
 	}
 }

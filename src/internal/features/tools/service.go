@@ -10,9 +10,17 @@ import (
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
-type service struct{}
+type ipInfoFetcher func(net.IP) (*ipinfoLib.Core, error)
 
-var Service = &service{}
+type service struct {
+	fetcher ipInfoFetcher
+}
+
+var Service = &service{
+	fetcher: func(ip net.IP) (*ipinfoLib.Core, error) {
+		return ipinfo.DefaultClient().GetIPInfo(ip)
+	},
+}
 
 func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
 	if queryIp != "" && net.ParseIP(queryIp) == nil {
@@ -37,7 +45,7 @@ func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, 
 		}
 	}
 
-	info, err := ipinfo.DefaultClient().GetIPInfo(parsedIp)
+	info, err := s.fetcher(parsedIp)
 
 	if err != nil {
 		return nil, fmt.Errorf("get ip info error: %w", err)

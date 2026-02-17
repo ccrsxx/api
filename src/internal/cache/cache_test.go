@@ -27,8 +27,9 @@ func TestGetCachedData(t *testing.T) {
 		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
+
 		if got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -56,7 +57,7 @@ func TestGetCachedData(t *testing.T) {
 		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
 
 		if got != want {
@@ -66,16 +67,16 @@ func TestGetCachedData(t *testing.T) {
 
 	t.Run("Fetcher Error -> Return Error", func(t *testing.T) {
 		cacheManager.memory = newMemoryCache()
-		expectedErr := errors.New("db dead")
+		wantErr := errors.New("db dead")
 
 		fetcher := func() (string, error) {
-			return "", expectedErr
+			return "", wantErr
 		}
 
 		_, err := GetCachedData(ctx, "err-key", ProviderMemory, fetcher, StaticTTL[string](time.Minute))
 
-		if !errors.Is(err, expectedErr) {
-			t.Errorf("got error %v, want %v", err, expectedErr)
+		if !errors.Is(err, wantErr) {
+			t.Errorf("got error %v, want %v", err, wantErr)
 		}
 	})
 
@@ -92,7 +93,7 @@ func TestGetCachedData(t *testing.T) {
 		got, err := GetCachedData(ctx, key, ProviderCloudflare, fetcher, StaticTTL[string](time.Minute))
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
 
 		if got != want {
@@ -143,7 +144,7 @@ func TestGetCachedDataCoverage(t *testing.T) {
 		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
 
 		if got != want {
@@ -170,7 +171,7 @@ func TestGetCachedDataCoverage(t *testing.T) {
 		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
 
 		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+			t.Fatalf("unwant error: %v", err)
 		}
 
 		if got != want {

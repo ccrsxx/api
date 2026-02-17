@@ -15,11 +15,11 @@ func TestLogging(t *testing.T) {
 		}
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/tea", nil)
+	r := httptest.NewRequest(http.MethodGet, "/tea", nil)
 
 	w := httptest.NewRecorder()
 
-	Logging(nextHandler).ServeHTTP(w, req)
+	Logging(nextHandler).ServeHTTP(w, r)
 
 	if w.Code != http.StatusTeapot {
 		t.Errorf("got status %d, want 418", w.Code)

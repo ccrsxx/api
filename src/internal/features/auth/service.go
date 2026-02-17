@@ -30,7 +30,16 @@ func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerTok
 		}
 	}
 
-	return parts[1], nil
+	token := parts[1]
+
+	if token != config.Env().SecretKey {
+		return "", &api.HttpError{
+			Message:    "Invalid token",
+			StatusCode: http.StatusUnauthorized,
+		}
+	}
+
+	return token, nil
 }
 
 func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken string) (string, error) {
@@ -41,9 +50,7 @@ func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken stri
 		}
 	}
 
-	match := queryToken == config.Env().SecretKey
-
-	if !match {
+	if queryToken != config.Env().SecretKey {
 		return "", &api.HttpError{
 			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,

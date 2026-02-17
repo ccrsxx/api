@@ -10,7 +10,7 @@ const (
 type Track struct {
 	TrackURL      *string `json:"trackUrl"`
 	TrackName     string  `json:"trackName"`
-	AlbumName     string  `json:"albumName"`
+	AlbumName     string `json:"albumName"`
 	ArtistName    string  `json:"artistName"`
 	ProgressMs    int     `json:"progressMs"`
 	DurationMs    int     `json:"durationMs"`

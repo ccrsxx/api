@@ -1,0 +1,82 @@
+package jellyfin
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/ccrsxx/api/src/internal/clients/jellyfin"
+	"github.com/ccrsxx/api/src/internal/test"
+)
+
+func TestController_getCurrentlyPlaying(t *testing.T) {
+	originalFetcher := Service.fetcher
+
+	defer func() {
+		Service.fetcher = originalFetcher
+	}()
+
+	t.Run("Success", func(t *testing.T) {
+		// We return nil sessions, which results in "Not Playing" (200 OK)
+		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+			return nil, nil
+		}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+		Controller.getCurrentlyPlaying(w, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("want 200, got %d", w.Code)
+		}
+
+		var resp struct {
+			Data struct {
+				IsPlaying bool `json:"isPlaying"`
+			} `json:"data"`
+		}
+
+		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
+		}
+
+		if resp.Data.IsPlaying {
+			t.Error("want isPlaying false")
+		}
+	})
+
+	t.Run("Service Error", func(t *testing.T) {
+		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+			return nil, errors.New("fail")
+		}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+		Controller.getCurrentlyPlaying(w, r)
+
+		if w.Code != http.StatusInternalServerError {
+			t.Errorf("want 500, got %d", w.Code)
+		}
+	})
+
+	t.Run("Write Error", func(t *testing.T) {
+		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+			return nil, nil
+		}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
+
+		Controller.getCurrentlyPlaying(errWriter, r)
+
+		// Success if we don't panic and the test completes
+		// Since everything is handled and mocked, we don't need assertions here
+	})
+}

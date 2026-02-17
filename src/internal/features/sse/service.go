@@ -28,16 +28,26 @@ type clientMetadata struct {
 	ConnectedAt time.Time
 }
 
+type DataFetcher func(context.Context) (model.CurrentlyPlaying, error)
+
 type service struct {
 	mu              sync.RWMutex
 	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
 	ipAddressCounts map[string]int
+
+	pollInterval    time.Duration
+	spotifyFetcher  DataFetcher
+	jellyfinFetcher DataFetcher
 }
 
 var Service = &service{
 	clients:         map[chan string]clientMetadata{},
 	ipAddressCounts: map[string]int{},
+
+	pollInterval:    1 * time.Second,
+	spotifyFetcher:  spotify.Service.GetCurrentlyPlaying,
+	jellyfinFetcher: jellyfin.Service.GetCurrentlyPlaying,
 }
 
 func (s *service) IsConnectionAllowed(ip string) error {
@@ -66,7 +76,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 }
 
 func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddress string, userAgent string) {
-	sseData := getSSEData(ctx)
+	sseData := s.getSSEData(ctx)
 
 	if ctx.Err() != nil {
 		slog.Warn("sse client cancelled", "ip_address", ipAddress)
@@ -169,9 +179,7 @@ func (s *service) stopWorkerLocked() {
 }
 
 func (s *service) pollLoop(stopChan chan struct{}) {
-	const interval = 1 * time.Second
-
-	ticker := time.NewTicker(interval)
+	ticker := time.NewTicker(s.pollInterval)
 
 	defer ticker.Stop()
 
@@ -188,25 +196,24 @@ func (s *service) pollLoop(stopChan chan struct{}) {
 }
 
 func (s *service) pollAndBroadcast(ctx context.Context) {
-	sseData := getSSEData(ctx)
+	sseData := s.getSSEData(ctx)
 
 	// Protect map iteration with read lock
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	for clientChan := range s.clients {
+		// Inside default block, if the client channel is full, skip sending to avoid blocking other clients
+		// Happens when the client has a slow connection
+
 		select {
 		case clientChan <- sseData.spotify:
 		default:
-			// If the client channel is full, skip sending to avoid blocking other clients
-			// Happens when the client has a slow connection
 		}
 
 		select {
 		case clientChan <- sseData.jellyfin:
 		default:
-			// If the client channel is full, skip sending to avoid blocking other clients
-			// Happens when the client has a slow connection
 		}
 	}
 }
@@ -216,7 +223,7 @@ type sseData struct {
 	jellyfin string
 }
 
-func getSSEData(ctx context.Context) sseData {
+func (s *service) getSSEData(ctx context.Context) sseData {
 	var wg sync.WaitGroup
 
 	var spotifyData, jellyfinData model.CurrentlyPlaying
@@ -226,7 +233,7 @@ func getSSEData(ctx context.Context) sseData {
 	go func() {
 		defer wg.Done()
 
-		data, err := spotify.Service.GetCurrentlyPlaying(ctx)
+		data, err := s.spotifyFetcher(ctx)
 
 		if err != nil {
 			slog.Warn("sse spotify fetch error", "error", err)
@@ -242,7 +249,7 @@ func getSSEData(ctx context.Context) sseData {
 	go func() {
 		defer wg.Done()
 
-		data, err := jellyfin.Service.GetCurrentlyPlaying(ctx)
+		data, err := s.jellyfinFetcher(ctx)
 
 		if err != nil {
 			slog.Warn("sse jellyfin fetch error", "error", err)
