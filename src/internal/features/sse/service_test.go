@@ -108,7 +108,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 		case msg := <-clientChan:
 			// Should receive updates from poll loop
 			if !strings.Contains(msg, "event: spotify") && !strings.Contains(msg, "event: jellyfin") {
-				t.Errorf("unwant broadcast message: %s", msg)
+				t.Errorf("unwanted broadcast message: %s", msg)
 			}
 		case <-time.After(100 * time.Millisecond):
 			t.Fatal("timeout waiting for broadcast")

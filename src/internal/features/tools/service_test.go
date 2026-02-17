@@ -100,7 +100,7 @@ func TestService_getIpInfo(t *testing.T) {
 			// Success case
 
 			if err != nil {
-				t.Errorf("unwant error: %v", err)
+				t.Errorf("unwanted error: %v", err)
 			}
 
 			if info == nil {

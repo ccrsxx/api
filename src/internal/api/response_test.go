@@ -24,7 +24,7 @@ func TestNewSuccessResponse(t *testing.T) {
 		err := NewSuccessResponse(w, http.StatusOK, data)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if w.Code != http.StatusOK {
@@ -46,7 +46,7 @@ func TestNewSuccessResponse(t *testing.T) {
 		err := NewSuccessResponse(w, http.StatusCreated, data)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		want := `{"data":{"name":"Jane","age":25}}`
@@ -60,11 +60,10 @@ func TestNewSuccessResponse(t *testing.T) {
 		w := httptest.NewRecorder()
 		data := map[string]string{"foo": "bar"}
 
-		// Maps are treated as direct responses
 		err := NewSuccessResponse(w, http.StatusOK, data)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		want := `{"foo":"bar"}`
@@ -81,7 +80,7 @@ func TestNewSuccessResponse(t *testing.T) {
 		err := NewSuccessResponse(w, http.StatusOK, data)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		want := `["a","b"]`
@@ -95,14 +94,15 @@ func TestNewSuccessResponse(t *testing.T) {
 func TestNewErrorResponse(t *testing.T) {
 	t.Run("Standard Error Response", func(t *testing.T) {
 		w := httptest.NewRecorder()
+
+		id := "test-id"
 		msg := "Invalid input"
 		details := []string{"field x is required"}
-		id := "test-id"
 
 		err := NewErrorResponse(w, http.StatusBadRequest, msg, details, id)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if w.Code != http.StatusBadRequest {
@@ -132,10 +132,19 @@ func TestNewErrorResponse(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		// Passing nil for details should result in empty slice []
-		_ = NewErrorResponse(w, http.StatusNotFound, "Not Found", nil, "id")
+		err := NewErrorResponse(w, http.StatusNotFound, "Not Found", nil, "id")
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
 
 		var response ErrorResponse
-		_ = json.Unmarshal(w.Body.Bytes(), &response)
+
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+
+		if err != nil {
+			t.Fatalf("failed to unmarshal response: %v", err)
+		}
 
 		if response.Error.Details == nil {
 			t.Error("want empty slice for details, got nil")
@@ -147,8 +156,6 @@ func TestNewErrorResponse(t *testing.T) {
 	})
 }
 
-// TestInternalNewResponse tests the private 'newResponse' function directly
-// to cover edge cases like network failures.
 func TestInternalNewResponse(t *testing.T) {
 	t.Run("Write Failure (Network Error)", func(t *testing.T) {
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
@@ -178,12 +185,12 @@ func TestInternalNewResponse(t *testing.T) {
 
 		// It should contain the marshal error...
 		if !strings.Contains(err.Error(), "marshal response error") {
-			t.Errorf("want 'marshal response error' in %v", err)
+			t.Fatalf("want 'marshal response error' in %v", err)
 		}
 
 		// ...but NOT the fallback error (because fallback succeeded)
 		if strings.Contains(err.Error(), "marshal fallback error") {
-			t.Errorf("unwant 'marshal fallback error' in %v", err)
+			t.Fatalf("unwanted 'marshal fallback error' in %v", err)
 		}
 
 		// Verify it wrote the fallback 500 status
@@ -205,12 +212,8 @@ func TestInternalNewResponse(t *testing.T) {
 		}
 
 		// The error should contain both the marshal error AND the fallback write error
-		if !strings.Contains(err.Error(), "marshal response error") {
-			t.Errorf("want 'marshal response error' in %v", err)
-		}
-
-		if !strings.Contains(err.Error(), "marshal fallback error") {
-			t.Errorf("want 'marshal fallback error' in %v", err)
+		if !strings.Contains(err.Error(), "marshal response error") || !strings.Contains(err.Error(), "marshal fallback error") {
+			t.Errorf("want both 'marshal response error' and 'marshal fallback error' in %v", err)
 		}
 	})
 }

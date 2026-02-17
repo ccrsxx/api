@@ -82,7 +82,11 @@ func TestMemoryCache_Delete(t *testing.T) {
 	key := "del-key"
 	val := "delete-me"
 
-	_ = c.Set(ctx, key, val, time.Minute)
+	err := c.Set(ctx, key, val, time.Minute)
+
+	if err != nil {
+		t.Fatalf("Set failed: %v", err)
+	}
 
 	// Verify exists
 	if _, err := c.Get(ctx, key); err != nil {
@@ -95,7 +99,7 @@ func TestMemoryCache_Delete(t *testing.T) {
 	}
 
 	// Verify gone
-	_, err := c.Get(ctx, key)
+	_, err = c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
 		t.Errorf("want ErrCacheMiss after Delete, got %v", err)
@@ -122,13 +126,17 @@ func TestMemoryCache_Cleanup(t *testing.T) {
 	key := "cleanup-key"
 	val := "cleanup-data"
 
-	_ = c.Set(ctx, key, val, 1*time.Millisecond)
+	err := c.Set(ctx, key, val, 1*time.Millisecond)
+
+	if err != nil {
+		t.Fatalf("Set failed: %v", err)
+	}
 
 	time.Sleep(50 * time.Millisecond)
 
 	// Coverage Check: The 'cleanup' goroutine loop code should have run.
 	// We verify the side effect (item is gone).
-	_, err := c.Get(ctx, key)
+	_, err = c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
 		t.Errorf("cleanup loop failed to remove expired item")

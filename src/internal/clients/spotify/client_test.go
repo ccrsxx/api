@@ -260,7 +260,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 		res, err := c.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if res == nil || res.Item.Name != "Song" {
@@ -288,7 +288,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 		res, err := c.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if res != nil {

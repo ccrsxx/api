@@ -32,7 +32,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		got, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if !got.IsPlaying {
@@ -52,7 +52,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		got, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwant error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if got.IsPlaying {

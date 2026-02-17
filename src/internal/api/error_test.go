@@ -31,9 +31,12 @@ func TestHandleHttpError(t *testing.T) {
 
 		var resp ErrorResponse
 
-		_ = json.Unmarshal(w.Body.Bytes(), &resp)
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
 
-		// In production, message is generic
+		if err != nil {
+			t.Fatalf("failed to unmarshal response: %v", err)
+		}
+
 		if resp.Error.Message != "An internal server error occurred" {
 			t.Errorf("got message %q, want generic server error", resp.Error.Message)
 		}
@@ -44,7 +47,7 @@ func TestHandleHttpError(t *testing.T) {
 		originalDev := cfg.IsDevelopment
 		cfg.IsDevelopment = true
 
-		defer func() { cfg.IsDevelopment = originalDev }() // Reset after test
+		defer func() { cfg.IsDevelopment = originalDev }()
 
 		w := httptest.NewRecorder()
 
@@ -53,7 +56,6 @@ func TestHandleHttpError(t *testing.T) {
 			Stack:   "goroutine stack trace...",
 		}
 
-		// This triggers the fmt.Printf path in your code
 		HandleHttpError(w, r, panicErr)
 
 		if w.Code != http.StatusInternalServerError {

@@ -48,7 +48,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		got, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
+			t.Fatalf("unwanteded error: %v", err)
 		}
 
 		if !got.IsPlaying {
@@ -80,7 +80,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		fmt.Printf("Got state: %+v\n", got)
 
 		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
+			t.Fatalf("unwanteded error: %v", err)
 		}
 
 		if got.IsPlaying {
@@ -126,7 +126,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		_, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
+			t.Fatalf("unwanteded error: %v", err)
 		}
 
 		// Simulate "No Content" from API (user momentarily between songs or network blip)
@@ -144,7 +144,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		got, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
+			t.Fatalf("unwanteded error: %v", err)
 		}
 
 		if !got.IsPlaying {
@@ -166,7 +166,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		gotExpired, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
+			t.Fatalf("unwanteded error: %v", err)
 		}
 
 		if gotExpired.IsPlaying {

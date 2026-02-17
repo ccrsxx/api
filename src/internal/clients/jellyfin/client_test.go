@@ -88,7 +88,12 @@ func TestClient_GetSessions(t *testing.T) {
 	t.Run("Malformed JSON", func(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`invalid-json`))
+
+			_, err := w.Write([]byte(`invalid-json`))
+
+			if err != nil {
+				t.Fatalf("failed to write response: %v", err)
+			}
 		}))
 
 		defer mockServer.Close()

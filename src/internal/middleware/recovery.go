@@ -14,7 +14,7 @@ func Recovery(next http.Handler) http.Handler {
 				err := &api.PanicError{
 					Value:   rcv,
 					Stack:   string(debug.Stack()),
-					Message: "internal server error",
+					Message: "Internal server error",
 				}
 
 				api.HandleHttpError(w, r, err)
