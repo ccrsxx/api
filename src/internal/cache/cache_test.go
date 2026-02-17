@@ -36,7 +36,13 @@ func TestGetCachedData(t *testing.T) {
 
 		time.Sleep(10 * time.Millisecond)
 
-		if cached, _ := cacheManager.memory.Get(ctx, key); cached != want {
+		cached, err := cacheManager.memory.Get(ctx, key)
+
+		if err != nil {
+			t.Fatalf("error getting from cache: %v", err)
+		}
+
+		if cached != want {
 			t.Error("value was not saved to cache")
 		}
 	})
