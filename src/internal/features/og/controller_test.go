@@ -59,15 +59,15 @@ func TestController_getOg(t *testing.T) {
 		}
 
 		if w.Header().Get("Content-Type") != "image/png" {
-			t.Error("expected image/png content type")
+			t.Error("want image/png content type")
 		}
 
 		if w.Header().Get("Cache-Control") != "" {
-			t.Error("expected no cache-control header in non-prod")
+			t.Error("want no cache-control header in non-prod")
 		}
 
 		if w.Body.String() != "png-data" {
-			t.Error("expected body copy")
+			t.Error("want body copy")
 		}
 	})
 
@@ -121,7 +121,7 @@ func TestController_getOg(t *testing.T) {
 		// The controller wraps the error using api.HandleHttpError.
 		// We just check it's not OK.
 		if w.Code == http.StatusOK {
-			t.Error("expected error status for upstream failure")
+			t.Error("want error status for upstream failure")
 		}
 	})
 
@@ -151,7 +151,7 @@ func TestController_getOg(t *testing.T) {
 		Controller.getOg(errWriter, r)
 
 		if w.Code != http.StatusOK {
-			t.Error("expected 200 even if write error occurs")
+			t.Error("want 200 even if write error occurs")
 		}
 	})
 
@@ -172,7 +172,7 @@ func TestController_getOg(t *testing.T) {
 		Controller.getOg(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Error("expected success despite close error")
+			t.Error("want success despite close error")
 		}
 	})
 }

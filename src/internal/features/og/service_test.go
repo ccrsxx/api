@@ -91,10 +91,10 @@ func TestService_getOg(t *testing.T) {
 		Service.httpClient = &http.Client{
 			Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 				// Assert the code actually tried to hit the hardcoded dev URL
-				expectedPrefix := "http://localhost:4444/og"
+				wantPrefix := "http://localhost:4444/og"
 
-				if !strings.HasPrefix(req.URL.String(), expectedPrefix) {
-					t.Errorf("got %s, want dev url prefix %s", req.URL.String(), expectedPrefix)
+				if !strings.HasPrefix(req.URL.String(), wantPrefix) {
+					t.Errorf("got %s, want dev url prefix %s", req.URL.String(), wantPrefix)
 				}
 
 				return &http.Response{
@@ -144,7 +144,7 @@ func TestService_getOg(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "og request status error: 500") {
-			t.Errorf("got unexpected error message: %v", err)
+			t.Errorf("got unwanted error message: %v", err)
 		}
 	})
 
@@ -159,7 +159,7 @@ func TestService_getOg(t *testing.T) {
 		}
 
 		if !strings.Contains(err.Error(), "og request call error") {
-			t.Errorf("got unexpected error message: %v", err)
+			t.Errorf("got unwanted error message: %v", err)
 		}
 	})
 
