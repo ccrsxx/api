@@ -6,9 +6,12 @@ import (
 	"time"
 )
 
+const defaultCleanupInterval = 5 * time.Minute
+
 type memoryCache struct {
-	mu    sync.RWMutex
-	items map[string]item
+	mu              sync.RWMutex
+	items           map[string]item
+	cleanupInterval time.Duration // Added field
 }
 
 type item struct {
@@ -16,9 +19,10 @@ type item struct {
 	expiresAt time.Time
 }
 
-func newMemoryCache() *memoryCache {
+func newMemoryCache(cleanupInterval time.Duration) *memoryCache {
 	store := &memoryCache{
-		items: map[string]item{},
+		items:           map[string]item{},
+		cleanupInterval: cleanupInterval,
 	}
 
 	go store.cleanup()
@@ -60,11 +64,9 @@ func (m *memoryCache) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-var cleanupInterval = 5 * time.Minute
-
 func (m *memoryCache) cleanup() {
-
-	ticker := time.NewTicker(cleanupInterval)
+	// Use the instance field, not a global variable
+	ticker := time.NewTicker(m.cleanupInterval)
 
 	defer ticker.Stop()
 

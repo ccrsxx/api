@@ -15,7 +15,7 @@ func TestGetCachedData(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Cache Miss -> Fetch -> Set", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache()
+		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
 
 		key := "miss-key"
 		want := "fetched-want"
@@ -42,7 +42,7 @@ func TestGetCachedData(t *testing.T) {
 	})
 
 	t.Run("Cache Hit -> Return Immediate", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache()
+		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
 
 		key := "hit-key"
 		want := "cached-want"
@@ -66,7 +66,7 @@ func TestGetCachedData(t *testing.T) {
 	})
 
 	t.Run("Fetcher Error -> Return Error", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache()
+		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
 		wantErr := errors.New("db dead")
 
 		fetcher := func() (string, error) {
@@ -81,7 +81,7 @@ func TestGetCachedData(t *testing.T) {
 	})
 
 	t.Run("Provider Fallback (Cloudflare -> Memory)", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache()
+		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
 
 		key := "fallback-key"
 		want := "data"
@@ -156,7 +156,7 @@ func TestGetCachedDataCoverage(t *testing.T) {
 	})
 
 	t.Run("Type Assertion Failure (Wrong Type in Cache)", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache()
+		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
 
 		key := "wrong-type-key"
 

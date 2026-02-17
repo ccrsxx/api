@@ -23,7 +23,7 @@ type cache interface {
 }
 
 var cacheManager = &CacheManager{
-	memory: newMemoryCache(),
+	memory: newMemoryCache(defaultCleanupInterval),
 }
 
 type CacheManager struct {

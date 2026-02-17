@@ -7,7 +7,7 @@ import (
 )
 
 func TestMemoryCache_SetGet(t *testing.T) {
-	c := newMemoryCache()
+	c := newMemoryCache(defaultCleanupInterval)
 	ctx := context.Background()
 
 	key := "user:123"
@@ -45,7 +45,7 @@ func TestMemoryCache_SetGet(t *testing.T) {
 }
 
 func TestMemoryCache_Expiration(t *testing.T) {
-	c := newMemoryCache()
+	c := newMemoryCache(defaultCleanupInterval)
 	ctx := context.Background()
 
 	key := "temp-key"
@@ -76,7 +76,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 }
 
 func TestMemoryCache_Delete(t *testing.T) {
-	c := newMemoryCache()
+	c := newMemoryCache(defaultCleanupInterval)
 	ctx := context.Background()
 
 	key := "del-key"
@@ -103,7 +103,7 @@ func TestMemoryCache_Delete(t *testing.T) {
 }
 
 func TestMemoryCache_Miss(t *testing.T) {
-	c := newMemoryCache()
+	c := newMemoryCache(defaultCleanupInterval)
 	ctx := context.Background()
 
 	_, err := c.Get(ctx, "ghost-key")
@@ -114,15 +114,9 @@ func TestMemoryCache_Miss(t *testing.T) {
 }
 
 func TestMemoryCache_Cleanup(t *testing.T) {
-	// Temporarily lower the interval for this test
-	// To ensure the cleanup goroutine runs quickly
+	interval := 10 * time.Millisecond
 
-	originalInterval := cleanupInterval
-	cleanupInterval = 10 * time.Millisecond
-
-	defer func() { cleanupInterval = originalInterval }()
-
-	c := newMemoryCache()
+	c := newMemoryCache(interval)
 	ctx := context.Background()
 
 	key := "cleanup-key"
