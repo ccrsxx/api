@@ -15,6 +15,9 @@ tidy:
 test:
 	go test -cover $(PKG)
 
+test-race:
+	go test -cover -race $(PKG)
+
 test-watch:
 	-gotestsum -- -cover $(PKG)
 	gotestsum --watch -- -cover $(PKG)
