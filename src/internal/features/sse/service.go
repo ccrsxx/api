@@ -17,8 +17,10 @@ import (
 )
 
 const (
-	maxGlobalClients = 100
 	maxClientsPerIP  = 10
+	maxGlobalClients = 100
+
+	defaultPollInterval = 1 * time.Second
 )
 
 type clientMetadata struct {
@@ -45,7 +47,7 @@ var Service = &service{
 	clients:         map[chan string]clientMetadata{},
 	ipAddressCounts: map[string]int{},
 
-	pollInterval:    1 * time.Second,
+	pollInterval:    defaultPollInterval,
 	spotifyFetcher:  spotify.Service.GetCurrentlyPlaying,
 	jellyfinFetcher: jellyfin.Service.GetCurrentlyPlaying,
 }

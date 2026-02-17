@@ -51,15 +51,19 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 
 func TestService_AddRemoveClient(t *testing.T) {
 	// Mock Dependencies
-	originalSpot := Service.spotifyFetcher
-	originalJelly := Service.jellyfinFetcher
 	originalPoll := Service.pollInterval
 
+	originalSpot := Service.spotifyFetcher
+	originalJelly := Service.jellyfinFetcher
+
 	defer func() {
+		Service.pollInterval = originalPoll
+
 		Service.spotifyFetcher = originalSpot
 		Service.jellyfinFetcher = originalJelly
-		Service.pollInterval = originalPoll
 	}()
+
+	Service.pollInterval = 10 * time.Millisecond
 
 	Service.spotifyFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
 		return model.CurrentlyPlaying{Platform: model.PlatformSpotify, IsPlaying: true}, nil
@@ -68,8 +72,6 @@ func TestService_AddRemoveClient(t *testing.T) {
 	Service.jellyfinFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
 		return model.CurrentlyPlaying{Platform: model.PlatformJellyfin, IsPlaying: false}, nil
 	}
-
-	Service.pollInterval = 10 * time.Millisecond
 
 	t.Run("Add or Remove Client Lifecycle", func(t *testing.T) {
 		// Use buffered channel matching production controller
