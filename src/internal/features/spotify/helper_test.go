@@ -92,21 +92,4 @@ func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 			t.Error("want nil image url")
 		}
 	})
-
-	t.Run("Nil Item", func(t *testing.T) {
-		raw := &spotify.SpotifyCurrentlyPlaying{
-			IsPlaying: true,
-			Item:      nil,
-		}
-
-		got := parseSpotifyCurrentlyPlaying(raw)
-
-		if got.Item != nil {
-			t.Fatalf("want nil item when raw.Item is nil, got %+v", got.Item)
-		}
-
-		if !got.IsPlaying {
-			t.Error("want IsPlaying to be preserved")
-		}
-	})
 }

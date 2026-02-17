@@ -10,14 +10,6 @@ import (
 func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) model.CurrentlyPlaying {
 	item := raw.Item
 
-	if item == nil {
-		return model.CurrentlyPlaying{
-			Item:      nil,
-			Platform:  model.PlatformSpotify,
-			IsPlaying: raw.IsPlaying,
-		}
-	}
-
 	var artistNames []string
 
 	for _, artist := range item.Artists {
