@@ -37,7 +37,7 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		
+
 		r.Header.Set("Authorization", "Bearer wrong-key") // Does NOT match mocked env
 
 		w := httptest.NewRecorder()
