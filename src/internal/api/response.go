@@ -69,7 +69,7 @@ func NewSuccessResponse[T any](w http.ResponseWriter, statusCode int, data T) er
 	val := reflect.ValueOf(data)
 	kind := val.Kind()
 
-	if kind == reflect.Ptr && !val.IsNil() {
+	if kind == reflect.Pointer && !val.IsNil() {
 		kind = val.Elem().Kind()
 	}
 
