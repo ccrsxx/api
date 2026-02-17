@@ -9,14 +9,12 @@ import (
 )
 
 func TestController_getFavicon(t *testing.T) {
-	// Preserve original icon
 	originalIcon := icon
 
 	defer func() {
 		icon = originalIcon
 	}()
 
-	// Set a fake icon for testing
 	icon = []byte("fake-icon-data")
 
 	t.Run("Success", func(t *testing.T) {

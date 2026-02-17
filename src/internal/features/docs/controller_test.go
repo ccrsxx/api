@@ -39,7 +39,6 @@ func TestController_getDocs(t *testing.T) {
 	})
 
 	t.Run("Render Error", func(t *testing.T) {
-		// Starts with invalid JSON to ensure scalargo's renderer will error
 		openapiSpec = nil
 
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
@@ -47,7 +46,6 @@ func TestController_getDocs(t *testing.T) {
 
 		Controller.getDocs(w, r)
 
-		// Scalargo's renderer should fail and we should return a 500 error
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("want status 500, got %d", w.Code)
 		}

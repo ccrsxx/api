@@ -23,10 +23,10 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 	})
 
 	t.Run("Success (200 OK)", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodGet, "/", nil)
-		r.Header.Set("Authorization", "Bearer middleware-secret") // Matches mocked env
-
 		w := httptest.NewRecorder()
+
+		r := httptest.NewRequest(http.MethodGet, "/", nil)
+		r.Header.Set("Authorization", "Bearer middleware-secret")
 
 		Middleware.IsAuthorized(handler).ServeHTTP(w, r)
 
@@ -36,11 +36,11 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 	})
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		r.Header.Set("Authorization", "Bearer wrong-key") // Does NOT match mocked env
-
-		w := httptest.NewRecorder()
+		r.Header.Set("Authorization", "Bearer wrong-key")
 
 		Middleware.IsAuthorized(handler).ServeHTTP(w, r)
 
@@ -64,8 +64,8 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 	})
 
 	t.Run("Success (200 OK)", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodGet, "/?token=query-secret", nil)
 		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/?token=query-secret", nil)
 
 		Middleware.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
 
@@ -75,8 +75,8 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 	})
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodGet, "/?token=wrong-secret", nil)
 		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/?token=wrong-secret", nil)
 
 		Middleware.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
 

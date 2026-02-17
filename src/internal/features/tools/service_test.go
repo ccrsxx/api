@@ -11,7 +11,6 @@ import (
 )
 
 func TestService_getIpInfo(t *testing.T) {
-	// Restore original fetcher after tests
 	originalFetcher := Service.fetcher
 
 	defer func() {
@@ -37,7 +36,7 @@ func TestService_getIpInfo(t *testing.T) {
 		queryIp    string
 		requestIp  string
 		wantError  bool
-		wantStatus int // if error want
+		wantStatus int
 	}{
 		{
 			name:      "Success with Query IP",

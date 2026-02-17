@@ -164,7 +164,7 @@ func TestService_getOg(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		Service.ogUrl = "http://\x7f" // Control char triggers NewRequest failure
+		Service.ogUrl = "http://\x7f"
 
 		_, err := Service.getOg(context.Background(), "")
 
@@ -174,7 +174,6 @@ func TestService_getOg(t *testing.T) {
 	})
 
 	t.Run("Status Error Body Close Failure", func(t *testing.T) {
-		// Use CustomTransport to simulate body close failure (impossible with real network)
 		Service.ogUrl = "http://example.com"
 
 		Service.httpClient = &http.Client{

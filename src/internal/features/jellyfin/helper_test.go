@@ -9,7 +9,6 @@ import (
 )
 
 func Test_parseJellyfinSessions(t *testing.T) {
-	// Setup config for image URL construction
 	originalImgUrl := config.Env().JellyfinImageUrl
 
 	defer func() {
@@ -19,10 +18,10 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	config.Env().JellyfinImageUrl = "http://jellyfin.com"
 
 	t.Run("Full Data", func(t *testing.T) {
-		name := "Song"
-		artist := "Artist"
-		album := "Album"
 		id := "item-1"
+		name := "Song"
+		album := "Album"
+		artist := "Artist"
 
 		ticks := int64(100000) // 10ms
 		pos := int64(50000)    // 5ms

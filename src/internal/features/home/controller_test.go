@@ -16,7 +16,6 @@ func TestController_ping(t *testing.T) {
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		// Set a host so utils.GetPublicUrlFromRequest works predictably
 		r.Host = "api.example.com"
 
 		Controller.ping(w, r)

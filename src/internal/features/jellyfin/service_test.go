@@ -13,16 +13,16 @@ import (
 )
 
 func TestService_GetCurrentlyPlaying(t *testing.T) {
-	// Restore globals
 	originalFetcher := Service.fetcher
+
 	originalUser := config.Env().JellyfinUsername
 
 	defer func() {
 		Service.fetcher = originalFetcher
+
 		config.Env().JellyfinUsername = originalUser
 	}()
 
-	// Setup valid config user
 	config.Env().JellyfinUsername = "testuser"
 
 	validUser := "testuser"

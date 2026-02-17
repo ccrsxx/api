@@ -69,7 +69,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 
 	t.Run("Write Error", func(t *testing.T) {
 		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return nil, nil // Return valid empty object
+			return nil, nil
 		}
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)

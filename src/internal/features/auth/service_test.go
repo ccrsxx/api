@@ -64,7 +64,6 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// We discard the returned string because we trust validation logic resides in the error check
 			_, err := Service.getAuthorizationFromBearerToken(ctx, tt.headerToken)
 
 			if (err != nil) != tt.wantErr {

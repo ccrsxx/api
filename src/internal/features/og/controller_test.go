@@ -25,7 +25,7 @@ func TestController_getOg(t *testing.T) {
 		config.Config().IsDevelopment = originalDev
 	}()
 
-	// Force "Not Development" so the Service uses our mock URL instead of localhost:4444
+	// Default to Production for most tests so we can inject the mock URL
 	config.Config().IsDevelopment = false
 
 	t.Run("Success Default (No Cache)", func(t *testing.T) {
@@ -137,6 +137,7 @@ func TestController_getOg(t *testing.T) {
 				t.Fatalf("failed to write response body: %v", err)
 			}
 		}))
+
 		defer mockServer.Close()
 
 		Service.ogUrl = mockServer.URL
@@ -145,11 +146,13 @@ func TestController_getOg(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
-		// Use a Faulty ResponseWriter to simulate client connection drop during write
 		errWriter := &test.ErrorResponseWriter{ResponseWriter: w}
 
-		// This should log a warning but not panic
 		Controller.getOg(errWriter, r)
+
+		if w.Code != http.StatusOK {
+			t.Error("expected 200 even if write error occurs")
+		}
 	})
 
 	t.Run("Stream Close Error", func(t *testing.T) {
@@ -168,7 +171,6 @@ func TestController_getOg(t *testing.T) {
 
 		Controller.getOg(w, r)
 
-		// Should log error in defer, but request succeeds to the user
 		if w.Code != http.StatusOK {
 			t.Error("expected success despite close error")
 		}

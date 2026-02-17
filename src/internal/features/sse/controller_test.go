@@ -12,7 +12,6 @@ import (
 )
 
 func TestController_getCurrentPlayingSSE(t *testing.T) {
-	// Setup Mocks
 	originalPollInterval := Service.pollInterval
 	originalSpotifyFetcher := Service.spotifyFetcher
 	originalJellyfinFetcher := Service.jellyfinFetcher
@@ -36,12 +35,14 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 	t.Run("Client Channel Closed Externally", func(t *testing.T) {
 		// Clear State
 		Service.mu.Lock()
+
 		Service.clients = map[chan string]clientMetadata{}
+
 		Service.mu.Unlock()
 
-		// Start Controller in Background
 		done := make(chan struct{})
 
+		// Start Controller in Background
 		go func() {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/sse", nil)
@@ -114,8 +115,7 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 
 		// Use a writer that does NOT implement http.Flusher interface.
 		// http.NewResponseController(w).Flush() will return ErrNotSupported.
-		w := httptest.NewRecorder()
-		wrappedW := &test.NonFlusherResponseWriter{ResponseWriter: w}
+		w := &test.NonFlusherResponseWriter{ResponseWriter: httptest.NewRecorder()}
 
 		ctx, cancel := context.WithCancel(r.Context())
 
@@ -124,7 +124,7 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 		done := make(chan bool)
 
 		go func() {
-			Controller.getCurrentPlayingSSE(wrappedW, r)
+			Controller.getCurrentPlayingSSE(w, r)
 			close(done)
 		}()
 

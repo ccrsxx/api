@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ccrsxx/api/src/internal/api"
 	"github.com/ccrsxx/api/src/internal/clients/jellyfin"
 	"github.com/ccrsxx/api/src/internal/test"
 )
@@ -34,17 +35,15 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			t.Errorf("want 200, got %d", w.Code)
 		}
 
-		var resp struct {
-			Data struct {
-				IsPlaying bool `json:"isPlaying"`
-			} `json:"data"`
-		}
+		var res api.SuccessResponse[struct {
+			IsPlaying bool `json:"isPlaying"`
+		}]
 
-		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatal(err)
 		}
 
-		if resp.Data.IsPlaying {
+		if res.Data.IsPlaying {
 			t.Error("want isPlaying false")
 		}
 	})

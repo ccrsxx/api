@@ -50,7 +50,6 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 }
 
 func TestService_AddRemoveClient(t *testing.T) {
-	// Mock Dependencies
 	originalPoll := Service.pollInterval
 
 	originalSpot := Service.spotifyFetcher
@@ -77,9 +76,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 		// Use buffered channel matching production controller
 		clientChan := make(chan string, 4)
 
-		ctx, cancel := context.WithCancel(context.Background())
-
-		defer cancel()
+		ctx := t.Context()
 
 		// Add Client
 		Service.AddClient(ctx, clientChan, "127.0.0.1", "TestAgent")
@@ -124,6 +121,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 		if Service.stopChan != nil {
 			// Wait a bit for stopWorker to finish
 			time.Sleep(20 * time.Millisecond)
+
 			if Service.stopChan != nil {
 				t.Error("want poller to stop")
 			}
@@ -148,7 +146,6 @@ func TestService_AddRemoveClient(t *testing.T) {
 }
 
 func TestService_getSSEData_Errors(t *testing.T) {
-	// Mock errors
 	Service.spotifyFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
 		return model.CurrentlyPlaying{}, errors.New("spotify fail")
 	}
