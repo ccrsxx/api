@@ -36,9 +36,7 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 
 	ipAddress := utils.GetIpAddressFromRequest(r)
 
-	var panicErr *PanicError
-
-	if errors.As(err, &panicErr) {
+	if panicErr, ok := errors.AsType[*PanicError](err); ok {
 		parsedStack := panicErr.Stack
 
 		if config.Config().IsDevelopment {
@@ -65,9 +63,7 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 
-	var httpErr *HttpError
-
-	if errors.As(err, &httpErr) {
+	if httpErr, ok := errors.AsType[*HttpError](err); ok {
 		slog.Error("http handled error",
 			"message", httpErr.Message,
 			"status_code", httpErr.StatusCode,

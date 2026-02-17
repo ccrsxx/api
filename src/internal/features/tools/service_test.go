@@ -84,9 +84,7 @@ func TestService_getIpInfo(t *testing.T) {
 				}
 
 				if tt.wantStatus != 0 {
-					var httpErr *api.HttpError
-
-					if errors.As(err, &httpErr) {
+					if httpErr, ok := errors.AsType[*api.HttpError](err); ok {
 						if httpErr.StatusCode != tt.wantStatus {
 							t.Errorf("got status %d, want %d", httpErr.StatusCode, tt.wantStatus)
 						}
