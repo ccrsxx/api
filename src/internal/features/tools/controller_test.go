@@ -22,11 +22,11 @@ func TestController_GetIpAddress(t *testing.T) {
 		Controller.GetIpAddress(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
 		}
 
 		if w.Body.String() != "192.0.2.1" {
-			t.Errorf("want 192.0.2.1, got %q", w.Body.String())
+			t.Errorf("got %q, want 192.0.2.1", w.Body.String())
 		}
 	})
 
@@ -62,7 +62,7 @@ func TestController_GetIpInfo(t *testing.T) {
 		Controller.GetIpInfo(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
 		}
 
 		var res map[string]any
@@ -78,7 +78,7 @@ func TestController_GetIpInfo(t *testing.T) {
 		data := res["data"].(map[string]any)
 
 		if data["ip"] != "8.8.8.8" {
-			t.Errorf("want ip 8.8.8.8, got %v", data["ip"])
+			t.Errorf("got %v, want ip 8.8.8.8", data["ip"])
 		}
 	})
 
@@ -89,7 +89,7 @@ func TestController_GetIpInfo(t *testing.T) {
 		Controller.GetIpInfo(w, r)
 
 		if w.Code == http.StatusOK {
-			t.Error("want error status, got 200")
+			t.Error("got 200, want error status")
 		}
 	})
 
@@ -114,7 +114,7 @@ func TestController_GetHttpHeaders(t *testing.T) {
 		Controller.GetHttpHeaders(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
 		}
 
 		var res map[string]string
@@ -124,7 +124,7 @@ func TestController_GetHttpHeaders(t *testing.T) {
 		}
 
 		if val := res["User-Agent"]; val != "Test-Agent" {
-			t.Errorf("want User-Agent 'Test-Agent', got %q", val)
+			t.Errorf("got %q, want User-Agent 'Test-Agent'", val)
 		}
 	})
 

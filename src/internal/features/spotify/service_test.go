@@ -40,7 +40,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		if got.Item.TrackName != "Test Song" {
-			t.Errorf("want track Test Song, got %s", got.Item.TrackName)
+			t.Errorf("got %s, want track Test Song", got.Item.TrackName)
 		}
 	})
 

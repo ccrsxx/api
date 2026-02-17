@@ -31,7 +31,7 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 		Middleware.IsAuthorized(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want status 200, got %d", w.Code)
+			t.Errorf("got %d, want status 200", w.Code)
 		}
 	})
 
@@ -45,7 +45,7 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 		Middleware.IsAuthorized(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusUnauthorized {
-			t.Errorf("want status 401, got %d", w.Code)
+			t.Errorf("got %d, want status 401", w.Code)
 		}
 	})
 }
@@ -70,7 +70,7 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 		Middleware.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want status 200, got %d", w.Code)
+			t.Errorf("got %d, want status 200", w.Code)
 		}
 	})
 
@@ -81,7 +81,7 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 		Middleware.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusUnauthorized {
-			t.Errorf("want status 401, got %d", w.Code)
+			t.Errorf("got %d, want status 401", w.Code)
 		}
 	})
 }

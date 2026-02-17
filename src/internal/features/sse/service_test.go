@@ -17,7 +17,7 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 
 	t.Run("Allowed", func(t *testing.T) {
 		if err := Service.IsConnectionAllowed("1.1.1.1"); err != nil {
-			t.Errorf("want allowed, got %v", err)
+			t.Errorf("got %v, want allowed", err)
 		}
 	})
 

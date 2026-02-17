@@ -34,7 +34,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 		Controller.getCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
 		}
 
 		var res api.SuccessResponse[struct {
@@ -63,7 +63,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 		// Service error returns the error to the controller, which calls HandleHttpError
 		// Since it's a generic error, it usually results in 500
 		if w.Code != http.StatusInternalServerError {
-			t.Errorf("want 500, got %d", w.Code)
+			t.Errorf("got %d, want 500", w.Code)
 		}
 	})
 

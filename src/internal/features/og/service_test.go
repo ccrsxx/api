@@ -32,11 +32,11 @@ func TestService_getOg(t *testing.T) {
 	t.Run("Success (Production URL)", func(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodGet {
-				t.Errorf("want GET, got %s", r.Method)
+				t.Errorf("got %s, want GET", r.Method)
 			}
 
 			if r.URL.Query().Get("title") != "hello" {
-				t.Errorf("want query param title=hello, got %s", r.URL.Query().Encode())
+				t.Errorf("got %s, want query param title=hello", r.URL.Query().Encode())
 			}
 
 			w.WriteHeader(http.StatusOK)
@@ -56,7 +56,7 @@ func TestService_getOg(t *testing.T) {
 		stream, err := Service.getOg(context.Background(), "title=hello")
 
 		if err != nil {
-			t.Fatalf("want success, got error: %v", err)
+			t.Fatalf("got error: %v, want success", err)
 		}
 
 		defer func() {
@@ -72,7 +72,7 @@ func TestService_getOg(t *testing.T) {
 		}
 
 		if string(data) != "image-data" {
-			t.Errorf("want image-data, got %s", string(data))
+			t.Errorf("got %s, want image-data", string(data))
 		}
 	})
 
@@ -94,7 +94,7 @@ func TestService_getOg(t *testing.T) {
 				expectedPrefix := "http://localhost:4444/og"
 
 				if !strings.HasPrefix(req.URL.String(), expectedPrefix) {
-					t.Errorf("want dev url prefix %s, got %s", expectedPrefix, req.URL.String())
+					t.Errorf("got %s, want dev url prefix %s", req.URL.String(), expectedPrefix)
 				}
 
 				return &http.Response{
@@ -108,7 +108,7 @@ func TestService_getOg(t *testing.T) {
 		stream, err := Service.getOg(context.Background(), "title=dev")
 
 		if err != nil {
-			t.Fatalf("want success, got error: %v", err)
+			t.Fatalf("got error: %v, want success", err)
 		}
 
 		defer func() {
@@ -124,7 +124,7 @@ func TestService_getOg(t *testing.T) {
 		}
 
 		if string(data) != "dev-image-data" {
-			t.Errorf("want dev-image-data, got %s", string(data))
+			t.Errorf("got %s, want dev-image-data", string(data))
 		}
 	})
 

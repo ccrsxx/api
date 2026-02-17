@@ -43,7 +43,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 		got := parseJellyfinSessions(session)
 
 		if got.Platform != model.PlatformJellyfin {
-			t.Errorf("want platform jellyfin, got %s", got.Platform)
+			t.Errorf("got %s, want platform jellyfin", got.Platform)
 		}
 
 		if !got.IsPlaying {
@@ -51,18 +51,18 @@ func Test_parseJellyfinSessions(t *testing.T) {
 		}
 
 		if got.Item.TrackName != "Song" {
-			t.Errorf("want Song, got %s", got.Item.TrackName)
+			t.Errorf("got %s, want Song", got.Item.TrackName)
 		}
 
 		// 10000 ticks = 1ms. 50000 ticks = 5ms.
 		if got.Item.ProgressMs != 5 {
-			t.Errorf("want 5ms, got %d", got.Item.ProgressMs)
+			t.Errorf("got %d, want 5ms", got.Item.ProgressMs)
 		}
 
 		wantImg := "http://jellyfin.com/Items/item-1/Images/Primary"
 
 		if *got.Item.AlbumImageURL != wantImg {
-			t.Errorf("want %s, got %s", wantImg, *got.Item.AlbumImageURL)
+			t.Errorf("got %s, want %s", *got.Item.AlbumImageURL, wantImg)
 		}
 	})
 
@@ -80,19 +80,19 @@ func Test_parseJellyfinSessions(t *testing.T) {
 		got := parseJellyfinSessions(session)
 
 		if got.IsPlaying {
-			t.Fatal("want paused, got playing")
+			t.Fatal("got playing, want paused")
 		}
 
 		if got.Item.TrackName != "Unknown Track" {
-			t.Fatalf("want fallback track name, got %s", got.Item.TrackName)
+			t.Fatalf("got %s, want fallback track name", got.Item.TrackName)
 		}
 
 		if got.Item.ArtistName != "Unknown Artist" {
-			t.Fatalf("want fallback artist name, got %s", got.Item.ArtistName)
+			t.Fatalf("got %s, want fallback artist name", got.Item.ArtistName)
 		}
 
 		if got.Item.AlbumName != "Unknown Album" {
-			t.Errorf("want fallback album name, got %s", got.Item.AlbumName)
+			t.Errorf("got %s, want fallback album name", got.Item.AlbumName)
 		}
 	})
 
@@ -109,7 +109,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 		got := parseJellyfinSessions(session)
 
 		if got.Item.AlbumName != "Original Album" {
-			t.Errorf("want Original Album, got %s", got.Item.AlbumName)
+			t.Errorf("got %s, want Original Album", got.Item.AlbumName)
 		}
 	})
 }

@@ -73,7 +73,7 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 			// Optional: Ensure the error is the correct 401 type if we expect an error
 			if tt.wantErr && err != nil {
 				if httpErr, ok := err.(*api.HttpError); !ok || httpErr.StatusCode != http.StatusUnauthorized {
-					t.Errorf("want 401 HttpError, got %v", err)
+					t.Errorf("got %v, want 401 HttpError", err)
 				}
 			}
 		})

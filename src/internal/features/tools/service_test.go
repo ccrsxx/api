@@ -79,7 +79,7 @@ func TestService_getIpInfo(t *testing.T) {
 
 			if tt.wantError {
 				if err == nil {
-					t.Error("want error, got nil")
+					t.Error("got nil, want error")
 					return
 				}
 
@@ -88,7 +88,7 @@ func TestService_getIpInfo(t *testing.T) {
 
 					if errors.As(err, &httpErr) {
 						if httpErr.StatusCode != tt.wantStatus {
-							t.Errorf("want status %d, got %d", tt.wantStatus, httpErr.StatusCode)
+							t.Errorf("got status %d, want %d", httpErr.StatusCode, tt.wantStatus)
 						}
 					} else {
 						t.Error("want HttpError type")
@@ -105,7 +105,7 @@ func TestService_getIpInfo(t *testing.T) {
 			}
 
 			if info == nil {
-				t.Error("want info, got nil")
+				t.Error("got nil, want info")
 			}
 		})
 	}

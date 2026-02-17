@@ -39,11 +39,11 @@ func TestClient_GetSessions(t *testing.T) {
 		sessions, err := c.GetSessions(context.Background())
 
 		if err != nil {
-			t.Fatalf("want success, got err: %v", err)
+			t.Fatalf("got err: %v, want success", err)
 		}
 
 		if len(sessions) != 1 {
-			t.Errorf("want 1 session, got %d", len(sessions))
+			t.Errorf("got %d, want 1 session", len(sessions))
 		}
 	})
 
@@ -121,7 +121,7 @@ func TestClient_GetSessions(t *testing.T) {
 		_, err := c.GetSessions(context.Background())
 
 		if err != nil {
-			t.Fatalf("want GetSessions to handle body close error gracefully, got: %v", err)
+			t.Fatalf("got: %v, want GetSessions to handle body close error gracefully", err)
 		}
 	})
 }

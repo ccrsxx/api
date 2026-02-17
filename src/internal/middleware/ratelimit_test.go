@@ -78,7 +78,7 @@ func TestRateLimit(t *testing.T) {
 		server.ServeHTTP(w, r)
 
 		if w.Header().Get("RateLimit-Limit") != "10" {
-			t.Error("Wrong Limit header")
+			t.Error("wrong limit header")
 		}
 	})
 }

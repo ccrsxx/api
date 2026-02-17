@@ -48,7 +48,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		got, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanteded error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if !got.IsPlaying {
@@ -56,7 +56,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		if got.Item.TrackName != "Song" {
-			t.Errorf("want Song, got %s", got.Item.TrackName)
+			t.Errorf("got %s, want Song", got.Item.TrackName)
 		}
 	})
 
@@ -80,7 +80,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		fmt.Printf("Got state: %+v\n", got)
 
 		if err != nil {
-			t.Fatalf("unwanteded error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if got.IsPlaying {
@@ -126,7 +126,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		_, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanteded error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		// Simulate "No Content" from API (user momentarily between songs or network blip)
@@ -144,7 +144,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		got, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanteded error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if !got.IsPlaying {
@@ -166,7 +166,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		gotExpired, err := Service.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
-			t.Fatalf("unwanteded error: %v", err)
+			t.Fatalf("unwanted error: %v", err)
 		}
 
 		if gotExpired.IsPlaying {
@@ -192,7 +192,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 		// Should have advanced by ~200ms, but capped at 5100
 		if got.Item.ProgressMs > 5100 {
-			t.Errorf("want capped progress, got %d", got.Item.ProgressMs)
+			t.Errorf("got %d, want capped progress", got.Item.ProgressMs)
 		}
 
 		// Test nil checks in getExtrapolatedState

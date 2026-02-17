@@ -34,11 +34,11 @@ func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 		got := parseSpotifyCurrentlyPlaying(raw)
 
 		if got.Platform != model.PlatformSpotify {
-			t.Errorf("want platform spotify, got %s", got.Platform)
+			t.Errorf("got %s, want platform spotify", got.Platform)
 		}
 
 		if got.Item.ArtistName != "A1, A2" {
-			t.Errorf("want 'A1, A2', got %q", got.Item.ArtistName)
+			t.Errorf("got %q, want 'A1, A2'", got.Item.ArtistName)
 		}
 
 		if *got.Item.TrackURL != "http://open.&spotify.com/track/1" {

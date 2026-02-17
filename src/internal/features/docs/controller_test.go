@@ -26,15 +26,15 @@ func TestController_getDocs(t *testing.T) {
 		Controller.getDocs(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want status 200, got %d", w.Code)
+			t.Errorf("got %d, want status 200", w.Code)
 		}
 
 		if contentType := w.Header().Get("Content-Type"); contentType != "text/html" {
-			t.Errorf("want Content-Type text/html, got %s", contentType)
+			t.Errorf("got %s, want Content-Type text/html", contentType)
 		}
 
 		if w.Body.Len() == 0 {
-			t.Error("want body to contain HTML, got empty")
+			t.Error("got empty, want body to contain HTML")
 		}
 	})
 
@@ -47,7 +47,7 @@ func TestController_getDocs(t *testing.T) {
 		Controller.getDocs(w, r)
 
 		if w.Code != http.StatusInternalServerError {
-			t.Errorf("want status 500, got %d", w.Code)
+			t.Errorf("got %d, want status 500", w.Code)
 		}
 	})
 

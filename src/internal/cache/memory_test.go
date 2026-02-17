@@ -24,7 +24,7 @@ func TestMemoryCache_SetGet(t *testing.T) {
 	}
 
 	if got != val {
-		t.Errorf("got %v, want %v", got, val)
+	t.Errorf("got %v, want %v", got, val)
 	}
 
 	newVal := "jane_doe"
@@ -40,7 +40,7 @@ func TestMemoryCache_SetGet(t *testing.T) {
 	}
 
 	if got != newVal {
-		t.Errorf("got %v, want %v", got, newVal)
+	t.Errorf("got %v, want %v", got, newVal)
 	}
 }
 
@@ -71,7 +71,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 	_, err = c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
-		t.Errorf("want ErrCacheMiss for expired item, got %v", err)
+	t.Errorf("got %v, want ErrCacheMiss for expired item", err)
 	}
 }
 
@@ -102,7 +102,7 @@ func TestMemoryCache_Delete(t *testing.T) {
 	_, err = c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
-		t.Errorf("want ErrCacheMiss after Delete, got %v", err)
+	t.Errorf("got %v, want ErrCacheMiss after Delete", err)
 	}
 }
 
@@ -113,7 +113,7 @@ func TestMemoryCache_Miss(t *testing.T) {
 	_, err := c.Get(ctx, "ghost-key")
 
 	if err != ErrCacheMiss {
-		t.Errorf("want ErrCacheMiss for unknown key, got %v", err)
+	t.Errorf("got %v, want ErrCacheMiss for unknown key", err)
 	}
 }
 
@@ -139,6 +139,6 @@ func TestMemoryCache_Cleanup(t *testing.T) {
 	_, err = c.Get(ctx, key)
 
 	if err != ErrCacheMiss {
-		t.Errorf("cleanup loop failed to remove expired item")
+	t.Errorf("cleanup loop failed to remove expired item")
 	}
 }

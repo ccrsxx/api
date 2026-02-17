@@ -24,11 +24,11 @@ func TestController_getFavicon(t *testing.T) {
 		Controller.getFavicon(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want status 200, got %d", w.Code)
+			t.Errorf("got %d, want status 200", w.Code)
 		}
 
 		if contentType := w.Header().Get("Content-Type"); contentType != "image/x-icon" {
-			t.Errorf("want Content-Type image/x-icon, got %s", contentType)
+			t.Errorf("got %s, want Content-Type image/x-icon", contentType)
 		}
 
 		if w.Body.String() != "fake-icon-data" {

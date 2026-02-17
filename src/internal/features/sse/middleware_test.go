@@ -31,7 +31,7 @@ func TestMiddleware(t *testing.T) {
 		handler.ServeHTTP(rec, req)
 
 		if rec.Code != http.StatusOK {
-			t.Fatalf("want 200 OK, got %d", rec.Code)
+			t.Fatalf("got %d, want 200 ok", rec.Code)
 		}
 
 		wantHeaders := map[string]string{
@@ -42,7 +42,7 @@ func TestMiddleware(t *testing.T) {
 
 		for k, v := range wantHeaders {
 			if got := rec.Header().Get(k); got != v {
-				t.Errorf("want header %s: %s, got %s", k, v, got)
+				t.Errorf("got header %s: %s, want %s", k, v, got)
 			}
 		}
 	})
@@ -74,7 +74,7 @@ func TestMiddleware(t *testing.T) {
 		handler.ServeHTTP(w, r)
 
 		if w.Code != http.StatusTooManyRequests {
-			t.Errorf("want 429 Too Many Requests, got %d", w.Code)
+			t.Errorf("got %d, want 429 too many requests", w.Code)
 		}
 	})
 }

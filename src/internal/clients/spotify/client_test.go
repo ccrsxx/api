@@ -52,7 +52,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("want error from 401 status, got nil")
+			t.Fatal("got nil, want error from 401 status")
 		}
 	})
 
@@ -146,11 +146,11 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("want 500 error, got nil")
+			t.Fatal("got nil, want 500 error")
 		}
 
 		if !strings.Contains(err.Error(), "status error: 500") {
-			t.Errorf("want status error message, got: %v", err)
+			t.Errorf("got %v, want status error message", err)
 		}
 	})
 
@@ -228,7 +228,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 		_, err := c.GetCurrentlyPlaying(ctx)
 
 		if err == nil {
-			t.Fatal("want invalid item type error, got nil")
+			t.Fatal("got nil, want invalid item type error")
 		}
 
 		if !strings.Contains(err.Error(), "invalid item type") {

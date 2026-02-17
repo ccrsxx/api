@@ -8,6 +8,6 @@ func TestDefaultClient(t *testing.T) {
 	client := DefaultClient()
 
 	if client == nil {
-		t.Fatal("want ipinfo client to be initialized, got nil")
+	t.Fatal("got nil, want ipinfo client to be initialized")
 	}
 }

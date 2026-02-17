@@ -33,7 +33,7 @@ func TestController_getOg(t *testing.T) {
 
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query().Get("title") != "test" {
-				t.Errorf("want query param title=test, got %s", r.URL.Query().Encode())
+				t.Errorf("got %s, want query param title=test", r.URL.Query().Encode())
 			}
 			w.WriteHeader(http.StatusOK)
 
@@ -55,7 +55,7 @@ func TestController_getOg(t *testing.T) {
 		Controller.getOg(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("expected 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
 		}
 
 		if w.Header().Get("Content-Type") != "image/png" {
@@ -95,11 +95,11 @@ func TestController_getOg(t *testing.T) {
 		Controller.getOg(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("expected 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
 		}
 
 		if !strings.Contains(w.Header().Get("Cache-Control"), "max-age=31536000") {
-			t.Errorf("expected aggressive cache control, got %s", w.Header().Get("Cache-Control"))
+			t.Errorf("got %s, want aggressive cache control", w.Header().Get("Cache-Control"))
 		}
 	})
 

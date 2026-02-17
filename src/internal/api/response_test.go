@@ -147,11 +147,11 @@ func TestNewErrorResponse(t *testing.T) {
 		}
 
 		if response.Error.Details == nil {
-			t.Error("want empty slice for details, got nil")
+			t.Error("got nil, want empty slice for details")
 		}
 
 		if len(response.Error.Details) != 0 {
-			t.Error("want empty slice length 0")
+			t.Error("got non-zero length, want empty slice length 0")
 		}
 	})
 }
@@ -164,11 +164,11 @@ func TestInternalNewResponse(t *testing.T) {
 		err := newResponse(w, http.StatusOK, data)
 
 		if err == nil {
-			t.Fatal("want error from Write failure, got nil")
+			t.Fatal("got nil, want error from Write failure")
 		}
 
 		if !strings.Contains(err.Error(), "write response error") {
-			t.Errorf("want 'write response error', got %v", err)
+			t.Errorf("got %v, want 'write response error'", err)
 		}
 	})
 
@@ -180,17 +180,17 @@ func TestInternalNewResponse(t *testing.T) {
 		err := newResponse(w, http.StatusOK, data)
 
 		if err == nil {
-			t.Fatal("want error from marshal failure, got nil")
+			t.Fatal("got nil, want error from marshal failure")
 		}
 
 		// It should contain the marshal error...
 		if !strings.Contains(err.Error(), "marshal response error") {
-			t.Fatalf("want 'marshal response error' in %v", err)
+			t.Fatalf("got %v, want 'marshal response error' in error", err)
 		}
 
 		// ...but NOT the fallback error (because fallback succeeded)
 		if strings.Contains(err.Error(), "marshal fallback error") {
-			t.Fatalf("unwanted 'marshal fallback error' in %v", err)
+			t.Fatalf("got %v, want no 'marshal fallback error' in error", err)
 		}
 
 		// Verify it wrote the fallback 500 status
@@ -208,12 +208,12 @@ func TestInternalNewResponse(t *testing.T) {
 		err := newResponse(w, http.StatusOK, data)
 
 		if err == nil {
-			t.Fatal("want error from double failure, got nil")
+			t.Fatal("got nil, want error from double failure")
 		}
 
 		// The error should contain both the marshal error AND the fallback write error
 		if !strings.Contains(err.Error(), "marshal response error") || !strings.Contains(err.Error(), "marshal fallback error") {
-			t.Errorf("want both 'marshal response error' and 'marshal fallback error' in %v", err)
+			t.Errorf("got %v, want both 'marshal response error' and 'marshal fallback error'", err)
 		}
 	})
 }
