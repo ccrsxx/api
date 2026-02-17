@@ -1,8 +1,6 @@
 package og
 
 import (
-	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,27 +11,43 @@ import (
 )
 
 func TestController_getOg(t *testing.T) {
+	originalOgUrl := Service.ogUrl
 	originalClient := Service.httpClient
 
+	originalDev := config.Config().IsDevelopment
 	originalProd := config.Config().IsProduction
 
 	defer func() {
+		Service.ogUrl = originalOgUrl
 		Service.httpClient = originalClient
+
 		config.Config().IsProduction = originalProd
+		config.Config().IsDevelopment = originalDev
 	}()
+
+	// Force "Not Development" so the Service uses our mock URL instead of localhost:4444
+	config.Config().IsDevelopment = false
 
 	t.Run("Success Default (No Cache)", func(t *testing.T) {
 		config.Config().IsProduction = false
 
-		Service.httpClient = &http.Client{
-			Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader("png-data")),
-					Header:     make(http.Header),
-				}, nil
-			}),
-		}
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("title") != "test" {
+				t.Errorf("want query param title=test, got %s", r.URL.Query().Encode())
+			}
+			w.WriteHeader(http.StatusOK)
+
+			_, err := w.Write([]byte("png-data"))
+
+			if err != nil {
+				t.Fatalf("failed to write response body: %v", err)
+			}
+		}))
+
+		defer mockServer.Close()
+
+		Service.ogUrl = mockServer.URL
+		Service.httpClient = mockServer.Client()
 
 		r := httptest.NewRequest(http.MethodGet, "/og?title=test", nil)
 		w := httptest.NewRecorder()
@@ -48,9 +62,8 @@ func TestController_getOg(t *testing.T) {
 			t.Error("expected image/png content type")
 		}
 
-		// Should NOT have cache control in non-prod
 		if w.Header().Get("Cache-Control") != "" {
-			t.Error("expected no cache-control header")
+			t.Error("expected no cache-control header in non-prod")
 		}
 
 		if w.Body.String() != "png-data" {
@@ -61,14 +74,20 @@ func TestController_getOg(t *testing.T) {
 	t.Run("Success Production (With Cache)", func(t *testing.T) {
 		config.Config().IsProduction = true
 
-		Service.httpClient = &http.Client{
-			Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader("png-data")),
-				}, nil
-			}),
-		}
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+
+			_, err := w.Write([]byte("png-data"))
+
+			if err != nil {
+				t.Fatalf("failed to write response body: %v", err)
+			}
+		}))
+
+		defer mockServer.Close()
+
+		Service.ogUrl = mockServer.URL
+		Service.httpClient = mockServer.Client()
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
@@ -78,51 +97,63 @@ func TestController_getOg(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Errorf("expected 200, got %d", w.Code)
 		}
+
 		if !strings.Contains(w.Header().Get("Cache-Control"), "max-age=31536000") {
 			t.Errorf("expected aggressive cache control, got %s", w.Header().Get("Cache-Control"))
 		}
 	})
 
-	t.Run("Service Error", func(t *testing.T) {
-		Service.httpClient = &http.Client{
-			Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
-				return nil, errors.New("fetch fail")
-			}),
-		}
+	t.Run("Service Error (Upstream 500)", func(t *testing.T) {
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}))
+
+		defer mockServer.Close()
+
+		Service.ogUrl = mockServer.URL
+		Service.httpClient = mockServer.Client()
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
 		Controller.getOg(w, r)
 
-		// api.HandleHttpError usually returns 500 or mapped status
+		// The controller wraps the error using api.HandleHttpError.
+		// We just check it's not OK.
 		if w.Code == http.StatusOK {
-			t.Error("expected error status")
+			t.Error("expected error status for upstream failure")
 		}
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
 		config.Config().IsProduction = false
-		Service.httpClient = &http.Client{
-			Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader("data")),
-				}, nil
-			}),
-		}
+
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+
+			_, err := w.Write([]byte("data"))
+
+			if err != nil {
+				t.Fatalf("failed to write response body: %v", err)
+			}
+		}))
+		defer mockServer.Close()
+
+		Service.ogUrl = mockServer.URL
+		Service.httpClient = mockServer.Client()
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
+		// Use a Faulty ResponseWriter to simulate client connection drop during write
 		errWriter := &test.ErrorResponseWriter{ResponseWriter: w}
 
+		// This should log a warning but not panic
 		Controller.getOg(errWriter, r)
-
-		// Should log warning and exit safely
 	})
 
 	t.Run("Stream Close Error", func(t *testing.T) {
+		Service.ogUrl = "http://example.com"
 		Service.httpClient = &http.Client{
 			Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -137,7 +168,7 @@ func TestController_getOg(t *testing.T) {
 
 		Controller.getOg(w, r)
 
-		// Should log error in defer, but request succeeds
+		// Should log error in defer, but request succeeds to the user
 		if w.Code != http.StatusOK {
 			t.Error("expected success despite close error")
 		}
