@@ -89,8 +89,21 @@ func TestService_getOg(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		// Simulate request creation error by passing an invalid URL
-		_, err := Service.getOg(nil, "")
+		originalDev := config.Config().IsDevelopment
+		originalOgUrl := Service.ogUrl
+
+		defer func() {
+			Service.ogUrl = originalOgUrl
+			config.Config().IsDevelopment = originalDev
+		}()
+
+		// Ensure we're in production mode to use the invalid URL
+		config.Config().IsDevelopment = false
+
+		// Set an invalid URL to trigger request creation error
+		Service.ogUrl = "http://\x7f"
+
+		_, err := Service.getOg(context.Background(), "")
 
 		if err == nil {
 			t.Error("want error from nil context")

@@ -12,15 +12,17 @@ import (
 )
 
 type service struct {
+	ogUrl      string
 	httpClient *http.Client
 }
 
 var Service = &service{
+	ogUrl:      "http://10.0.0.60:4444/og",
 	httpClient: &http.Client{Timeout: 8 * time.Second},
 }
 
 func (s *service) getOg(ctx context.Context, query string) (io.ReadCloser, error) {
-	ogUrl := "http://10.0.0.60:4444/og"
+	ogUrl := s.ogUrl
 
 	if config.Config().IsDevelopment {
 		ogUrl = "http://localhost:4444/og"
