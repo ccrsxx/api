@@ -12,8 +12,15 @@ func TestMiddleware(t *testing.T) {
 	}))
 
 	t.Run("Connection Allowed", func(t *testing.T) {
+		// Lock required for test stability: The background worker may still be
+		// reading these configuration fields while we restore them.
+
+		Service.mu.Lock()
+
 		Service.clients = map[chan string]clientMetadata{}
 		Service.ipAddressCounts = map[string]int{}
+
+		Service.mu.Unlock()
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 

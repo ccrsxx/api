@@ -179,7 +179,16 @@ func (s *service) stopWorkerLocked() {
 }
 
 func (s *service) pollLoop(stopChan chan struct{}) {
-	ticker := time.NewTicker(s.pollInterval)
+	// Lock required for test stability: The background worker may still be
+	// reading these configuration fields while we restore them.
+
+	s.mu.RLock()
+
+	interval := s.pollInterval
+
+	s.mu.RUnlock()
+
+	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 
@@ -224,8 +233,17 @@ type sseData struct {
 }
 
 func (s *service) getSSEData(ctx context.Context) sseData {
-	var wg sync.WaitGroup
+	// Lock required for test stability: The background worker may still be
+	// reading these configuration fields while we restore them.
 
+	s.mu.RLock()
+
+	spotifyFetcher := s.spotifyFetcher
+	jellyfinFetcher := s.jellyfinFetcher
+
+	s.mu.RUnlock()
+
+	var wg sync.WaitGroup
 	var spotifyData, jellyfinData model.CurrentlyPlaying
 
 	wg.Add(2)
@@ -233,7 +251,7 @@ func (s *service) getSSEData(ctx context.Context) sseData {
 	go func() {
 		defer wg.Done()
 
-		data, err := s.spotifyFetcher(ctx)
+		data, err := spotifyFetcher(ctx)
 
 		if err != nil {
 			slog.Warn("sse spotify fetch error", "error", err)
@@ -249,7 +267,7 @@ func (s *service) getSSEData(ctx context.Context) sseData {
 	go func() {
 		defer wg.Done()
 
-		data, err := s.jellyfinFetcher(ctx)
+		data, err := jellyfinFetcher(ctx)
 
 		if err != nil {
 			slog.Warn("sse jellyfin fetch error", "error", err)
