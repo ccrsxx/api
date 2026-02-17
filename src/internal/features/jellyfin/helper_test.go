@@ -18,25 +18,17 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	config.Env().JellyfinImageUrl = "http://jellyfin.com"
 
 	t.Run("Full Data", func(t *testing.T) {
-		id := "item-1"
-		name := "Song"
-		album := "Album"
-		artist := "Artist"
-
-		ticks := int64(100000) // 10ms
-		pos := int64(50000)    // 5ms
-
 		session := &jellyfin.SessionInfo{
 			NowPlayingItem: &jellyfin.BaseItem{
-				Name:         &name,
-				Artists:      []string{artist},
-				Album:        &album,
-				Id:           id,
-				RunTimeTicks: &ticks,
+				Id:           "item-1",
+				Name:         new("Song"),
+				Album:        new("Album"),
+				Artists:      []string{"Artist"},
+				RunTimeTicks: new(int64(100000)), // 10ms
 			},
 			PlayState: &jellyfin.PlayerStateInfo{
 				IsPaused:      false,
-				PositionTicks: &pos,
+				PositionTicks: new(int64(50000)), // 5ms
 			},
 		}
 
@@ -97,11 +89,9 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	})
 
 	t.Run("Fallback to OriginalTitle", func(t *testing.T) {
-		orig := "Original Album"
-
 		session := &jellyfin.SessionInfo{
 			NowPlayingItem: &jellyfin.BaseItem{
-				OriginalTitle: &orig,
+				OriginalTitle: new("Original Album"),
 			},
 			PlayState: &jellyfin.PlayerStateInfo{},
 		}

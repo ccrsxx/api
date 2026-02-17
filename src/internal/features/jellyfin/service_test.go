@@ -32,12 +32,11 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		resetJellyfinCache()
 
 		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			name := "Song"
 			return []jellyfin.SessionInfo{
 				{
 					UserName: &validUser,
 					NowPlayingItem: &jellyfin.BaseItem{
-						Name: &name,
+						Name: new("Song"),
 						Type: jellyfin.KindAudio,
 					},
 					PlayState: &jellyfin.PlayerStateInfo{IsPaused: false},
@@ -102,22 +101,17 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	t.Run("Caching and Extrapolation", func(t *testing.T) {
 		// Prime the cache with a playing state
 		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			name := "Cached Song"
-
-			ticks := int64(60000000) // 6000ms duration (using large numbers for ticks)
-			pos := int64(10000000)   // 1000ms progress
-
 			return []jellyfin.SessionInfo{
 				{
 					UserName: &validUser,
 					NowPlayingItem: &jellyfin.BaseItem{
-						Name:         &name,
+						Name:         new("Cached Song"),
 						Type:         jellyfin.KindAudio,
-						RunTimeTicks: &ticks,
+						RunTimeTicks: new(int64(60000000)), // 6000ms duration (using large numbers for ticks)
 					},
 					PlayState: &jellyfin.PlayerStateInfo{
 						IsPaused:      false,
-						PositionTicks: &pos,
+						PositionTicks: new(int64(10000000)), // 1000ms progress
 					},
 				},
 			}, nil

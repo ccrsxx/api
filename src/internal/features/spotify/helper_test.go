@@ -26,7 +26,7 @@ func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 					},
 				},
 				ExternalURLs: spotify.SpotifyExternalURLs{
-					Spotify: "http://open.&spotify.com/track/1",
+					Spotify: "http://open.spotify.com/track/1",
 				},
 			},
 		}
@@ -41,7 +41,7 @@ func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 			t.Errorf("got %q, want 'A1, A2'", got.Item.ArtistName)
 		}
 
-		if *got.Item.TrackURL != "http://open.&spotify.com/track/1" {
+		if *got.Item.TrackURL != "http://open.spotify.com/track/1" {
 			t.Error("wrong track url")
 		}
 
