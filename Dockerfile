@@ -13,7 +13,7 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY src src
+COPY cmd internal ./
 
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./src/cmd/api/main.go
 

@@ -9,7 +9,7 @@ dev:
 	APP_ENV=development air
 
 build:
-	go build -o ./tmp/main.exe ./src/cmd/api/main.go
+	go build -o ./tmp/main.exe ./cmd/api/main.go
 
 start: build
 	APP_ENV=production ./tmp/main.exe
