@@ -22,26 +22,32 @@ Steps to run the project locally:
    git clone https://github.com/ccrsxx/api
    ```
 
-2. Change directory to the project
+1. Change directory to the project
 
    ```bash
    cd api
    ```
 
-3. Install dependencies
+1. Install dependencies
 
    ```bash
    go mod download
    ```
 
-4. Set up environment variables
+1. Install Tools
+
+   ```bash
+   make setup-tools
+   ```
+
+1. Set up environment variables
    Create a copy of the `.env.example` file and name it `.env`. Fill in credentials as needed.
 
    ```bash
    cp .env.example .env
    ```
 
-5. Run the app in development
+1. Run the app in development
 
    ```bash
    make dev
