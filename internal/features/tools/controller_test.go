@@ -37,6 +37,10 @@ func TestController_GetIpAddress(t *testing.T) {
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
 		Controller.GetIpAddress(errWriter, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }
 
@@ -100,6 +104,11 @@ func TestController_GetIpInfo(t *testing.T) {
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
 		Controller.GetIpInfo(errWriter, r)
+
+		// The handler should have attempted to write a 200 before the write failed.
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }
 
@@ -135,5 +144,10 @@ func TestController_GetHttpHeaders(t *testing.T) {
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
 		Controller.GetHttpHeaders(errWriter, r)
+
+		// Confirm the handler attempted to write OK prior to the forced write error.
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }

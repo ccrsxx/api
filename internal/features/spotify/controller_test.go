@@ -78,5 +78,9 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
 		Controller.getCurrentlyPlaying(errWriter, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }

@@ -51,5 +51,9 @@ func TestController_ping(t *testing.T) {
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
 		Controller.ping(w, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }

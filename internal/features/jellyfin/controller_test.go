@@ -75,7 +75,8 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 
 		Controller.getCurrentlyPlaying(errWriter, r)
 
-		// Success if we don't panic and the test completes
-		// Since everything is handled and mocked, we don't need assertions here
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }

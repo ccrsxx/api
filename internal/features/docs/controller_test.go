@@ -58,5 +58,9 @@ func TestController_getDocs(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 
 		Controller.getDocs(w, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }

@@ -41,5 +41,9 @@ func TestController_getFavicon(t *testing.T) {
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
 		Controller.getFavicon(w, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 }

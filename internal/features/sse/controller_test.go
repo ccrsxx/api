@@ -108,6 +108,10 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 		case <-time.After(1 * time.Second):
 			t.Fatal("handler did not exit on write error")
 		}
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 
 	t.Run("Flush Error", func(t *testing.T) {

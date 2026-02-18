@@ -106,15 +106,30 @@ func TestHandleHttpError(t *testing.T) {
 	t.Run("Write Failures (Triggers logErrorResponse)", func(t *testing.T) {
 		w1 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHttpError(w1, r, &PanicError{Message: "crash"})
+		HandleHttpError(w1, r, &HttpError{StatusCode: 400, Message: "bad"})
+
+		if w1.Code != 400 {
+			t.Errorf("got %d, want 400", w1.Code)
+		}
+
+		// Panic error and generic error only returns 500.
+		// So we can assert that the status code is 500 to confirm the error handling path was followed.
 
 		w2 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHttpError(w2, r, &HttpError{StatusCode: 400, Message: "bad"})
+		HandleHttpError(w2, r, &PanicError{Message: "crash"})
+
+		if w2.Code != 500 {
+			t.Errorf("got %d, want 500", w2.Code)
+		}
 
 		w3 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
 		HandleHttpError(w3, r, errors.New("generic"))
+
+		if w3.Code != 500 {
+			t.Errorf("got %d, want 500", w3.Code)
+		}
 	})
 }
 

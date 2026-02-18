@@ -153,6 +153,10 @@ func TestController_getOg(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Error("want 200 even if write error occurs")
 		}
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
+		}
 	})
 
 	t.Run("Stream Close Error", func(t *testing.T) {
