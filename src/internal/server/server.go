@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ccrsxx/api/src/internal/config"
 )
@@ -9,7 +10,7 @@ import (
 func NewServer() *http.Server {
 	RegisterLoaders()
 
-	addr := ":" + config.Env().Port
+	addr := ":" + strconv.Itoa(config.Env().Port)
 
 	handler := RegisterRoutes()
 

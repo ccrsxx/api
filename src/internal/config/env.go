@@ -30,7 +30,7 @@ func (e *EnvironmentApp) UnmarshalText(text []byte) error {
 }
 
 type appEnv struct {
-	Port           string         `env:"PORT,required"`
+	Port           int            `env:"PORT,required"`
 	AppEnv         EnvironmentApp `env:"APP_ENV,required"`
 	SecretKey      string         `env:"SECRET_KEY,required"`
 	AllowedOrigins []string       `env:"ALLOWED_ORIGINS,required"`
