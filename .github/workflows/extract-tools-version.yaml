@@ -25,6 +25,6 @@ jobs:
           echo "go-version=$GO_VERSION" >> $GITHUB_OUTPUT
           echo "Detected Go version: $GO_VERSION"
 
-          GOLANGCI_LINT_VERSION=$(awk '/^GOLANGCI_LINT_VERSION = / {print $3}' Makefile)
+          GOLANGCI_LINT_VERSION=$(awk '/^GOLANGCI_LINT_VERSION/ {print $3}' Makefile)
           echo "golangci-lint-version=$GOLANGCI_LINT_VERSION" >> $GITHUB_OUTPUT
           echo "Detected golangci-lint version: $GOLANGCI_LINT_VERSION"
