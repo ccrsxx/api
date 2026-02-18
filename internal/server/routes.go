@@ -38,5 +38,4 @@ func RegisterRoutes() http.Handler {
 	)
 
 	return routes
-
 }
