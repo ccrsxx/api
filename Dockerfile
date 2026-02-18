@@ -15,7 +15,7 @@ RUN go mod download
 
 COPY cmd internal ./
 
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./src/cmd/api/main.go
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./cmd/api/main.go
 
 FROM scratch AS final
 
