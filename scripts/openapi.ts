@@ -52,7 +52,7 @@ async function main(): Promise<void> {
 
   const stringifiedOpenapi = JSON.stringify(openapi);
 
-  const outputPath = '../src/internal/features/docs/openapi.json';
+  const outputPath = '../internal/features/docs/openapi.json';
 
   await writeFile(outputPath, stringifiedOpenapi);
 
