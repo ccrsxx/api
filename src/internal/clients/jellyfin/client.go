@@ -69,6 +69,7 @@ func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
 		}
 	}()
 
+	// nolint:nilaway
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("jellyfin currently playing request status error: %d", res.StatusCode)
 	}

@@ -42,6 +42,7 @@ func (s *service) getOg(ctx context.Context, query string) (io.ReadCloser, error
 		return nil, fmt.Errorf("og request call error: %w", err)
 	}
 
+	// nolint:nilaway
 	if res.StatusCode != http.StatusOK {
 		if err := res.Body.Close(); err != nil {
 			slog.Warn("og response close body error", "error", err)
