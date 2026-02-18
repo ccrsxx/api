@@ -29,6 +29,9 @@ test-coverage:
 lint:
 	golangci-lint run $(PKG)
 
+lint-nill:
+	nilaway $(PKG)
+
 format:
 	go fmt $(PKG)
 
