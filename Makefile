@@ -1,5 +1,9 @@
 PKG ?= ./...
 
+AIR_VERSION = v1.64.5
+GOTESTSUM_VERSION = v1.13.0
+GOLANGCI_LINT_VERSION = v2.10.1
+
 dev:
 	APP_ENV=development air
 
@@ -35,6 +39,11 @@ lint-nill:
 format:
 	go fmt $(PKG)
 
+setup-tools:
+	go install gotest.tools/gotestsum@$(GOTESTSUM_VERSION)
+	go install github.com/air-verse/air@$(AIR_VERSION)
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+
 setup-hooks:
 	npm i -g @commitlint/cli @commitlint/config-conventional
 	git config core.hooksPath ./.hooks
@@ -42,8 +51,8 @@ setup-hooks:
 setup-scripts:
 	cd scripts && npm i
 
-generate-openapi: setup-scripts
+generate-openapi:
 	npm run start:no-commit --prefix ./scripts
 
-generate-openapi-commit: setup-scripts
+generate-openapi-commit:
 	npm run start --prefix ./scripts

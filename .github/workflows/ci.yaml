@@ -10,14 +10,14 @@ permissions:
   contents: read
 
 jobs:
-  extract-go-version:
-    uses: ./.github/workflows/extract-go-version.yaml
+  extract-tools-version:
+    uses: ./.github/workflows/extract-tools-version.yaml
 
   lint:
     name: Lint
     runs-on: self-hosted
 
-    needs: extract-go-version
+    needs: extract-tools-version
 
     steps:
       - name: Checkout repo
@@ -25,18 +25,18 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ needs.extract-go-version.outputs.go-version }}
+          go-version: ${{ needs.extract-tools-version.outputs.go-version }}
 
       - name: Run linter
         uses: golangci/golangci-lint-action@v9
         with:
-          version: ${{ vars.GOLANGCI_LINT_VERSION }}
+          version: ${{ needs.extract-tools-version.outputs.golangci-lint-version }}
 
   test:
     name: Test
     runs-on: self-hosted
 
-    needs: extract-go-version
+    needs: extract-tools-version
 
     steps:
       - name: Checkout repo
@@ -44,7 +44,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ needs.extract-go-version.outputs.go-version }}
+          go-version: ${{ needs.extract-tools-version.outputs.go-version }}
 
       - name: Run tests
         run: make test
@@ -53,7 +53,7 @@ jobs:
     name: Format
     runs-on: self-hosted
 
-    needs: extract-go-version
+    needs: extract-tools-version
 
     steps:
       - name: Checkout repo
@@ -61,7 +61,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ needs.extract-go-version.outputs.go-version }}
+          go-version: ${{ needs.extract-tools-version.outputs.go-version }}
 
       - name: Run formatter
         run: make format

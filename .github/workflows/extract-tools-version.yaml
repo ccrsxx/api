@@ -1,0 +1,30 @@
+name: Extract Go version
+
+on:
+  workflow_call:
+    outputs:
+      go-version:
+        description: 'Go version from package.json'
+        value: ${{ jobs.extract.outputs.go-version }}
+      golangci-lint-version:
+        description: 'golangci-lint version from Makefile'
+        value: ${{ jobs.extract.outputs.golangci-lint-version }}
+
+jobs:
+  extract:
+    runs-on: self-hosted
+    outputs:
+      go-version: ${{ steps.extract.outputs.go-version }}
+      golangci-lint-version: ${{ steps.extract.outputs.golangci-lint-version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - id: extract
+        run: |
+          GO_VERSION=$(awk '/^go/ {print $2}' go.mod)
+          echo "go-version=$GO_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Go version: $GO_VERSION"
+
+          GOLANGCI_LINT_VERSION=$(awk '/^GOLANGCI_LINT_VERSION = / {print $3}' Makefile)
+          echo "golangci-lint-version=$GOLANGCI_LINT_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected golangci-lint version: $GOLANGCI_LINT_VERSION"

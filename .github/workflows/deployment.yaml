@@ -16,8 +16,8 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yaml
 
-  extract-go-version:
-    uses: ./.github/workflows/extract-go-version.yaml
+  extract-tools-version:
+    uses: ./.github/workflows/extract-tools-version.yaml
 
   deploy:
     name: Build and deploy via Docker on VPS
@@ -26,7 +26,7 @@ jobs:
 
     needs:
       - ci
-      - extract-go-version
+      - extract-tools-version
 
     permissions:
       packages: write
@@ -62,7 +62,7 @@ jobs:
         with:
           platforms: linux/arm64
           build-args: |
-            GO_VERSION=${{ needs.extract-go-version.outputs.go-version }}
+            GO_VERSION=${{ needs.extract-tools-version.outputs.go-version }}
           push: true
           tags: |
             ${{ env.LATEST_IMAGE }}
