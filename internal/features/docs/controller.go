@@ -3,6 +3,7 @@ package docs
 import (
 	_ "embed"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	scalargo "github.com/bdpiprava/scalar-go"
@@ -39,7 +40,6 @@ func (c *controller) getDocs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write([]byte(html)); err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("docs response error: %w", err))
-		return
+		slog.Warn("docs response error", "error", err)
 	}
 }

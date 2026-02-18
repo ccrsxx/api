@@ -1,7 +1,7 @@
 package spotify
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
@@ -20,7 +20,6 @@ func (c *controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := api.NewSuccessResponse(w, http.StatusOK, data); err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("spotify currently playing response error: %w", err))
-		return
+		slog.Warn("spotify currently playing response error", "error", err)
 	}
 }

@@ -166,6 +166,7 @@ func TestService_WorkerLocks(t *testing.T) {
 	Service.stopChan = nil
 
 	Service.startWorkerLocked()
+
 	if Service.stopChan == nil {
 		t.Error("want worker started")
 	}

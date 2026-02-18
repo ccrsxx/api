@@ -2,10 +2,8 @@ package favicon
 
 import (
 	_ "embed"
-	"fmt"
+	"log/slog"
 	"net/http"
-
-	"github.com/ccrsxx/api/internal/api"
 )
 
 var Controller = &controller{}
@@ -20,7 +18,6 @@ func (c *controller) getFavicon(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write(icon); err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("favicon response error: %w", err))
-		return
+		slog.Warn("favicon response error", "error", err)
 	}
 }

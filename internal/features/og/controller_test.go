@@ -175,6 +175,7 @@ func TestController_getOg(t *testing.T) {
 
 		Controller.getOg(w, r)
 
+		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {
 			t.Error("want success despite close error")
 		}

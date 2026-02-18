@@ -1,7 +1,7 @@
 package home
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
@@ -24,7 +24,6 @@ func (c *controller) ping(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("home response error: %w", err))
-		return
+		slog.Warn("home response error", "error", err)
 	}
 }

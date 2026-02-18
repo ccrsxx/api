@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
@@ -19,8 +19,7 @@ func (c *controller) GetIpAddress(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write([]byte(ipAddress)); err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("ip response error: %w", err))
-		return
+		slog.Warn("ip response error", "error", err)
 	}
 }
 
@@ -36,8 +35,7 @@ func (c *controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := api.NewSuccessResponse(w, http.StatusOK, ipInfo); err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("ip info response error: %w", err))
-		return
+		slog.Warn("ip info response error", "error", err)
 	}
 }
 
@@ -45,7 +43,6 @@ func (c *controller) GetHttpHeaders(w http.ResponseWriter, r *http.Request) {
 	headers := utils.GetHttpHeadersFromRequest(r)
 
 	if err := api.NewSuccessResponse(w, http.StatusOK, headers); err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("headers response error: %w", err))
-		return
+		slog.Warn("headers response error", "error", err)
 	}
 }

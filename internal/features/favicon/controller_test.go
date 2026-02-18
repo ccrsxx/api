@@ -42,6 +42,7 @@ func TestController_getFavicon(t *testing.T) {
 
 		Controller.getFavicon(w, r)
 
+		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
 		}
