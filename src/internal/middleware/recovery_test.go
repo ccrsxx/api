@@ -25,15 +25,15 @@ func TestRecovery(t *testing.T) {
 		t.Errorf("got status %d, want 500", w.Code)
 	}
 
-	var resp api.ErrorResponse
+	var res api.ErrorResponse
 
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+	if err := json.Unmarshal(w.Body.Bytes(), &res); err != nil {
 		t.Fatalf("failed to parse error response: %v", err)
 	}
 
 	// In production (default config), the message should be generic
-	if resp.Error.Message != "An internal server error occurred" {
-		t.Errorf("got message %q, want generic error message", resp.Error.Message)
+	if res.Error.Message != "An internal server error occurred" {
+		t.Errorf("got message %q, want generic error message", res.Error.Message)
 	}
 
 	// 3. Ensure we didn't leak the panic message to the client (Security)

@@ -160,15 +160,15 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 			AccessToken string `json:"access_token"`
 		}
 
-		var tokenResp spotifyTokenResponse
+		var tokenRes spotifyTokenResponse
 
-		if err := json.NewDecoder(res.Body).Decode(&tokenResp); err != nil {
+		if err := json.NewDecoder(res.Body).Decode(&tokenRes); err != nil {
 			return tokenResponse{}, fmt.Errorf("spotify access token decode error: %w", err)
 		}
 
 		return tokenResponse{
-			ExpiresIn:   tokenResp.ExpiresIn,
-			AccessToken: tokenResp.AccessToken,
+			ExpiresIn:   tokenRes.ExpiresIn,
+			AccessToken: tokenRes.AccessToken,
 		}, nil
 	}
 

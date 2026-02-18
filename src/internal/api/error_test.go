@@ -29,16 +29,16 @@ func TestHandleHttpError(t *testing.T) {
 			t.Errorf("got %d, want %d", w.Code, http.StatusInternalServerError)
 		}
 
-		var resp ErrorResponse
+		var res ErrorResponse
 
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		err := json.Unmarshal(w.Body.Bytes(), &res)
 
 		if err != nil {
 			t.Fatalf("failed to unmarshal response: %v", err)
 		}
 
-		if resp.Error.Message != "An internal server error occurred" {
-			t.Errorf("got message %q, want generic server error", resp.Error.Message)
+		if res.Error.Message != "An internal server error occurred" {
+			t.Errorf("got message %q, want generic server error", res.Error.Message)
 		}
 	})
 
@@ -79,16 +79,16 @@ func TestHandleHttpError(t *testing.T) {
 			t.Errorf("got %d, want 400", w.Code)
 		}
 
-		var resp ErrorResponse
+		var res ErrorResponse
 
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		err := json.Unmarshal(w.Body.Bytes(), &res)
 
 		if err != nil {
 			t.Fatalf("failed to unmarshal response: %v", err)
 		}
 
-		if resp.Error.Message != httpErr.Message {
-			t.Errorf("got message %q, want %q", resp.Error.Message, httpErr.Message)
+		if res.Error.Message != httpErr.Message {
+			t.Errorf("got message %q, want %q", res.Error.Message, httpErr.Message)
 		}
 	})
 
