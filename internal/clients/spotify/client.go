@@ -22,6 +22,14 @@ const (
 	defaultApiURL  = "https://api.spotify.com/v1/me/player/currently-playing"
 )
 
+type ClientConfig struct {
+	ApiURL       string
+	AuthURL      string
+	ClientID     string
+	ClientSecret string
+	RefreshToken string
+}
+
 type Client struct {
 	apiURL       string
 	authURL      string
@@ -36,13 +44,13 @@ var (
 	instance *Client
 )
 
-func New(clientID, clientSecret, refreshToken, authURL, apiURL string) *Client {
+func New(cfg ClientConfig) *Client {
 	return &Client{
-		apiURL:       apiURL,
-		authURL:      authURL,
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		refreshToken: refreshToken,
+		apiURL:       cfg.ApiURL,
+		authURL:      cfg.AuthURL,
+		clientID:     cfg.ClientID,
+		clientSecret: cfg.ClientSecret,
+		refreshToken: cfg.RefreshToken,
 		httpClient:   &http.Client{Timeout: 8 * time.Second},
 	}
 }
@@ -50,11 +58,13 @@ func New(clientID, clientSecret, refreshToken, authURL, apiURL string) *Client {
 func DefaultClient() *Client {
 	once.Do(func() {
 		instance = New(
-			config.Env().SpotifyClientID,
-			config.Env().SpotifyClientSecret,
-			config.Env().SpotifyRefreshToken,
-			defaultAuthURL,
-			defaultApiURL,
+			ClientConfig{
+				ApiURL:       defaultApiURL,
+				AuthURL:      defaultAuthURL,
+				ClientID:     config.Env().SpotifyClientID,
+				ClientSecret: config.Env().SpotifyClientSecret,
+				RefreshToken: config.Env().SpotifyRefreshToken,
+			},
 		)
 	})
 

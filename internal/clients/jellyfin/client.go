@@ -11,10 +11,17 @@ import (
 	"github.com/ccrsxx/api/internal/config"
 )
 
+type ClientConfig struct {
+	URL      string
+	ApiKey   string
+	ImageURL string
+	Username string
+}
+
 type Client struct {
 	url        string
 	apiKey     string
-	imageUrl   string
+	imageURL   string
 	username   string
 	httpClient *http.Client
 }
@@ -24,12 +31,12 @@ var (
 	client *Client
 )
 
-func New(url, apiKey, imageUrl, username string) *Client {
+func New(cfg ClientConfig) *Client {
 	return &Client{
-		url:        url,
-		apiKey:     apiKey,
-		imageUrl:   imageUrl,
-		username:   username,
+		url:        cfg.URL,
+		apiKey:     cfg.ApiKey,
+		imageURL:   cfg.ImageURL,
+		username:   cfg.Username,
 		httpClient: &http.Client{Timeout: 8 * time.Second},
 	}
 }
@@ -37,10 +44,12 @@ func New(url, apiKey, imageUrl, username string) *Client {
 func DefaultClient() *Client {
 	once.Do(func() {
 		client = New(
-			config.Env().JellyfinUrl,
-			config.Env().JellyfinApiKey,
-			config.Env().JellyfinImageUrl,
-			config.Env().JellyfinUsername,
+			ClientConfig{
+				URL:      config.Env().JellyfinUrl,
+				ApiKey:   config.Env().JellyfinApiKey,
+				ImageURL: config.Env().JellyfinImageUrl,
+				Username: config.Env().JellyfinUsername,
+			},
 		)
 	})
 

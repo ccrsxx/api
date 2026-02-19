@@ -24,7 +24,13 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Token Request Creation Error", func(t *testing.T) {
-		c := New("id", "sec", "ref", "http://bad\x7f", "http://api")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      "http://bad\x7f",
+			ApiURL:       "http://api",
+		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
 			t.Error("want error from new request creation")
@@ -32,7 +38,13 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	})
 
 	t.Run("Token Network Error", func(t *testing.T) {
-		c := New("id", "sec", "ref", "http://127.0.0.1:0", "http://api")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      "http://127.0.0.1:0",
+			ApiURL:       "http://api",
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -48,7 +60,13 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 
 		defer s.Close()
 
-		c := New("id", "sec", "ref", s.URL, "http://api")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      s.URL,
+			ApiURL:       "http://api",
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -66,7 +84,13 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 
 		defer s.Close()
 
-		c := New("id", "sec", "ref", s.URL, "http://api")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      s.URL,
+			ApiURL:       "http://api",
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -76,7 +100,13 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	})
 
 	t.Run("Token Body Close Error", func(t *testing.T) {
-		c := New("id", "sec", "ref", "http://auth", "http://api")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      "http://auth",
+			ApiURL:       "http://api",
+		})
 
 		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
@@ -108,7 +138,13 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer authSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, "http://bad\x7f")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       "http://bad\x7f",
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -122,7 +158,13 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer authSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, "http://127.0.0.1:0")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       "http://",
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -142,7 +184,13 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       apiSrv.URL,
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -168,7 +216,13 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       apiSrv.URL,
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -178,7 +232,13 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 	})
 
 	t.Run("API Body Close Error", func(t *testing.T) {
-		c := New("id", "sec", "ref", "http://auth", "http://api")
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      "http://auth",
+			ApiURL:       "http://api",
+		})
 
 		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 			if strings.Contains(req.URL.String(), "auth") {
@@ -224,7 +284,13 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       apiSrv.URL,
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
@@ -256,7 +322,13 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       apiSrv.URL,
+		})
 
 		res, err := c.GetCurrentlyPlaying(ctx)
 
@@ -284,7 +356,13 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
+		c := New(ClientConfig{
+			ClientID:     "id",
+			ClientSecret: "sec",
+			RefreshToken: "ref",
+			AuthURL:      authSrv.URL,
+			ApiURL:       apiSrv.URL,
+		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
 
