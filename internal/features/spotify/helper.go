@@ -7,7 +7,7 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-func parseSpotifyCurrentlyPlaying(raw *spotify.SpotifyCurrentlyPlaying) model.CurrentlyPlaying {
+func parseSpotifyCurrentlyPlaying(raw spotify.SpotifyCurrentlyPlaying) model.CurrentlyPlaying {
 	item := raw.Item
 
 	var artistNames []string

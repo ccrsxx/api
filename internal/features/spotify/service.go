@@ -2,6 +2,7 @@ package spotify
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ccrsxx/api/internal/clients/spotify"
@@ -9,11 +10,11 @@ import (
 )
 
 type service struct {
-	fetcher func(context.Context) (*spotify.SpotifyCurrentlyPlaying, error)
+	fetcher func(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
 }
 
 var Service = &service{
-	fetcher: func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
+	fetcher: func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
 		return spotify.DefaultClient().GetCurrentlyPlaying(ctx)
 	},
 }
@@ -21,13 +22,13 @@ var Service = &service{
 func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
 	data, err := s.fetcher(ctx)
 
-	if err != nil {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), fmt.Errorf("spotify get currently playing error: %w", err)
+	// Handle 204 No Content case
+	if errors.Is(err, spotify.ErrNoContent) {
+		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
 	}
 
-	// Handle 204 No Content case
-	if data == nil {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
+	if err != nil {
+		return model.CurrentlyPlaying{}, fmt.Errorf("spotify get currently playing error: %w", err)
 	}
 
 	return parseSpotifyCurrentlyPlaying(data), nil

@@ -9,7 +9,7 @@ import (
 
 func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 	t.Run("Full Data", func(t *testing.T) {
-		raw := &spotify.SpotifyCurrentlyPlaying{
+		raw := spotify.SpotifyCurrentlyPlaying{
 			IsPlaying:  true,
 			ProgressMs: 1000,
 			Item: &spotify.SpotifyItem{
@@ -51,7 +51,7 @@ func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Local File (No URLs)", func(t *testing.T) {
-		raw := &spotify.SpotifyCurrentlyPlaying{
+		raw := spotify.SpotifyCurrentlyPlaying{
 			IsPlaying: true,
 			Item: &spotify.SpotifyItem{
 				Name:    "Local Song",
@@ -77,7 +77,7 @@ func Test_parseSpotifyCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("No Images", func(t *testing.T) {
-		raw := &spotify.SpotifyCurrentlyPlaying{
+		raw := spotify.SpotifyCurrentlyPlaying{
 			Item: &spotify.SpotifyItem{
 				Name: "Track",
 				Album: &spotify.SpotifyAlbum{

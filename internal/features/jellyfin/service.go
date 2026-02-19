@@ -28,7 +28,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 	sessions, err := s.fetcher(ctx)
 
 	if err != nil {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), fmt.Errorf("jellyfin get sessions error: %w", err)
+		return model.CurrentlyPlaying{}, fmt.Errorf("jellyfin get sessions error: %w", err)
 	}
 
 	var playingItem *model.CurrentlyPlaying
@@ -52,8 +52,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 			continue
 		}
 
-		parsedValue := parseJellyfinSessions(&session)
-		playingItem = &parsedValue
+		playingItem = new(parseJellyfinSessions(session))
 
 		break
 	}

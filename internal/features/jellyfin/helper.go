@@ -9,7 +9,7 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-func parseJellyfinSessions(session *jellyfin.SessionInfo) model.CurrentlyPlaying {
+func parseJellyfinSessions(session jellyfin.SessionInfo) model.CurrentlyPlaying {
 	item := session.NowPlayingItem
 	playState := session.PlayState
 

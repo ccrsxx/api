@@ -2,6 +2,7 @@ package spotify
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -263,7 +264,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 			t.Fatalf("unwanted error: %v", err)
 		}
 
-		if res == nil || res.Item.Name != "Song" {
+		if res.Item.Name != "Song" {
 			t.Error("failed to parse response correctly")
 		}
 	})
@@ -285,14 +286,10 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		c := New("id", "sec", "ref", authSrv.URL, apiSrv.URL)
 
-		res, err := c.GetCurrentlyPlaying(ctx)
+		_, err := c.GetCurrentlyPlaying(ctx)
 
-		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
-		}
-
-		if res != nil {
-			t.Error("want nil response for 204 No Content")
+		if !errors.Is(err, ErrNoContent) {
+			t.Fatalf("got %v, want ErrNoContent", err)
 		}
 	})
 }

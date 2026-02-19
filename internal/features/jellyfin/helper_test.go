@@ -18,7 +18,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	config.Env().JellyfinImageUrl = "http://jellyfin.com"
 
 	t.Run("Full Data", func(t *testing.T) {
-		session := &jellyfin.SessionInfo{
+		session := jellyfin.SessionInfo{
 			NowPlayingItem: &jellyfin.BaseItem{
 				Id:           "item-1",
 				Name:         new("Song"),
@@ -60,7 +60,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 
 	t.Run("Minimal Data (Fallbacks)", func(t *testing.T) {
 		// Test logic where Name/Album are nil
-		session := &jellyfin.SessionInfo{
+		session := jellyfin.SessionInfo{
 			NowPlayingItem: &jellyfin.BaseItem{
 				// All nil
 			},
@@ -89,7 +89,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	})
 
 	t.Run("Fallback to OriginalTitle", func(t *testing.T) {
-		session := &jellyfin.SessionInfo{
+		session := jellyfin.SessionInfo{
 			NowPlayingItem: &jellyfin.BaseItem{
 				OriginalTitle: new("Original Album"),
 			},

@@ -21,8 +21,8 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	}()
 
 	t.Run("Success", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return &spotify.SpotifyCurrentlyPlaying{
+		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+			return spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
 			}, nil
@@ -51,8 +51,8 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return nil, errors.New("fail")
+		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+			return spotify.SpotifyCurrentlyPlaying{}, errors.New("fail")
 		}
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -68,8 +68,11 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return nil, nil
+		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+			return spotify.SpotifyCurrentlyPlaying{
+				IsPlaying: true,
+				Item:      &spotify.SpotifyItem{Name: "Song"},
+			}, nil
 		}
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)

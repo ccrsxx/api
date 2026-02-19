@@ -17,8 +17,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	}()
 
 	t.Run("Success Playing", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return &spotify.SpotifyCurrentlyPlaying{
+		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+			return spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item: &spotify.SpotifyItem{
 					Name: "Test Song",
@@ -44,9 +44,9 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 	})
 
-	t.Run("Success Not Playing (Nil Data)", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return nil, nil // 204 No Content behavior
+	t.Run("Success No Content", func(t *testing.T) {
+		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+			return spotify.SpotifyCurrentlyPlaying{}, spotify.ErrNoContent
 		}
 
 		got, err := Service.GetCurrentlyPlaying(context.Background())
@@ -65,8 +65,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Client Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (*spotify.SpotifyCurrentlyPlaying, error) {
-			return nil, errors.New("network fail")
+		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+			return spotify.SpotifyCurrentlyPlaying{}, errors.New("network fail")
 		}
 
 		got, err := Service.GetCurrentlyPlaying(context.Background())

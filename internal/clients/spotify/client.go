@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -60,17 +61,19 @@ func DefaultClient() *Client {
 	return instance
 }
 
-func (c *Client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlaying, error) {
+var ErrNoContent = errors.New("spotify currently playing no content")
+
+func (c *Client) GetCurrentlyPlaying(ctx context.Context) (SpotifyCurrentlyPlaying, error) {
 	token, err := c.getAccessToken(ctx)
 
 	if err != nil {
-		return nil, err
+		return SpotifyCurrentlyPlaying{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", c.apiURL, nil)
 
 	if err != nil {
-		return nil, fmt.Errorf("spotify currently playing request creation error: %w", err)
+		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing request creation error: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -78,7 +81,7 @@ func (c *Client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 	res, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("spotify currently playing request call error: %w", err)
+		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing request call error: %w", err)
 	}
 
 	defer func() {
@@ -87,30 +90,31 @@ func (c *Client) GetCurrentlyPlaying(ctx context.Context) (*SpotifyCurrentlyPlay
 		}
 	}()
 
-	// 204 No Content means nothing is currently playing
+	// 204 No Content means the user is not playing anything and not opening the Spotify app.
+	// It doesn't have song data, so we return a default struct and handle the no content case in the service layer.
+
 	// nolint:nilaway
 	if res.StatusCode == http.StatusNoContent {
 		slog.Debug("spotify currently playing no content")
-
-		return nil, nil
+		return SpotifyCurrentlyPlaying{}, ErrNoContent
 	}
 
 	// nolint:nilaway
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("spotify currently playing request status error: %d", res.StatusCode)
+		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing request status error: %d", res.StatusCode)
 	}
 
 	var data SpotifyCurrentlyPlaying
 
 	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
-		return nil, fmt.Errorf("spotify currently playing decode error: %w", err)
+		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing decode error: %w", err)
 	}
 
 	if data.Item == nil || data.Item.Type != "track" {
-		return nil, fmt.Errorf("spotify currently playing invalid item type: %v", data.Item)
+		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing invalid item type: %v", data.Item)
 	}
 
-	return &data, nil
+	return data, nil
 }
 
 func (c *Client) getAccessToken(ctx context.Context) (string, error) {
