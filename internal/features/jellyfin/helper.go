@@ -5,11 +5,10 @@ import (
 	"strings"
 
 	"github.com/ccrsxx/api/internal/clients/jellyfin"
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/model"
 )
 
-func parseJellyfinSessions(session jellyfin.SessionInfo) model.CurrentlyPlaying {
+func parseJellyfinSessions(session jellyfin.SessionInfo, jellyfinImageUrl string) model.CurrentlyPlaying {
 	item := session.NowPlayingItem
 	playState := session.PlayState
 
@@ -36,7 +35,7 @@ func parseJellyfinSessions(session jellyfin.SessionInfo) model.CurrentlyPlaying 
 	albumImageUrl := ""
 
 	if item.Id != "" {
-		albumImageUrl = fmt.Sprintf("%s/Items/%s/Images/Primary", config.Env().JellyfinImageUrl, item.Id)
+		albumImageUrl = fmt.Sprintf("%s/Items/%s/Images/Primary", jellyfinImageUrl, item.Id)
 	}
 
 	// Jellyfin uses "Ticks". 1 ms = 10,000 Ticks. Convert to ms.

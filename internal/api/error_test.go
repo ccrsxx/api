@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -15,6 +14,8 @@ func TestHandleHttpError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/test", nil)
 
 	t.Run("PanicError - Standard (Production)", func(t *testing.T) {
+		Init(false)
+
 		w := httptest.NewRecorder()
 
 		panicErr := &PanicError{
@@ -30,7 +31,6 @@ func TestHandleHttpError(t *testing.T) {
 		}
 
 		var res ErrorResponse
-
 		err := json.Unmarshal(w.Body.Bytes(), &res)
 
 		if err != nil {
@@ -43,13 +43,9 @@ func TestHandleHttpError(t *testing.T) {
 	})
 
 	t.Run("PanicError - Development Mode (Stack Trace)", func(t *testing.T) {
-		cfg := config.Config()
-		originalDev := cfg.IsDevelopment
-		cfg.IsDevelopment = true
+		Init(true)
 
-		defer func() {
-			cfg.IsDevelopment = originalDev
-		}()
+		defer Init(false)
 
 		w := httptest.NewRecorder()
 

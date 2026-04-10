@@ -16,17 +16,20 @@ type Service struct {
 	lastState        *model.CurrentlyPlaying
 	lastStateTime    time.Time
 	jellyfinUsername string
+	jellyfinImageUrl string
 }
 
 type ServiceConfig struct {
 	Fetcher          func(context.Context) ([]jellyfin.SessionInfo, error)
 	JellyfinUsername string
+	JellyfinImageUrl string
 }
 
 func NewService(cfg ServiceConfig) *Service {
 	return &Service{
 		fetcher:          cfg.Fetcher,
 		jellyfinUsername: cfg.JellyfinUsername,
+		jellyfinImageUrl: cfg.JellyfinImageUrl,
 	}
 }
 
@@ -58,7 +61,7 @@ func (s *Service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 			continue
 		}
 
-		playingItem = new(parseJellyfinSessions(session))
+		playingItem = new(parseJellyfinSessions(session, s.jellyfinImageUrl))
 
 		break
 	}

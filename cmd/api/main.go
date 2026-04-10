@@ -12,10 +12,12 @@ import (
 )
 
 func main() {
-	server := server.NewServer()
+	cfg := config.Init()
+
+	server := server.NewServer(cfg)
 
 	go func() {
-		slog.Info("server start listening", "port", server.Addr, "env", config.Env().AppEnv)
+		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)
 
 		if err := server.ListenAndServe(); err != nil {
 			slog.Error("server stop listening", "error", err)

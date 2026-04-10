@@ -4,18 +4,11 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/clients/jellyfin"
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/model"
 )
 
 func Test_parseJellyfinSessions(t *testing.T) {
-	originalImgUrl := config.Env().JellyfinImageUrl
-
-	defer func() {
-		config.Env().JellyfinImageUrl = originalImgUrl
-	}()
-
-	config.Env().JellyfinImageUrl = "http://jellyfin.com"
+	mockImageURL := "http://jellyfin.com"
 
 	t.Run("Full Data", func(t *testing.T) {
 		session := jellyfin.SessionInfo{
@@ -32,7 +25,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 			},
 		}
 
-		got := parseJellyfinSessions(session)
+		got := parseJellyfinSessions(session, mockImageURL)
 
 		if got.Platform != model.PlatformJellyfin {
 			t.Errorf("got %s, want platform jellyfin", got.Platform)
@@ -69,7 +62,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 			},
 		}
 
-		got := parseJellyfinSessions(session)
+		got := parseJellyfinSessions(session, mockImageURL)
 
 		if got.IsPlaying {
 			t.Fatal("got playing, want paused")
@@ -96,7 +89,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 			PlayState: &jellyfin.PlayerStateInfo{},
 		}
 
-		got := parseJellyfinSessions(session)
+		got := parseJellyfinSessions(session, mockImageURL)
 
 		if got.Item.AlbumName != "Original Album" {
 			t.Errorf("got %s, want Original Album", got.Item.AlbumName)

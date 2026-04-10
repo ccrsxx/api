@@ -7,12 +7,12 @@ import (
 	"github.com/ccrsxx/api/internal/config"
 )
 
-func NewServer() *http.Server {
-	RegisterLoaders()
+func NewServer(cfg config.AppConfig) *http.Server {
+	RegisterLoaders(cfg)
 
-	addr := ":" + strconv.Itoa(config.Env().Port)
+	addr := ":" + strconv.Itoa(cfg.Port)
 
-	handler := RegisterRoutes()
+	handler := RegisterRoutes(cfg)
 
 	httpServer := &http.Server{
 		Addr:    addr,

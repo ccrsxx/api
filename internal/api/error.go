@@ -6,10 +6,15 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/utils"
 	"github.com/google/uuid"
 )
+
+var isDevelopmentMode bool
+
+func Init(isDevelopment bool) {
+	isDevelopmentMode = isDevelopment
+}
 
 type PanicError struct {
 	Value   any
@@ -39,7 +44,7 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 	if panicErr, ok := errors.AsType[*PanicError](err); ok {
 		parsedStack := panicErr.Stack
 
-		if config.Config().IsDevelopment {
+		if isDevelopmentMode {
 			parsedStack = "disabled in development mode"
 
 			fmt.Printf("panic stack trace:\n%s\n", panicErr.Stack)

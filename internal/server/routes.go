@@ -21,29 +21,29 @@ import (
 	"github.com/ccrsxx/api/internal/middleware"
 )
 
-func RegisterRoutes() http.Handler {
+func RegisterRoutes(cfg config.AppConfig) http.Handler {
 	router := http.NewServeMux()
 
 	memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)
 
-	ipInfoClient := ipinfo.NewClient(config.Env().IpInfoToken)
+	ipInfoClient := ipinfo.NewClient(cfg.IpInfoToken)
 
 	spotifyClient := spotifyClient.NewClient(spotifyClient.Config{
-		ClientID:     config.Env().SpotifyClientID,
+		ClientID:     cfg.SpotifyClientID,
 		MemoryCache:  memoryCache,
-		ClientSecret: config.Env().SpotifyClientSecret,
-		RefreshToken: config.Env().SpotifyRefreshToken,
+		ClientSecret: cfg.SpotifyClientSecret,
+		RefreshToken: cfg.SpotifyRefreshToken,
 	})
 
 	jellyfinClient := jellyfinClient.NewClient(jellyfinClient.Config{
-		URL:      config.Env().JellyfinUrl,
-		ApiKey:   config.Env().JellyfinApiKey,
-		ImageURL: config.Env().JellyfinImageUrl,
-		Username: config.Env().JellyfinUsername,
+		URL:      cfg.JellyfinUrl,
+		ApiKey:   cfg.JellyfinApiKey,
+		ImageURL: cfg.JellyfinImageUrl,
+		Username: cfg.JellyfinUsername,
 	})
 
 	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
-		SecretKey: config.Env().SecretKey,
+		SecretKey: cfg.SecretKey,
 	}))
 
 	spotifyService := spotify.NewService(spotify.ServiceConfig{
@@ -52,7 +52,8 @@ func RegisterRoutes() http.Handler {
 
 	jellyfinService := jellyfin.NewService(jellyfin.ServiceConfig{
 		Fetcher:          jellyfinClient.GetSessions,
-		JellyfinUsername: config.Env().JellyfinUsername,
+		JellyfinUsername: cfg.JellyfinUsername,
+		JellyfinImageUrl: cfg.JellyfinImageUrl,
 	})
 
 	toolsController := tools.NewController(
@@ -68,11 +69,11 @@ func RegisterRoutes() http.Handler {
 	og.LoadRoutes(og.Config{
 		Router: router,
 		Service: og.NewService(og.ServiceConfig{
-			OgUrl:      config.Env().OgUrl,
+			OgUrl:      cfg.OgUrl,
 			HttpClient: og.DefaultHttpClient,
 		}),
 		ControllerConfig: og.ControllerConfig{
-			IsProduction: config.Config().IsProduction,
+			IsProduction: cfg.IsProduction,
 		},
 	})
 
@@ -133,7 +134,7 @@ func RegisterRoutes() http.Handler {
 	)
 
 	routes := middleware.Recovery(
-		middleware.Cors(config.Env().AllowedOrigins)(
+		middleware.Cors(cfg.AllowedOrigins)(
 			middleware.Logging(
 				middleware.RateLimit(100, 1*time.Minute)(
 					router,

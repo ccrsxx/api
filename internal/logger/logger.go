@@ -3,12 +3,10 @@ package logger
 import (
 	"log/slog"
 	"os"
-
-	"github.com/ccrsxx/api/internal/config"
 )
 
-func Init() {
-	if config.Config().IsDevelopment {
+func Init(isDevelopment bool) {
+	if isDevelopment {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 		return
 	}
