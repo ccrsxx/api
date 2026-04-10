@@ -191,14 +191,7 @@ func (s *service) stopWorkerLocked() {
 }
 
 func (s *service) pollLoop(stopChan chan struct{}) {
-	// Lock required for test stability: The background worker may still be
-	// reading these configuration fields while we restore them.
-
-	s.mu.RLock()
-
 	interval := s.pollInterval
-
-	s.mu.RUnlock()
 
 	ticker := time.NewTicker(interval)
 
@@ -245,15 +238,8 @@ type sseData struct {
 }
 
 func (s *service) getSSEData(ctx context.Context) sseData {
-	// Lock required for test stability: The background worker may still be
-	// reading these configuration fields while we restore them.
-
-	s.mu.RLock()
-
 	spotifyFetcher := s.spotifyFetcher
 	jellyfinFetcher := s.jellyfinFetcher
-
-	s.mu.RUnlock()
 
 	var wg sync.WaitGroup
 	var spotifyData, jellyfinData model.CurrentlyPlaying
