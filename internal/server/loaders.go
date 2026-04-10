@@ -6,7 +6,7 @@ import (
 	"github.com/ccrsxx/api/internal/logger"
 )
 
-func RegisterLoaders(cfg config.AppConfig) {
+func InitLoaders(cfg config.AppConfig) {
 	api.Init(cfg.IsDevelopment)
 	logger.Init(cfg.IsDevelopment)
 }

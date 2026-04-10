@@ -8,11 +8,11 @@ import (
 )
 
 func NewServer(cfg config.AppConfig) *http.Server {
-	RegisterLoaders(cfg)
+	InitLoaders(cfg)
 
 	addr := ":" + strconv.Itoa(cfg.Port)
 
-	handler := RegisterRoutes(cfg)
+	handler := InitRoutes(cfg)
 
 	httpServer := &http.Server{
 		Addr:    addr,

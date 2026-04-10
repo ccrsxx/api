@@ -21,7 +21,7 @@ import (
 	"github.com/ccrsxx/api/internal/middleware"
 )
 
-func RegisterRoutes(cfg config.AppConfig) http.Handler {
+func InitRoutes(cfg config.AppConfig) http.Handler {
 	router := http.NewServeMux()
 
 	memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)
@@ -64,7 +64,10 @@ func RegisterRoutes(cfg config.AppConfig) http.Handler {
 		),
 	)
 
-	sharedGetIpInfoController := http.HandlerFunc(toolsController.GetIpInfo)
+	// Shared rate-limited handler for GetIpInfo. Limits to 10 requests per 10 seconds.
+	sharedGetIpInfoController := middleware.RateLimit(10, 10*time.Second)(
+		http.HandlerFunc(toolsController.GetIpInfo),
+	)
 
 	og.LoadRoutes(og.Config{
 		Router: router,
