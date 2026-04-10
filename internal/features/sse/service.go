@@ -34,10 +34,9 @@ type Service struct {
 	mu              sync.RWMutex
 	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
-	ipAddressCounts map[string]int
-
 	pollInterval    time.Duration
 	spotifyFetcher  DataFetcher
+	ipAddressCounts map[string]int
 	jellyfinFetcher DataFetcher
 }
 

@@ -30,8 +30,13 @@ type Config struct {
 }
 
 type Client struct {
-	config     Config
-	httpClient *http.Client
+	apiURL      string
+	secret      string
+	authURL     string
+	refresh     string
+	clientID    string
+	httpClient  *http.Client
+	memoryCache cache.Cache
 }
 
 var ErrNoContent = errors.New("spotify currently playing no content")
@@ -46,8 +51,13 @@ func NewClient(cfg Config) *Client {
 	}
 
 	return &Client{
-		config:     cfg,
-		httpClient: &http.Client{Timeout: 8 * time.Second},
+		apiURL:      cfg.ApiURL,
+		secret:      cfg.ClientSecret,
+		authURL:     cfg.AuthURL,
+		refresh:     cfg.RefreshToken,
+		clientID:    cfg.ClientID,
+		memoryCache: cfg.MemoryCache,
+		httpClient:  &http.Client{Timeout: 8 * time.Second},
 	}
 }
 
@@ -58,7 +68,7 @@ func (c *Client) GetCurrentlyPlaying(ctx context.Context) (SpotifyCurrentlyPlayi
 		return SpotifyCurrentlyPlaying{}, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", c.config.ApiURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.apiURL, nil)
 
 	if err != nil {
 		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing request creation error: %w", err)
@@ -114,10 +124,10 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 	fetcher := func() (tokenResponse, error) {
 		requestBody := url.Values{
 			"grant_type":    {"refresh_token"},
-			"refresh_token": {c.config.RefreshToken},
+			"refresh_token": {c.refresh},
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", c.config.AuthURL, strings.NewReader(requestBody.Encode()))
+		req, err := http.NewRequestWithContext(ctx, "POST", c.authURL, strings.NewReader(requestBody.Encode()))
 
 		if err != nil {
 			return tokenResponse{}, fmt.Errorf("spotify access token request creation error: %w", err)
@@ -125,7 +135,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		authString := c.config.ClientID + ":" + c.config.ClientSecret
+		authString := c.clientID + ":" + c.secret
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
 
@@ -177,7 +187,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 	data, err := cache.GetOrFetch(
 		ctx,
-		c.config.MemoryCache,
+		c.memoryCache,
 		"api:spotify:access_token",
 		fetcher,
 		ttlFunc,

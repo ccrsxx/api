@@ -14,9 +14,8 @@ var DefaultHttpClient = &http.Client{
 }
 
 type Service struct {
+	ogUrl      string
 	httpClient *http.Client
-
-	ogUrl string
 }
 
 type ServiceConfig struct {
