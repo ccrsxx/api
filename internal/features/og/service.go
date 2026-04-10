@@ -7,26 +7,33 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/ccrsxx/api/internal/config"
 )
 
-type service struct {
+type Service struct {
 	ogUrl      string
 	httpClient *http.Client
 }
 
-var Service = &service{
-	ogUrl:      "http://10.0.0.60:4444/og",
-	httpClient: &http.Client{Timeout: 8 * time.Second},
+type ServiceConfig struct {
+	OgUrl      string
+	HttpClient *http.Client
 }
 
-func (s *service) getOg(ctx context.Context, query string) (io.ReadCloser, error) {
-	ogUrl := s.ogUrl
-
-	if config.Config().IsDevelopment {
-		ogUrl = "http://localhost:4444/og"
+func NewService(cfg ServiceConfig) *Service {
+	if cfg.HttpClient == nil {
+		cfg.HttpClient = &http.Client{
+			Timeout: 8 * time.Second,
+		}
 	}
+
+	return &Service{
+		ogUrl:      cfg.OgUrl,
+		httpClient: cfg.HttpClient,
+	}
+}
+
+func (s *Service) getOg(ctx context.Context, query string) (io.ReadCloser, error) {
+	ogUrl := s.ogUrl
 
 	targetUrl := fmt.Sprintf("%s?%s", ogUrl, query)
 

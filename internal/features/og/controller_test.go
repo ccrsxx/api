@@ -6,37 +6,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestController_getOg(t *testing.T) {
-	originalOgUrl := Service.ogUrl
-	originalClient := Service.httpClient
-
-	originalDev := config.Config().IsDevelopment
-	originalProd := config.Config().IsProduction
-
-	defer func() {
-		Service.ogUrl = originalOgUrl
-		Service.httpClient = originalClient
-
-		config.Config().IsProduction = originalProd
-		config.Config().IsDevelopment = originalDev
-	}()
-
-	// Default to Production for most tests so we can inject the mock URL
-	config.Config().IsDevelopment = false
-
 	t.Run("Success Default (No Cache)", func(t *testing.T) {
-		config.Config().IsProduction = false
-
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query().Get("title") != "test" {
 				t.Errorf("got %s, want query param title=test", r.URL.Query().Encode())
 			}
 			w.WriteHeader(http.StatusOK)
-
 			_, err := w.Write([]byte("png-data"))
 
 			if err != nil {
@@ -46,13 +25,18 @@ func TestController_getOg(t *testing.T) {
 
 		defer mockServer.Close()
 
-		Service.ogUrl = mockServer.URL
-		Service.httpClient = mockServer.Client()
+		svc := NewService(ServiceConfig{
+			OgUrl:      mockServer.URL,
+			HttpClient: mockServer.Client(),
+		})
+
+		// Inject false for isProduction
+		ctrl := NewController(svc, Config{ControllerConfig{IsProduction: false}})
 
 		r := httptest.NewRequest(http.MethodGet, "/og?title=test", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getOg(w, r)
+		ctrl.getOg(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -72,11 +56,8 @@ func TestController_getOg(t *testing.T) {
 	})
 
 	t.Run("Success Production (With Cache)", func(t *testing.T) {
-		config.Config().IsProduction = true
-
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-
 			_, err := w.Write([]byte("png-data"))
 
 			if err != nil {
@@ -86,13 +67,18 @@ func TestController_getOg(t *testing.T) {
 
 		defer mockServer.Close()
 
-		Service.ogUrl = mockServer.URL
-		Service.httpClient = mockServer.Client()
+		svc := NewService(ServiceConfig{
+			OgUrl:      mockServer.URL,
+			HttpClient: mockServer.Client(),
+		})
+
+		// Inject true for isProduction
+		ctrl := NewController(svc, Config{ControllerConfig: ControllerConfig{IsProduction: true}})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getOg(w, r)
+		ctrl.getOg(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -110,13 +96,17 @@ func TestController_getOg(t *testing.T) {
 
 		defer mockServer.Close()
 
-		Service.ogUrl = mockServer.URL
-		Service.httpClient = mockServer.Client()
+		svc := NewService(ServiceConfig{
+			OgUrl:      mockServer.URL,
+			HttpClient: mockServer.Client(),
+		})
+
+		ctrl := NewController(svc, Config{ControllerConfig: ControllerConfig{}})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getOg(w, r)
+		ctrl.getOg(w, r)
 
 		// The controller wraps the error using api.HandleHttpError.
 		// We just check it's not OK.
@@ -126,33 +116,25 @@ func TestController_getOg(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		config.Config().IsProduction = false
-
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-
-			_, err := w.Write([]byte("data"))
-
-			if err != nil {
-				t.Fatalf("failed to write response body: %v", err)
-			}
+			_, _ = w.Write([]byte("data"))
 		}))
 
 		defer mockServer.Close()
 
-		Service.ogUrl = mockServer.URL
-		Service.httpClient = mockServer.Client()
+		svc := NewService(ServiceConfig{
+			OgUrl:      mockServer.URL,
+			HttpClient: mockServer.Client(),
+		})
+
+		ctrl := NewController(svc, Config{ControllerConfig{}})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
 		errWriter := &test.ErrorResponseWriter{ResponseWriter: w}
-
-		Controller.getOg(errWriter, r)
-
-		if w.Code != http.StatusOK {
-			t.Error("want 200 even if write error occurs")
-		}
+		ctrl.getOg(errWriter, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
@@ -160,20 +142,24 @@ func TestController_getOg(t *testing.T) {
 	})
 
 	t.Run("Stream Close Error", func(t *testing.T) {
-		Service.ogUrl = "http://example.com"
-		Service.httpClient = &http.Client{
-			Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("data")},
-				}, nil
-			}),
-		}
+		svc := NewService(ServiceConfig{
+			OgUrl: "http://example.com",
+			HttpClient: &http.Client{
+				Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("data")},
+					}, nil
+				}),
+			},
+		})
+
+		ctrl := NewController(svc, Config{ControllerConfig{}})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getOg(w, r)
+		ctrl.getOg(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {
