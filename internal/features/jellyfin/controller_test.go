@@ -14,22 +14,22 @@ import (
 )
 
 func TestController_getCurrentlyPlaying(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
-
 	t.Run("Success", func(t *testing.T) {
 		// We return nil sessions, which results in "Not Playing" (200 OK)
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
 			return nil, nil
 		}
+
+		svc := NewService(Config{
+			Fetcher: mockFetcher,
+		})
+
+		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.getCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("want 200, got %d", w.Code)
@@ -49,14 +49,20 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
 			return nil, errors.New("fail")
 		}
+
+		svc := NewService(Config{
+			Fetcher: mockFetcher,
+		})
+
+		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.getCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("want 500, got %d", w.Code)
@@ -64,16 +70,22 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
 			return nil, nil
 		}
+
+		svc := NewService(Config{
+			Fetcher: mockFetcher,
+		})
+
+		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.getCurrentlyPlaying(errWriter, r)
+		ctrl.getCurrentlyPlaying(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

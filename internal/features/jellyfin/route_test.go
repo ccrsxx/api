@@ -10,7 +10,9 @@ import (
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	LoadRoutes(mux)
+	service := NewService(Config{})
+
+	LoadRoutes(mux, service)
 
 	tests := []test.RouteTestCase{
 

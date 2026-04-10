@@ -7,21 +7,27 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/clients/jellyfin"
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/model"
 )
 
 type service struct {
-	mu            sync.Mutex
-	fetcher       func(context.Context) ([]jellyfin.SessionInfo, error)
-	lastState     *model.CurrentlyPlaying
-	lastStateTime time.Time
+	mu               sync.Mutex
+	fetcher          func(context.Context) ([]jellyfin.SessionInfo, error)
+	lastState        *model.CurrentlyPlaying
+	lastStateTime    time.Time
+	jellyfinUsername string
 }
 
-var Service = &service{
-	fetcher: func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-		return jellyfin.DefaultClient().GetSessions(ctx)
-	},
+type Config struct {
+	Fetcher          func(context.Context) ([]jellyfin.SessionInfo, error)
+	JellyfinUsername string
+}
+
+func NewService(cfg Config) *service {
+	return &service{
+		fetcher:          cfg.Fetcher,
+		jellyfinUsername: cfg.JellyfinUsername,
+	}
 }
 
 func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
@@ -34,7 +40,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 	var playingItem *model.CurrentlyPlaying
 
 	for _, session := range sessions {
-		isNotValidUsername := session.UserName == nil || *session.UserName != config.Env().JellyfinUsername
+		isNotValidUsername := session.UserName == nil || *session.UserName != s.jellyfinUsername
 
 		if isNotValidUsername {
 			continue

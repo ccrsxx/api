@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
 	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/features/docs"
@@ -20,26 +21,31 @@ import (
 func RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
-	svcSpotify := spotify.NewService(spotify.Config{
+	serviceSpotify := spotify.NewService(spotify.Config{
 		Fetcher: spotifyClient.DefaultClient().GetCurrentlyPlaying,
 	})
 
-	svcSse := sse.NewService(
+	serviceJellyfin := jellyfin.NewService(jellyfin.Config{
+		Fetcher:          jellyfinClient.DefaultClient().GetSessions,
+		JellyfinUsername: config.Env().JellyfinUsername,
+	})
+
+	serviceSse := sse.NewService(
 		sse.Config{
 			PollInterval:    1 * time.Second,
-			SpotifyFetcher:  svcSpotify.GetCurrentlyPlaying,
-			JellyfinFetcher: jellyfin.Service.GetCurrentlyPlaying,
+			SpotifyFetcher:  serviceSpotify.GetCurrentlyPlaying,
+			JellyfinFetcher: serviceJellyfin.GetCurrentlyPlaying,
 		},
 	)
 
 	og.LoadRoutes(router)
-	sse.LoadRoutes(router, svcSse)
+	sse.LoadRoutes(router, serviceSse)
 	home.LoadRoutes(router)
 	docs.LoadRoutes(router)
 	tools.LoadRoutes(router)
 	favicon.LoadRoutes(router)
-	spotify.LoadRoutes(router, svcSpotify)
-	jellyfin.LoadRoutes(router)
+	spotify.LoadRoutes(router, serviceSpotify)
+	jellyfin.LoadRoutes(router, serviceJellyfin)
 
 	routes := middleware.Recovery(
 		middleware.Cors(config.Env().AllowedOrigins)(

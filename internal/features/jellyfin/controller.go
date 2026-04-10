@@ -7,12 +7,18 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 )
 
-type controller struct{}
+type controller struct {
+	service *service
+}
 
-var Controller = &controller{}
+func NewController(svc *service) *controller {
+	return &controller{
+		service: svc,
+	}
+}
 
 func (c *controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
-	data, err := Service.GetCurrentlyPlaying(r.Context())
+	data, err := c.service.GetCurrentlyPlaying(r.Context())
 
 	if err != nil {
 		api.HandleHttpError(w, r, err)
