@@ -11,12 +11,6 @@ import (
 )
 
 func TestService_getIpInfo(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
-
 	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
 		if ip.String() == "8.8.8.8" {
 			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8"), City: "Mountain View"}, nil
@@ -28,8 +22,6 @@ func TestService_getIpInfo(t *testing.T) {
 
 		return nil, errors.New("unknown ip")
 	}
-
-	Service.fetcher = mockFetcher
 
 	tests := []struct {
 		name       string
@@ -75,7 +67,9 @@ func TestService_getIpInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			info, err := Service.getIpInfo(tt.queryIp, tt.requestIp)
+			svc := NewService(ServiceConfig{Fetcher: mockFetcher})
+
+			info, err := svc.getIpInfo(tt.queryIp, tt.requestIp)
 
 			if tt.wantError {
 				if err == nil {

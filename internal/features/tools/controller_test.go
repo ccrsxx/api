@@ -14,12 +14,16 @@ import (
 
 func TestController_GetIpAddress(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
+		svc := NewService(ServiceConfig{Fetcher: nil})
+		ctrl := NewController(svc)
+
 		w := httptest.NewRecorder()
 
 		r := httptest.NewRequest(http.MethodGet, "/ip", nil)
+
 		r.RemoteAddr = "192.0.2.1:1234"
 
-		Controller.GetIpAddress(w, r)
+		ctrl.GetIpAddress(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -31,12 +35,15 @@ func TestController_GetIpAddress(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
+		svc := NewService(ServiceConfig{Fetcher: nil})
+		ctrl := NewController(svc)
+
 		r := httptest.NewRequest(http.MethodGet, "/ip", nil)
 		w := httptest.NewRecorder()
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.GetIpAddress(errWriter, r)
+		ctrl.GetIpAddress(errWriter, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
@@ -45,13 +52,7 @@ func TestController_GetIpAddress(t *testing.T) {
 }
 
 func TestController_GetIpInfo(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
-
-	Service.fetcher = func(ip net.IP) (*ipinfoLib.Core, error) {
+	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
 		if ip.String() == "8.8.8.8" {
 			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8")}, nil
 		}
@@ -60,10 +61,12 @@ func TestController_GetIpInfo(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
+		ctrl := NewController(NewService(ServiceConfig{Fetcher: mockFetcher}))
+
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=8.8.8.8", nil)
 		w := httptest.NewRecorder()
 
-		Controller.GetIpInfo(w, r)
+		ctrl.GetIpInfo(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -87,10 +90,13 @@ func TestController_GetIpInfo(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
+		svc := NewService(ServiceConfig{Fetcher: mockFetcher})
+		ctrl := NewController(svc)
+
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=1.1.1.1", nil)
 
-		Controller.GetIpInfo(w, r)
+		ctrl.GetIpInfo(w, r)
 
 		if w.Code == http.StatusOK {
 			t.Error("got 200, want error status")
@@ -98,12 +104,15 @@ func TestController_GetIpInfo(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
+		svc := NewService(ServiceConfig{Fetcher: mockFetcher})
+		ctrl := NewController(svc)
+
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=8.8.8.8", nil)
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.GetIpInfo(errWriter, r)
+		ctrl.GetIpInfo(errWriter, r)
 
 		// The handler should have attempted to write a 200 before the write failed.
 		if w.Code != http.StatusOK {
@@ -114,13 +123,14 @@ func TestController_GetIpInfo(t *testing.T) {
 
 func TestController_GetHttpHeaders(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
+		svc := NewService(ServiceConfig{Fetcher: nil})
+		ctrl := NewController(svc)
+
 		w := httptest.NewRecorder()
-
 		r := httptest.NewRequest(http.MethodGet, "/headers", nil)
-
 		r.Header.Set("User-Agent", "Test-Agent")
 
-		Controller.GetHttpHeaders(w, r)
+		ctrl.GetHttpHeaders(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -138,12 +148,15 @@ func TestController_GetHttpHeaders(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
+		svc := NewService(ServiceConfig{Fetcher: nil})
+		ctrl := NewController(svc)
+
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/headers", nil)
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.GetHttpHeaders(errWriter, r)
+		ctrl.GetHttpHeaders(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

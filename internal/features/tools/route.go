@@ -2,24 +2,21 @@ package tools
 
 import (
 	"net/http"
-	"time"
-
-	"github.com/ccrsxx/api/internal/middleware"
 )
 
-// Shared rate-limited handler for GetIpInfo. Limits to 10 requests per 10 seconds.
-var SharedGetIpInfo = middleware.RateLimit(10, 10*time.Second)(
-	http.HandlerFunc(Controller.GetIpInfo),
-)
+type Config struct {
+	ToolsController *Controller
+	SharedGetIpInfo http.Handler
+}
 
-func LoadRoutes(router *http.ServeMux) {
+func LoadRoutes(router *http.ServeMux, config Config) {
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /ipinfo", SharedGetIpInfo)
+	mux.Handle("GET /ipinfo", config.SharedGetIpInfo)
 
-	mux.HandleFunc("GET /ip", Controller.GetIpInfo)
+	mux.HandleFunc("GET /ip", config.ToolsController.GetIpAddress)
 
-	mux.HandleFunc("GET /headers", Controller.GetHttpHeaders)
+	mux.HandleFunc("GET /headers", config.ToolsController.GetHttpHeaders)
 
 	router.Handle("/tools/", http.StripPrefix("/tools", mux))
 }

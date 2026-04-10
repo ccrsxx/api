@@ -6,23 +6,26 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/clients/ipinfo"
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
 type ipInfoFetcher func(net.IP) (*ipinfoLib.Core, error)
 
-type service struct {
+type Service struct {
 	fetcher ipInfoFetcher
 }
 
-var Service = &service{
-	fetcher: func(ip net.IP) (*ipinfoLib.Core, error) {
-		return ipinfo.DefaultClient().GetIPInfo(ip)
-	},
+type ServiceConfig struct {
+	Fetcher ipInfoFetcher
 }
 
-func (s *service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
+func NewService(cfg ServiceConfig) *Service {
+	return &Service{
+		fetcher: cfg.Fetcher,
+	}
+}
+
+func (s *Service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
 	if queryIp != "" && net.ParseIP(queryIp) == nil {
 		return nil, &api.HttpError{
 			Message:    "Invalid IP address",

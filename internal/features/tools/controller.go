@@ -8,11 +8,17 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type controller struct{}
+type Controller struct {
+	service *Service
+}
 
-var Controller = &controller{}
+func NewController(svc *Service) *Controller {
+	return &Controller{
+		service: svc,
+	}
+}
 
-func (c *controller) GetIpAddress(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetIpAddress(w http.ResponseWriter, r *http.Request) {
 	ipAddress := utils.GetIpAddressFromRequest(r)
 
 	w.Header().Set("Content-Type", "text/plain")
@@ -23,11 +29,11 @@ func (c *controller) GetIpAddress(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
 	queryIp := r.URL.Query().Get("ip")
 	requestIp := utils.GetIpAddressFromRequest(r)
 
-	ipInfo, err := Service.getIpInfo(queryIp, requestIp)
+	ipInfo, err := c.service.getIpInfo(queryIp, requestIp)
 
 	if err != nil {
 		api.HandleHttpError(w, r, err)
@@ -39,7 +45,7 @@ func (c *controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *controller) GetHttpHeaders(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetHttpHeaders(w http.ResponseWriter, r *http.Request) {
 	headers := utils.GetHttpHeadersFromRequest(r)
 
 	if err := api.NewSuccessResponse(w, http.StatusOK, headers); err != nil {
