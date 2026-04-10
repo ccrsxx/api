@@ -14,6 +14,10 @@ type Service struct {
 	httpClient *http.Client
 }
 
+var DefaultHttpClient = &http.Client{
+	Timeout: 8 * time.Second,
+}
+
 type ServiceConfig struct {
 	OgUrl      string
 	HttpClient *http.Client
@@ -21,9 +25,7 @@ type ServiceConfig struct {
 
 func NewService(cfg ServiceConfig) *Service {
 	if cfg.HttpClient == nil {
-		cfg.HttpClient = &http.Client{
-			Timeout: 8 * time.Second,
-		}
+		cfg.HttpClient = DefaultHttpClient
 	}
 
 	return &Service{

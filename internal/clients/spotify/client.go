@@ -24,6 +24,7 @@ type Config struct {
 	ApiURL       string
 	AuthURL      string
 	ClientID     string
+	MemoryCache  cache.Cache
 	ClientSecret string
 	RefreshToken string
 }
@@ -174,10 +175,10 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 		return expiresIn - bufferExpiryOffset
 	}
 
-	data, err := cache.GetCachedData(
+	data, err := cache.GetOrFetch(
 		ctx,
+		c.config.MemoryCache,
 		"api:spotify:access_token",
-		"memory",
 		fetcher,
 		ttlFunc,
 	)

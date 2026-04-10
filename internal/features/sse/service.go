@@ -18,7 +18,7 @@ const (
 	maxClientsPerIP  = 10
 	maxGlobalClients = 100
 
-	defaultPollInterval = 1 * time.Second
+	DefaultPollInterval = 1 * time.Second
 )
 
 type clientMetadata struct {
@@ -49,7 +49,7 @@ type ServiceConfig struct {
 
 func NewService(cfg ServiceConfig) *Service {
 	if cfg.PollInterval <= 0 {
-		cfg.PollInterval = defaultPollInterval
+		cfg.PollInterval = DefaultPollInterval
 	}
 
 	return &Service{

@@ -7,7 +7,7 @@ import (
 )
 
 func TestMemoryCache_SetGet(t *testing.T) {
-	c := newMemoryCache(defaultCleanupInterval)
+	c := NewMemoryCache(DefaultCleanupInterval)
 	ctx := context.Background()
 
 	key := "user:123"
@@ -45,7 +45,7 @@ func TestMemoryCache_SetGet(t *testing.T) {
 }
 
 func TestMemoryCache_Expiration(t *testing.T) {
-	c := newMemoryCache(defaultCleanupInterval)
+	c := NewMemoryCache(DefaultCleanupInterval)
 	ctx := context.Background()
 
 	key := "temp-key"
@@ -76,7 +76,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 }
 
 func TestMemoryCache_Delete(t *testing.T) {
-	c := newMemoryCache(defaultCleanupInterval)
+	c := NewMemoryCache(DefaultCleanupInterval)
 	ctx := context.Background()
 
 	key := "del-key"
@@ -107,7 +107,7 @@ func TestMemoryCache_Delete(t *testing.T) {
 }
 
 func TestMemoryCache_Miss(t *testing.T) {
-	c := newMemoryCache(defaultCleanupInterval)
+	c := NewMemoryCache(DefaultCleanupInterval)
 	ctx := context.Background()
 
 	_, err := c.Get(ctx, "ghost-key")
@@ -120,7 +120,7 @@ func TestMemoryCache_Miss(t *testing.T) {
 func TestMemoryCache_Cleanup(t *testing.T) {
 	interval := 10 * time.Millisecond
 
-	c := newMemoryCache(interval)
+	c := NewMemoryCache(interval)
 	ctx := context.Background()
 
 	key := "cleanup-key"
@@ -141,4 +141,31 @@ func TestMemoryCache_Cleanup(t *testing.T) {
 	if err != ErrCacheMiss {
 		t.Errorf("cleanup loop failed to remove expired item")
 	}
+}
+
+func TestMemoryCache_DefaultCleanupInterval(t *testing.T) {
+	t.Run("Positive Interval", func(t *testing.T) {
+		c := NewMemoryCache(1)
+
+		if c.cleanupInterval != 1 {
+			t.Errorf("got %v, want 1", c.cleanupInterval)
+		}
+	})
+
+	t.Run("Zero Interval Fallback", func(t *testing.T) {
+		c := NewMemoryCache(0)
+
+		if c.cleanupInterval != DefaultCleanupInterval {
+			t.Errorf("got %v, want default %v", c.cleanupInterval, DefaultCleanupInterval)
+		}
+	})
+
+	t.Run("Negative Interval Fallback", func(t *testing.T) {
+		// Pass a negative number to trigger the if statement
+		c := NewMemoryCache(-1 * time.Minute)
+
+		if c.cleanupInterval != DefaultCleanupInterval {
+			t.Errorf("got %v, want default %v", c.cleanupInterval, DefaultCleanupInterval)
+		}
+	})
 }

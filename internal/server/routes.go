@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ccrsxx/api/internal/cache"
 	"github.com/ccrsxx/api/internal/clients/ipinfo"
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
@@ -23,10 +24,13 @@ import (
 func RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
+	memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)
+
 	ipInfoClient := ipinfo.NewClient(config.Env().IpInfoToken)
 
 	spotifyClient := spotifyClient.NewClient(spotifyClient.Config{
 		ClientID:     config.Env().SpotifyClientID,
+		MemoryCache:  memoryCache,
 		ClientSecret: config.Env().SpotifyClientSecret,
 		RefreshToken: config.Env().SpotifyRefreshToken,
 	})
@@ -65,16 +69,18 @@ func RegisterRoutes() http.Handler {
 		Router: router,
 		Service: og.NewService(og.ServiceConfig{
 			OgUrl:      config.Env().OgUrl,
-			HttpClient: &http.Client{Timeout: 8 * time.Second},
+			HttpClient: og.DefaultHttpClient,
 		}),
-		ControllerConfig: og.ControllerConfig{IsProduction: config.Config().IsProduction},
+		ControllerConfig: og.ControllerConfig{
+			IsProduction: config.Config().IsProduction,
+		},
 	})
 
 	sse.LoadRoutes(
 		sse.Config{
 			Router: router,
 			Service: sse.NewService(sse.ServiceConfig{
-				PollInterval:    1 * time.Second,
+				PollInterval:    sse.DefaultPollInterval,
 				SpotifyFetcher:  spotifyService.GetCurrentlyPlaying,
 				JellyfinFetcher: jellyfinService.GetCurrentlyPlaying,
 			}),

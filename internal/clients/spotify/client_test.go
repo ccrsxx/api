@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/cache"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -322,12 +323,15 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
+		memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)
+
 		c := NewClient(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
 			ApiURL:       apiSrv.URL,
+			MemoryCache:  memoryCache,
 		})
 
 		res, err := c.GetCurrentlyPlaying(ctx)
