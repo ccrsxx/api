@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/features/favicon"
 	"github.com/ccrsxx/api/internal/features/home"
@@ -18,8 +19,17 @@ import (
 func RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
+	svcSse := sse.NewService(
+		sse.Config{
+			PollInterval:    1 * time.Second,
+			SpotifyFetcher:  spotify.Service.GetCurrentlyPlaying,
+			JellyfinFetcher: jellyfin.Service.GetCurrentlyPlaying,
+		},
+	)
+
+	sse.LoadRoutes(router, svcSse)
+
 	og.LoadRoutes(router)
-	sse.LoadRoutes(router)
 	home.LoadRoutes(router)
 	docs.LoadRoutes(router)
 	tools.LoadRoutes(router)
@@ -28,7 +38,7 @@ func RegisterRoutes() http.Handler {
 	jellyfin.LoadRoutes(router)
 
 	routes := middleware.Recovery(
-		middleware.Cors(
+		middleware.Cors(config.Env().AllowedOrigins)(
 			middleware.Logging(
 				middleware.RateLimit(100, 1*time.Minute)(
 					router,

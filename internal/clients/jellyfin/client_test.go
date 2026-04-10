@@ -34,7 +34,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		defer mockServer.Close()
 
-		c := New(ClientConfig{URL: mockServer.URL})
+		c := New(Config{URL: mockServer.URL})
 
 		sessions, err := c.GetSessions(context.Background())
 
@@ -48,7 +48,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		c := New(ClientConfig{URL: "http://localhost\x7f"})
+		c := New(Config{URL: "http://localhost\x7f"})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -58,7 +58,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Network Error", func(t *testing.T) {
-		c := New(ClientConfig{URL: "http://invalid.url.local"})
+		c := New(Config{URL: "http://invalid.url.local"})
 
 		c.httpClient.Timeout = 10 * time.Millisecond
 
@@ -76,7 +76,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		defer mockServer.Close()
 
-		c := New(ClientConfig{URL: mockServer.URL})
+		c := New(Config{URL: mockServer.URL})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -98,7 +98,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		defer mockServer.Close()
 
-		c := New(ClientConfig{URL: mockServer.URL})
+		c := New(Config{URL: mockServer.URL})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -108,7 +108,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Body Close Error", func(t *testing.T) {
-		c := New(ClientConfig{URL: "http://example.com"})
+		c := New(Config{URL: "http://example.com"})
 
 		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{

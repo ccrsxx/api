@@ -22,7 +22,7 @@ const (
 	defaultApiURL  = "https://api.spotify.com/v1/me/player/currently-playing"
 )
 
-type ClientConfig struct {
+type Config struct {
 	ApiURL       string
 	AuthURL      string
 	ClientID     string
@@ -31,12 +31,8 @@ type ClientConfig struct {
 }
 
 type Client struct {
-	apiURL       string
-	authURL      string
-	clientID     string
-	clientSecret string
-	refreshToken string
-	httpClient   *http.Client
+	config     Config
+	httpClient *http.Client
 }
 
 var (
@@ -44,21 +40,17 @@ var (
 	instance *Client
 )
 
-func New(cfg ClientConfig) *Client {
+func New(cfg Config) *Client {
 	return &Client{
-		apiURL:       cfg.ApiURL,
-		authURL:      cfg.AuthURL,
-		clientID:     cfg.ClientID,
-		clientSecret: cfg.ClientSecret,
-		refreshToken: cfg.RefreshToken,
-		httpClient:   &http.Client{Timeout: 8 * time.Second},
+		config:     cfg,
+		httpClient: &http.Client{Timeout: 8 * time.Second},
 	}
 }
 
 func DefaultClient() *Client {
 	once.Do(func() {
 		instance = New(
-			ClientConfig{
+			Config{
 				ApiURL:       defaultApiURL,
 				AuthURL:      defaultAuthURL,
 				ClientID:     config.Env().SpotifyClientID,
@@ -80,7 +72,7 @@ func (c *Client) GetCurrentlyPlaying(ctx context.Context) (SpotifyCurrentlyPlayi
 		return SpotifyCurrentlyPlaying{}, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", c.apiURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.config.ApiURL, nil)
 
 	if err != nil {
 		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing request creation error: %w", err)
@@ -136,10 +128,10 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 	fetcher := func() (tokenResponse, error) {
 		requestBody := url.Values{
 			"grant_type":    {"refresh_token"},
-			"refresh_token": {c.refreshToken},
+			"refresh_token": {c.config.RefreshToken},
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", c.authURL, strings.NewReader(requestBody.Encode()))
+		req, err := http.NewRequestWithContext(ctx, "POST", c.config.AuthURL, strings.NewReader(requestBody.Encode()))
 
 		if err != nil {
 			return tokenResponse{}, fmt.Errorf("spotify access token request creation error: %w", err)
@@ -147,7 +139,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		authString := c.clientID + ":" + c.clientSecret
+		authString := c.config.ClientID + ":" + c.config.ClientSecret
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
 

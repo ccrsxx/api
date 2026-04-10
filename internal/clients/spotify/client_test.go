@@ -24,7 +24,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Token Request Creation Error", func(t *testing.T) {
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -38,7 +38,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	})
 
 	t.Run("Token Network Error", func(t *testing.T) {
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -60,7 +60,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 
 		defer s.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -84,7 +84,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 
 		defer s.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -100,7 +100,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 	})
 
 	t.Run("Token Body Close Error", func(t *testing.T) {
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -138,7 +138,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer authSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -158,7 +158,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer authSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -184,7 +184,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -216,7 +216,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -232,7 +232,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 	})
 
 	t.Run("API Body Close Error", func(t *testing.T) {
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -284,7 +284,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -322,7 +322,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",
@@ -356,7 +356,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		c := New(ClientConfig{
+		c := New(Config{
 			ClientID:     "id",
 			ClientSecret: "sec",
 			RefreshToken: "ref",

@@ -8,9 +8,15 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type controller struct{}
+type controller struct {
+	service *service
+}
 
-var Controller = &controller{}
+func NewController(svc *service) *controller {
+	return &controller{
+		service: svc,
+	}
+}
 
 func (c *controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request) {
 	rc := http.NewResponseController(w)
@@ -21,9 +27,9 @@ func (c *controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request
 	ipAddress := utils.GetIpAddressFromRequest(r)
 	userAgent := r.UserAgent()
 
-	Service.AddClient(ctx, clientChan, ipAddress, userAgent)
+	c.service.AddClient(ctx, clientChan, ipAddress, userAgent)
 
-	defer Service.RemoveClient(ctx, clientChan)
+	defer c.service.RemoveClient(ctx, clientChan)
 
 	clientDisconnected := r.Context().Done()
 

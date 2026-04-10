@@ -7,20 +7,15 @@ import (
 )
 
 func TestMiddleware(t *testing.T) {
-	handler := Middleware.IsConnectionAllowed(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-	}))
+	})
 
 	t.Run("Connection Allowed", func(t *testing.T) {
-		// Lock required for test stability: The background worker may still be
-		// reading these configuration fields while we restore them.
+		svc := NewService(Config{})
+		mw := NewMiddleware(svc)
 
-		Service.mu.Lock()
-
-		Service.clients = map[chan string]clientMetadata{}
-		Service.ipAddressCounts = map[string]int{}
-
-		Service.mu.Unlock()
+		handler := mw.IsConnectionAllowed(nextHandler)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
@@ -48,22 +43,18 @@ func TestMiddleware(t *testing.T) {
 	})
 
 	t.Run("IP Limit Reached", func(t *testing.T) {
+		svc := NewService(Config{})
+		mw := NewMiddleware(svc)
+
+		handler := mw.IsConnectionAllowed(nextHandler)
+
 		targetIP := "2.2.2.2"
 
-		Service.mu.Lock()
+		svc.mu.Lock()
 
-		// Max out the IP limit for the target IP
-		Service.ipAddressCounts[targetIP] = maxClientsPerIP
+		svc.ipAddressCounts[targetIP] = maxClientsPerIP
 
-		Service.mu.Unlock()
-
-		defer func() {
-			Service.mu.Lock()
-
-			delete(Service.ipAddressCounts, targetIP)
-
-			Service.mu.Unlock()
-		}()
+		svc.mu.Unlock()
 
 		w := httptest.NewRecorder()
 

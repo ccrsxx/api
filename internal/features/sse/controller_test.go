@@ -12,42 +12,36 @@ import (
 )
 
 func TestController_getCurrentPlayingSSE(t *testing.T) {
-	originalPollInterval := Service.pollInterval
-	originalSpotifyFetcher := Service.spotifyFetcher
-	originalJellyfinFetcher := Service.jellyfinFetcher
+	setupTest := func() (*service, *controller) {
+		dummySpotify := func(ctx context.Context) (model.CurrentlyPlaying, error) {
+			return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
+		}
 
-	defer func() {
-		Service.pollInterval = originalPollInterval
-		Service.spotifyFetcher = originalSpotifyFetcher
-		Service.jellyfinFetcher = originalJellyfinFetcher
-	}()
+		dummyJellyfin := func(ctx context.Context) (model.CurrentlyPlaying, error) {
+			return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
+		}
 
-	Service.spotifyFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
+		svc := NewService(Config{
+			PollInterval:    10 * time.Millisecond,
+			SpotifyFetcher:  dummySpotify,
+			JellyfinFetcher: dummyJellyfin,
+		})
+
+		ctrl := NewController(svc)
+
+		return svc, ctrl
 	}
-
-	Service.jellyfinFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
-	}
-
-	Service.pollInterval = 10 * time.Millisecond
 
 	t.Run("Client Channel Closed Externally", func(t *testing.T) {
-		// Clear State
-		Service.mu.Lock()
-
-		Service.clients = map[chan string]clientMetadata{}
-
-		Service.mu.Unlock()
+		svc, ctrl := setupTest()
 
 		done := make(chan struct{})
 
-		// Start Controller in Background
 		go func() {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
-			Controller.getCurrentPlayingSSE(w, r)
+			ctrl.getCurrentPlayingSSE(w, r)
 
 			close(done)
 		}()
@@ -56,14 +50,14 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 		var targetChan chan string
 
 		for {
-			Service.mu.RLock()
+			svc.mu.RLock()
 
-			for ch := range Service.clients {
+			for ch := range svc.clients {
 				targetChan = ch
 				break
 			}
 
-			Service.mu.RUnlock()
+			svc.mu.RUnlock()
 
 			if targetChan != nil {
 				break // Found it!
@@ -79,7 +73,7 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 
 		// Trigger !ok path
 		// We manually close the channel. This causes the controller loop to receive (!ok) and exit.
-		Service.RemoveClient(context.Background(), targetChan)
+		svc.RemoveClient(context.Background(), targetChan)
 
 		// Assert Exit
 		select {
@@ -91,13 +85,15 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
+		_, ctrl := setupTest()
+
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 		r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
 		done := make(chan bool)
 
 		go func() {
-			Controller.getCurrentPlayingSSE(w, r)
+			ctrl.getCurrentPlayingSSE(w, r)
 			close(done)
 		}()
 
@@ -115,6 +111,8 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 	})
 
 	t.Run("Flush Error", func(t *testing.T) {
+		_, ctrl := setupTest()
+
 		r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
 		// Use a writer that does NOT implement http.Flusher interface.
@@ -125,10 +123,10 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 
 		r = r.WithContext(ctx)
 
-		done := make(chan bool)
+		done := make(chan struct{})
 
 		go func() {
-			Controller.getCurrentPlayingSSE(w, r)
+			ctrl.getCurrentPlayingSSE(w, r)
 			close(done)
 		}()
 

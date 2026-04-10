@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/features/jellyfin"
-	"github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/model"
 	"github.com/google/uuid"
 )
@@ -43,13 +41,25 @@ type service struct {
 	jellyfinFetcher DataFetcher
 }
 
-var Service = &service{
-	clients:         map[chan string]clientMetadata{},
-	ipAddressCounts: map[string]int{},
+type Config struct {
+	PollInterval    time.Duration
+	SpotifyFetcher  DataFetcher
+	JellyfinFetcher DataFetcher
+}
 
-	pollInterval:    defaultPollInterval,
-	spotifyFetcher:  spotify.Service.GetCurrentlyPlaying,
-	jellyfinFetcher: jellyfin.Service.GetCurrentlyPlaying,
+func NewService(cfg Config) *service {
+	if cfg.PollInterval <= 0 {
+		cfg.PollInterval = defaultPollInterval
+	}
+
+	return &service{
+		clients:         map[chan string]clientMetadata{},
+		ipAddressCounts: map[string]int{},
+
+		pollInterval:    cfg.PollInterval,
+		spotifyFetcher:  cfg.SpotifyFetcher,
+		jellyfinFetcher: cfg.JellyfinFetcher,
+	}
 }
 
 func (s *service) IsConnectionAllowed(ip string) error {

@@ -11,7 +11,7 @@ import (
 	"github.com/ccrsxx/api/internal/config"
 )
 
-type ClientConfig struct {
+type Config struct {
 	URL      string
 	ApiKey   string
 	ImageURL string
@@ -31,7 +31,7 @@ var (
 	client *Client
 )
 
-func New(cfg ClientConfig) *Client {
+func New(cfg Config) *Client {
 	return &Client{
 		url:        cfg.URL,
 		apiKey:     cfg.ApiKey,
@@ -44,7 +44,7 @@ func New(cfg ClientConfig) *Client {
 func DefaultClient() *Client {
 	once.Do(func() {
 		client = New(
-			ClientConfig{
+			Config{
 				URL:      config.Env().JellyfinUrl,
 				ApiKey:   config.Env().JellyfinApiKey,
 				ImageURL: config.Env().JellyfinImageUrl,

@@ -4,24 +4,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/ccrsxx/api/internal/config"
 )
 
 func TestCors(t *testing.T) {
-	cfg := config.Env()
-
-	originalOrigins := cfg.AllowedOrigins
-
-	defer func() {
-		cfg.AllowedOrigins = originalOrigins
-	}()
-
-	cfg.AllowedOrigins = []string{"https://allowed.com", "http://localhost:3000"}
+	allowedOrigins := []string{"https://allowed.com", "http://localhost:3000"}
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+
+	mw := Cors(allowedOrigins)(nextHandler)
 
 	t.Run("Allowed Origin", func(t *testing.T) {
 		tests := []struct {
@@ -31,12 +23,12 @@ func TestCors(t *testing.T) {
 		}{
 			{
 				name:    "Allowed Origin 1",
-				origin:  "https://allowed.com",
+				origin:  allowedOrigins[0],
 				allowed: true,
 			},
 			{
 				name:    "Allowed Origin 2",
-				origin:  "http://localhost:3000",
+				origin:  allowedOrigins[1],
 				allowed: true,
 			},
 			{
@@ -59,7 +51,7 @@ func TestCors(t *testing.T) {
 
 				w := httptest.NewRecorder()
 
-				Cors(nextHandler).ServeHTTP(w, r)
+				mw.ServeHTTP(w, r)
 
 				if tt.allowed {
 					if w.Header().Get("Access-Control-Allow-Origin") != tt.origin {
@@ -89,7 +81,7 @@ func TestCors(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		Cors(nextHandler).ServeHTTP(w, r)
+		mw.ServeHTTP(w, r)
 
 		if w.Code != http.StatusNoContent {
 			t.Errorf("got status %d, want %d for OPTIONS", w.Code, http.StatusNoContent)
