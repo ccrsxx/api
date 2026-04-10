@@ -8,8 +8,12 @@ import (
 //go:embed openapi.json
 var openapiSpec []byte
 
-func LoadRoutes(router *http.ServeMux) {
+type Config struct {
+	Router *http.ServeMux
+}
+
+func LoadRoutes(config Config) {
 	controller := NewController(openapiSpec)
 
-	router.HandleFunc("GET /docs", controller.getDocs)
+	config.Router.HandleFunc("GET /docs", controller.getDocs)
 }

@@ -12,7 +12,10 @@ func TestLoadRoutes(t *testing.T) {
 
 	service := NewService(ServiceConfig{})
 
-	LoadRoutes(mux, service, Config{})
+	LoadRoutes(Config{
+		Router:  mux,
+		Service: service,
+	})
 
 	tests := []test.RouteTestCase{
 		{

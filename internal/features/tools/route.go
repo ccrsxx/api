@@ -5,18 +5,19 @@ import (
 )
 
 type Config struct {
-	ToolsController *Controller
-	SharedGetIpInfo http.Handler
+	Router                    *http.ServeMux
+	ToolsController           *Controller
+	SharedGetIpInfoController http.Handler
 }
 
-func LoadRoutes(router *http.ServeMux, config Config) {
+func LoadRoutes(config Config) {
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /ipinfo", config.SharedGetIpInfo)
+	mux.Handle("GET /ipinfo", config.SharedGetIpInfoController)
 
 	mux.HandleFunc("GET /ip", config.ToolsController.GetIpAddress)
 
 	mux.HandleFunc("GET /headers", config.ToolsController.GetHttpHeaders)
 
-	router.Handle("/tools/", http.StripPrefix("/tools", mux))
+	config.Router.Handle("/tools/", http.StripPrefix("/tools", mux))
 }

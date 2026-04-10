@@ -8,12 +8,18 @@ import (
 	m "github.com/ccrsxx/api/internal/middleware"
 )
 
-func LoadRoutes(router *http.ServeMux, service *Service, authMiddleware *auth.Middleware) {
-	controller := NewController(service)
-	middleware := NewMiddleware(service)
+type Config struct {
+	Router         *http.ServeMux
+	Service        *Service
+	AuthMiddleware *auth.Middleware
+}
 
-	router.Handle("GET /sse",
-		authMiddleware.IsAuthorizedFromQuery(
+func LoadRoutes(config Config) {
+	controller := NewController(config.Service)
+	middleware := NewMiddleware(config.Service)
+
+	config.Router.Handle("GET /sse",
+		config.AuthMiddleware.IsAuthorizedFromQuery(
 			m.RateLimit(10, 10*time.Second)(
 				middleware.IsConnectionAllowed(
 					http.HandlerFunc(controller.getCurrentPlayingSSE),

@@ -23,59 +23,93 @@ import (
 func RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
-	authService := auth.NewService(auth.ServiceConfig{
+	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
 		SecretKey: config.Env().SecretKey,
-	})
+	}))
 
-	authMiddleware := auth.NewMiddleware(authService)
-
-	configOg := og.Config{ControllerConfig: og.ControllerConfig{
-		IsProduction: config.Config().IsProduction,
-	}}
-
-	serviceOg := og.NewService(og.ServiceConfig{
-		OgUrl:      config.Env().OgUrl,
-		HttpClient: &http.Client{Timeout: 8 * time.Second},
-	})
-
-	serviceSpotify := spotify.NewService(spotify.ServiceConfig{
+	spotifyService := spotify.NewService(spotify.ServiceConfig{
 		Fetcher: spotifyClient.DefaultClient().GetCurrentlyPlaying,
 	})
 
-	serviceJellyfin := jellyfin.NewService(jellyfin.ServiceConfig{
+	jellyfinService := jellyfin.NewService(jellyfin.ServiceConfig{
 		Fetcher:          jellyfinClient.DefaultClient().GetSessions,
 		JellyfinUsername: config.Env().JellyfinUsername,
 	})
 
-	serviceSse := sse.NewService(
-		sse.ServiceConfig{
-			PollInterval:    1 * time.Second,
-			SpotifyFetcher:  serviceSpotify.GetCurrentlyPlaying,
-			JellyfinFetcher: serviceJellyfin.GetCurrentlyPlaying,
+	toolsController := tools.NewController(
+		tools.NewService(
+			tools.ServiceConfig{
+				Fetcher: ipinfo.DefaultClient().GetIPInfo,
+			},
+		),
+	)
+
+	sharedGetIpInfoController := http.HandlerFunc(toolsController.GetIpInfo)
+
+	og.LoadRoutes(og.Config{
+		Router: router,
+		Service: og.NewService(og.ServiceConfig{
+			OgUrl:      config.Env().OgUrl,
+			HttpClient: &http.Client{Timeout: 8 * time.Second},
+		}),
+		ControllerConfig: og.ControllerConfig{IsProduction: config.Config().IsProduction},
+	})
+
+	sse.LoadRoutes(
+		sse.Config{
+			Router: router,
+			Service: sse.NewService(sse.ServiceConfig{
+				PollInterval:    1 * time.Second,
+				SpotifyFetcher:  spotifyService.GetCurrentlyPlaying,
+				JellyfinFetcher: jellyfinService.GetCurrentlyPlaying,
+			}),
+			AuthMiddleware: authMiddleware,
 		},
 	)
 
-	serviceTools := tools.NewService(
-		tools.ServiceConfig{
-			Fetcher: ipinfo.DefaultClient().GetIPInfo,
+	home.LoadRoutes(
+		home.Config{
+			Router:                    router,
+			ToolsController:           toolsController,
+			SharedGetIpInfoController: sharedGetIpInfoController,
 		},
 	)
 
-	controllerTools := tools.NewController(serviceTools)
+	docs.LoadRoutes(
+		docs.Config{
+			Router: router,
+		},
+	)
 
-	configTools := tools.Config{
-		ToolsController: controllerTools,
-		SharedGetIpInfo: http.HandlerFunc(controllerTools.GetIpInfo),
-	}
+	tools.LoadRoutes(
+		tools.Config{
+			Router:                    router,
+			ToolsController:           toolsController,
+			SharedGetIpInfoController: sharedGetIpInfoController,
+		},
+	)
 
-	og.LoadRoutes(router, serviceOg, configOg)
-	sse.LoadRoutes(router, serviceSse, authMiddleware)
-	home.LoadRoutes(router, configTools)
-	docs.LoadRoutes(router)
-	tools.LoadRoutes(router, configTools)
-	favicon.LoadRoutes(router)
-	spotify.LoadRoutes(router, serviceSpotify, authMiddleware)
-	jellyfin.LoadRoutes(router, serviceJellyfin, authMiddleware)
+	favicon.LoadRoutes(
+		favicon.Config{
+			Router: router,
+		},
+	)
+
+	spotify.LoadRoutes(
+		spotify.Config{
+			Router:         router,
+			Service:        spotifyService,
+			AuthMiddleware: authMiddleware,
+		},
+	)
+
+	jellyfin.LoadRoutes(
+		jellyfin.Config{
+			Router:         router,
+			Service:        jellyfinService,
+			AuthMiddleware: authMiddleware,
+		},
+	)
 
 	routes := middleware.Recovery(
 		middleware.Cors(config.Env().AllowedOrigins)(

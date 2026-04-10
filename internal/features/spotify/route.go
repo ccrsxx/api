@@ -6,16 +6,22 @@ import (
 	"github.com/ccrsxx/api/internal/features/auth"
 )
 
-func LoadRoutes(router *http.ServeMux, service *Service, authMiddleware *auth.Middleware) {
+type Config struct {
+	Router         *http.ServeMux
+	Service        *Service
+	AuthMiddleware *auth.Middleware
+}
+
+func LoadRoutes(config Config) {
 	mux := http.NewServeMux()
 
-	controller := NewController(service)
+	controller := NewController(config.Service)
 
 	mux.Handle("GET /currently-playing",
-		authMiddleware.IsAuthorized(
+		config.AuthMiddleware.IsAuthorized(
 			http.HandlerFunc(controller.getCurrentlyPlaying),
 		),
 	)
 
-	router.Handle("/spotify/", http.StripPrefix("/spotify", mux))
+	config.Router.Handle("/spotify/", http.StripPrefix("/spotify", mux))
 }

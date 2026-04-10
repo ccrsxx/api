@@ -17,10 +17,10 @@ type ControllerConfig struct {
 	IsProduction bool
 }
 
-func NewController(service *Service, cfg Config) *Controller {
+func NewController(service *Service, cfg ControllerConfig) *Controller {
 	return &Controller{
 		service:      service,
-		isProduction: cfg.ControllerConfig.IsProduction,
+		isProduction: cfg.IsProduction,
 	}
 }
 

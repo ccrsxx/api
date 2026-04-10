@@ -7,7 +7,13 @@ import (
 	"github.com/ccrsxx/api/internal/features/tools"
 )
 
-func LoadRoutes(router *http.ServeMux, config tools.Config) {
+type Config struct {
+	Router                    *http.ServeMux
+	ToolsController           *tools.Controller
+	SharedGetIpInfoController http.Handler
+}
+
+func LoadRoutes(config Config) {
 	controller := NewController()
 
 	handleHomeRequest := func(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +24,7 @@ func LoadRoutes(router *http.ServeMux, config tools.Config) {
 			config.ToolsController.GetIpAddress(w, r)
 			return
 		case strings.HasPrefix(hostname, "ipinfo."):
-			config.SharedGetIpInfo.ServeHTTP(w, r)
+			config.SharedGetIpInfoController.ServeHTTP(w, r)
 			return
 		case strings.HasPrefix(hostname, "headers."):
 			config.ToolsController.GetHttpHeaders(w, r)
@@ -28,5 +34,5 @@ func LoadRoutes(router *http.ServeMux, config tools.Config) {
 		controller.ping(w, r)
 	}
 
-	router.HandleFunc("GET /{$}", handleHomeRequest)
+	config.Router.HandleFunc("GET /{$}", handleHomeRequest)
 }

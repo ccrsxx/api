@@ -21,11 +21,15 @@ func TestLoadRoutes(t *testing.T) {
 	ctrl := NewController(svc)
 
 	config := Config{
-		ToolsController: ctrl,
-		SharedGetIpInfo: http.HandlerFunc(ctrl.GetIpInfo),
+		ToolsController:           ctrl,
+		SharedGetIpInfoController: http.HandlerFunc(ctrl.GetIpInfo),
 	}
 
-	LoadRoutes(mux, config)
+	LoadRoutes(Config{
+		Router:                    mux,
+		ToolsController:           config.ToolsController,
+		SharedGetIpInfoController: config.SharedGetIpInfoController,
+	})
 
 	tests := []test.RouteTestCase{
 		{

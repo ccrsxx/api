@@ -31,7 +31,7 @@ func TestController_getOg(t *testing.T) {
 		})
 
 		// Inject false for isProduction
-		ctrl := NewController(svc, Config{ControllerConfig{IsProduction: false}})
+		ctrl := NewController(svc, ControllerConfig{IsProduction: false})
 
 		r := httptest.NewRequest(http.MethodGet, "/og?title=test", nil)
 		w := httptest.NewRecorder()
@@ -73,7 +73,7 @@ func TestController_getOg(t *testing.T) {
 		})
 
 		// Inject true for isProduction
-		ctrl := NewController(svc, Config{ControllerConfig: ControllerConfig{IsProduction: true}})
+		ctrl := NewController(svc, ControllerConfig{IsProduction: true})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
@@ -101,7 +101,7 @@ func TestController_getOg(t *testing.T) {
 			HttpClient: mockServer.Client(),
 		})
 
-		ctrl := NewController(svc, Config{ControllerConfig: ControllerConfig{}})
+		ctrl := NewController(svc, ControllerConfig{})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
@@ -128,7 +128,7 @@ func TestController_getOg(t *testing.T) {
 			HttpClient: mockServer.Client(),
 		})
 
-		ctrl := NewController(svc, Config{ControllerConfig{}})
+		ctrl := NewController(svc, ControllerConfig{})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
@@ -154,7 +154,7 @@ func TestController_getOg(t *testing.T) {
 			},
 		})
 
-		ctrl := NewController(svc, Config{ControllerConfig{}})
+		ctrl := NewController(svc, ControllerConfig{})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()

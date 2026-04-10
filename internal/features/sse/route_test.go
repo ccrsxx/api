@@ -17,7 +17,13 @@ func TestLoadRoutes(t *testing.T) {
 
 	authMiddleware := auth.NewMiddleware(authService)
 
-	LoadRoutes(mux, service, authMiddleware)
+	LoadRoutes(
+		Config{
+			Router:         mux,
+			Service:        service,
+			AuthMiddleware: authMiddleware,
+		},
+	)
 
 	tests := []test.RouteTestCase{
 		{
