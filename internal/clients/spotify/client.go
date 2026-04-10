@@ -56,8 +56,8 @@ func NewClient(cfg Config) *Client {
 		authURL:     cfg.AuthURL,
 		refresh:     cfg.RefreshToken,
 		clientID:    cfg.ClientID,
-		memoryCache: cfg.MemoryCache,
 		httpClient:  &http.Client{Timeout: 8 * time.Second},
+		memoryCache: cfg.MemoryCache,
 	}
 }
 
