@@ -6,13 +6,13 @@ import (
 	"github.com/ccrsxx/api/internal/features/auth"
 )
 
-func LoadRoutes(router *http.ServeMux, service *service) {
+func LoadRoutes(router *http.ServeMux, service *Service, authMiddleware *auth.Middleware) {
 	mux := http.NewServeMux()
 
 	controller := NewController(service)
 
 	mux.Handle("GET /currently-playing",
-		auth.Middleware.IsAuthorized(
+		authMiddleware.IsAuthorized(
 			http.HandlerFunc(controller.getCurrentlyPlaying),
 		),
 	)

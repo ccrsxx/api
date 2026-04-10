@@ -10,7 +10,7 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-type service struct {
+type Service struct {
 	mu               sync.Mutex
 	fetcher          func(context.Context) ([]jellyfin.SessionInfo, error)
 	lastState        *model.CurrentlyPlaying
@@ -18,19 +18,19 @@ type service struct {
 	jellyfinUsername string
 }
 
-type Config struct {
+type ServiceConfig struct {
 	Fetcher          func(context.Context) ([]jellyfin.SessionInfo, error)
 	JellyfinUsername string
 }
 
-func NewService(cfg Config) *service {
-	return &service{
+func NewService(cfg ServiceConfig) *Service {
+	return &Service{
 		fetcher:          cfg.Fetcher,
 		jellyfinUsername: cfg.JellyfinUsername,
 	}
 }
 
-func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
+func (s *Service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
 	sessions, err := s.fetcher(ctx)
 
 	if err != nil {
@@ -77,7 +77,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 	return *playingItem, nil
 }
 
-func (s *service) getCachedStateOrEmpty() model.CurrentlyPlaying {
+func (s *Service) getCachedStateOrEmpty() model.CurrentlyPlaying {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -94,7 +94,7 @@ func (s *service) getCachedStateOrEmpty() model.CurrentlyPlaying {
 	return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 }
 
-func (s *service) getExtrapolatedState() model.CurrentlyPlaying {
+func (s *Service) getExtrapolatedState() model.CurrentlyPlaying {
 	if s.lastState == nil || s.lastState.Item == nil {
 		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 	}

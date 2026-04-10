@@ -1,23 +1,25 @@
 package favicon
 
 import (
-	_ "embed"
 	"log/slog"
 	"net/http"
 )
 
-var Controller = &controller{}
+type Controller struct {
+	icon []byte
+}
 
-type controller struct{}
+func NewController(icon []byte) *Controller {
+	return &Controller{
+		icon: icon,
+	}
+}
 
-//go:embed favicon.ico
-var icon []byte
-
-func (c *controller) getFavicon(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) getFavicon(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/x-icon")
 	w.WriteHeader(http.StatusOK)
 
-	if _, err := w.Write(icon); err != nil {
+	if _, err := w.Write(c.icon); err != nil {
 		slog.Warn("favicon response error", "error", err)
 	}
 }

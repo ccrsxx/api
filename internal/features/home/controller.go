@@ -8,11 +8,13 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type controller struct{}
+type Controller struct{}
 
-var Controller = &controller{}
+func NewController() *Controller {
+	return &Controller{}
+}
 
-func (c *controller) ping(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) ping(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Message          string `json:"message"`
 		DocumentationURL string `json:"documentationUrl"`

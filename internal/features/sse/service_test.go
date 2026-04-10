@@ -12,7 +12,7 @@ import (
 
 func TestService_IsConnectionAllowed(t *testing.T) {
 	t.Run("Allowed", func(t *testing.T) {
-		svc := NewService(Config{})
+		svc := NewService(ServiceConfig{})
 
 		if err := svc.IsConnectionAllowed("1.1.1.1"); err != nil {
 			t.Errorf("got %v, want allowed", err)
@@ -20,7 +20,7 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 	})
 
 	t.Run("IP Limit Reached", func(t *testing.T) {
-		svc := NewService(Config{})
+		svc := NewService(ServiceConfig{})
 		ip := "2.2.2.2"
 
 		// Access private fields safely since we are in the sse package
@@ -34,7 +34,7 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 	})
 
 	t.Run("Global Limit Reached", func(t *testing.T) {
-		svc := NewService(Config{})
+		svc := NewService(ServiceConfig{})
 
 		// Fake filling the map
 		for range maxGlobalClients {
@@ -51,7 +51,7 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 }
 
 func TestService_AddRemoveClient(t *testing.T) {
-	setupService := func() *service {
+	setupService := func() *Service {
 		dummySpotify := func(ctx context.Context) (model.CurrentlyPlaying, error) {
 			return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
 		}
@@ -60,7 +60,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 			return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
 		}
 
-		return NewService(Config{
+		return NewService(ServiceConfig{
 			PollInterval:    10 * time.Millisecond,
 			SpotifyFetcher:  dummySpotify,
 			JellyfinFetcher: dummyJellyfin,
@@ -152,7 +152,7 @@ func TestService_getSSEData_Errors(t *testing.T) {
 		return model.CurrentlyPlaying{}, errors.New("jellyfin fail")
 	}
 
-	svc := NewService(Config{
+	svc := NewService(ServiceConfig{
 		SpotifyFetcher:  failSpotify,
 		JellyfinFetcher: failJellyfin,
 	})
@@ -166,7 +166,7 @@ func TestService_getSSEData_Errors(t *testing.T) {
 }
 
 func TestService_WorkerLocks(t *testing.T) {
-	svc := NewService(Config{})
+	svc := NewService(ServiceConfig{})
 
 	if svc.stopChan != nil {
 		t.Error("want initial stopChan to be nil")

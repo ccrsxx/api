@@ -9,19 +9,15 @@ import (
 )
 
 func TestController_getFavicon(t *testing.T) {
-	originalIcon := icon
-
-	defer func() {
-		icon = originalIcon
-	}()
-
-	icon = []byte("fake-icon-data")
+	mockIcon = []byte("mock-icon-data")
 
 	t.Run("Success", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/favicon.ico", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getFavicon(w, r)
+		controller := NewController(mockIcon)
+
+		controller.getFavicon(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -31,7 +27,7 @@ func TestController_getFavicon(t *testing.T) {
 			t.Errorf("got %s, want Content-Type image/x-icon", contentType)
 		}
 
-		if w.Body.String() != "fake-icon-data" {
+		if w.Body.String() != "mock-icon-data" {
 			t.Error("want body to contain icon data")
 		}
 	})
@@ -40,7 +36,9 @@ func TestController_getFavicon(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/favicon.ico", nil)
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		Controller.getFavicon(w, r)
+		controller := NewController(mockIcon)
+
+		controller.getFavicon(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

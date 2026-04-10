@@ -12,7 +12,7 @@ import (
 )
 
 func TestController_getCurrentPlayingSSE(t *testing.T) {
-	setupTest := func() (*service, *controller) {
+	setupTest := func() (*Service, *Controller) {
 		dummySpotify := func(ctx context.Context) (model.CurrentlyPlaying, error) {
 			return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
 		}
@@ -21,7 +21,7 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 			return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			PollInterval:    10 * time.Millisecond,
 			SpotifyFetcher:  dummySpotify,
 			JellyfinFetcher: dummyJellyfin,

@@ -1,7 +1,6 @@
 package docs
 
 import (
-	_ "embed"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,14 +10,17 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type controller struct{}
+type Controller struct {
+	openapiSpec []byte
+}
 
-var Controller = &controller{}
+func NewController(openapiSpec []byte) *Controller {
+	return &Controller{
+		openapiSpec: openapiSpec,
+	}
+}
 
-//go:embed openapi.json
-var openapiSpec []byte
-
-func (c *controller) getDocs(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) getDocs(w http.ResponseWriter, r *http.Request) {
 	serverOverride := scalargo.ServerOverride{
 		URL:         utils.GetPublicUrlFromRequest(r),
 		Description: "Production server",
@@ -28,7 +30,7 @@ func (c *controller) getDocs(w http.ResponseWriter, r *http.Request) {
 		scalargo.WithTheme(scalargo.ThemeDefault),
 		scalargo.WithLayout(scalargo.LayoutModern),
 		scalargo.WithServers(serverOverride),
-		scalargo.WithSpecBytes(openapiSpec),
+		scalargo.WithSpecBytes(c.openapiSpec),
 	)
 
 	if err != nil {

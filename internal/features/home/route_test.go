@@ -1,16 +1,32 @@
 package home
 
 import (
+	"net"
 	"net/http"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/tools"
 	"github.com/ccrsxx/api/internal/test"
+	"github.com/ipinfo/go/v2/ipinfo"
 )
 
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	LoadRoutes(mux)
+	svc := tools.NewService(tools.ServiceConfig{
+		Fetcher: func(ip net.IP) (*ipinfo.Core, error) {
+			return &ipinfo.Core{IP: ip}, nil
+		},
+	})
+
+	ctrl := tools.NewController(svc)
+
+	config := tools.Config{
+		ToolsController: ctrl,
+		SharedGetIpInfo: http.HandlerFunc(ctrl.GetIpInfo),
+	}
+
+	LoadRoutes(mux, config)
 
 	tests := []test.RouteTestCase{
 		{

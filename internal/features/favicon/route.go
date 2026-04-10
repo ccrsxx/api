@@ -1,9 +1,15 @@
 package favicon
 
 import (
+	_ "embed"
 	"net/http"
 )
 
+//go:embed favicon.ico
+var mockIcon []byte
+
 func LoadRoutes(router *http.ServeMux) {
-	router.HandleFunc("GET /favicon.ico", Controller.getFavicon)
+	controller := NewController(mockIcon)
+
+	router.HandleFunc("GET /favicon.ico", controller.getFavicon)
 }

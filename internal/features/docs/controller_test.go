@@ -9,21 +9,15 @@ import (
 )
 
 func TestController_getDocs(t *testing.T) {
-	originalSpec := openapiSpec
-
-	defer func() {
-		openapiSpec = originalSpec
-	}()
-
 	validJSON := []byte(`{"openapi":"3.0.0","info":{"title":"Test","version":"1.0"}}`)
 
 	t.Run("Success", func(t *testing.T) {
-		openapiSpec = validJSON
-
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getDocs(w, r)
+		controller := NewController(validJSON)
+
+		controller.getDocs(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -39,12 +33,12 @@ func TestController_getDocs(t *testing.T) {
 	})
 
 	t.Run("Render Error", func(t *testing.T) {
-		openapiSpec = nil
-
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getDocs(w, r)
+		controller := NewController(nil)
+
+		controller.getDocs(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want status 500", w.Code)
@@ -57,7 +51,9 @@ func TestController_getDocs(t *testing.T) {
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 
-		Controller.getDocs(w, r)
+		controller := NewController(validJSON)
+
+		controller.getDocs(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

@@ -29,7 +29,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			}, nil
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher:          mockFetcher,
 			JellyfinUsername: validUser,
 		})
@@ -62,7 +62,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			}, nil
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher:          mockFetcher,
 			JellyfinUsername: validUser,
 		})
@@ -85,7 +85,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			return nil, errors.New("network fail")
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher: mockFetcher,
 		})
 
@@ -114,7 +114,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			}, nil
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher:          mockFetcher,
 			JellyfinUsername: validUser,
 		})
@@ -168,7 +168,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 	t.Run("Extrapolation Logic Edge Cases", func(t *testing.T) {
 		// Initialize empty service
-		svc := NewService(Config{})
+		svc := NewService(ServiceConfig{})
 
 		// Manually setup a state where Progress is near Duration
 		svc.lastState = &model.CurrentlyPlaying{

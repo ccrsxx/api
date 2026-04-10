@@ -8,17 +8,17 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type controller struct {
-	service *service
+type Controller struct {
+	service *Service
 }
 
-func NewController(svc *service) *controller {
-	return &controller{
+func NewController(svc *Service) *Controller {
+	return &Controller{
 		service: svc,
 	}
 }
 
-func (c *controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request) {
 	rc := http.NewResponseController(w)
 	ctx := r.Context()
 

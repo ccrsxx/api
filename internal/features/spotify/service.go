@@ -9,21 +9,21 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-type service struct {
+type Service struct {
 	fetcher func(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
 }
 
-type Config struct {
+type ServiceConfig struct {
 	Fetcher func(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
 }
 
-func NewService(cfg Config) *service {
-	return &service{
+func NewService(cfg ServiceConfig) *Service {
+	return &Service{
 		fetcher: cfg.Fetcher,
 	}
 }
 
-func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
+func (s *Service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
 	data, err := s.fetcher(ctx)
 
 	// Handle 204 No Content case

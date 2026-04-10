@@ -30,7 +30,7 @@ type clientMetadata struct {
 
 type DataFetcher func(context.Context) (model.CurrentlyPlaying, error)
 
-type service struct {
+type Service struct {
 	mu              sync.RWMutex
 	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
@@ -41,18 +41,18 @@ type service struct {
 	jellyfinFetcher DataFetcher
 }
 
-type Config struct {
+type ServiceConfig struct {
 	PollInterval    time.Duration
 	SpotifyFetcher  DataFetcher
 	JellyfinFetcher DataFetcher
 }
 
-func NewService(cfg Config) *service {
+func NewService(cfg ServiceConfig) *Service {
 	if cfg.PollInterval <= 0 {
 		cfg.PollInterval = defaultPollInterval
 	}
 
-	return &service{
+	return &Service{
 		clients:         map[chan string]clientMetadata{},
 		ipAddressCounts: map[string]int{},
 
@@ -62,7 +62,7 @@ func NewService(cfg Config) *service {
 	}
 }
 
-func (s *service) IsConnectionAllowed(ip string) error {
+func (s *Service) IsConnectionAllowed(ip string) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -87,7 +87,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 	return nil
 }
 
-func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddress string, userAgent string) {
+func (s *Service) AddClient(ctx context.Context, clientChan chan string, ipAddress string, userAgent string) {
 	sseData := s.getSSEData(ctx)
 
 	if ctx.Err() != nil {
@@ -127,7 +127,7 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 	}
 }
 
-func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
+func (s *Service) RemoveClient(ctx context.Context, clientChan chan string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -164,7 +164,7 @@ func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
 	}
 }
 
-func (s *service) startWorkerLocked() {
+func (s *Service) startWorkerLocked() {
 	if s.stopChan != nil {
 		slog.Warn("sse poller already running")
 		return
@@ -177,7 +177,7 @@ func (s *service) startWorkerLocked() {
 	slog.Info("sse poller started")
 }
 
-func (s *service) stopWorkerLocked() {
+func (s *Service) stopWorkerLocked() {
 	if s.stopChan == nil {
 		slog.Warn("sse poller not running")
 		return
@@ -190,7 +190,7 @@ func (s *service) stopWorkerLocked() {
 	slog.Info("sse poller stopped")
 }
 
-func (s *service) pollLoop(stopChan chan struct{}) {
+func (s *Service) pollLoop(stopChan chan struct{}) {
 	interval := s.pollInterval
 
 	ticker := time.NewTicker(interval)
@@ -209,7 +209,7 @@ func (s *service) pollLoop(stopChan chan struct{}) {
 	}
 }
 
-func (s *service) pollAndBroadcast(ctx context.Context) {
+func (s *Service) pollAndBroadcast(ctx context.Context) {
 	sseData := s.getSSEData(ctx)
 
 	// Protect map iteration with read lock
@@ -237,7 +237,7 @@ type sseData struct {
 	jellyfin string
 }
 
-func (s *service) getSSEData(ctx context.Context) sseData {
+func (s *Service) getSSEData(ctx context.Context) sseData {
 	spotifyFetcher := s.spotifyFetcher
 	jellyfinFetcher := s.jellyfinFetcher
 

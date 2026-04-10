@@ -12,7 +12,7 @@ func TestMiddleware(t *testing.T) {
 	})
 
 	t.Run("Connection Allowed", func(t *testing.T) {
-		svc := NewService(Config{})
+		svc := NewService(ServiceConfig{})
 		mw := NewMiddleware(svc)
 
 		handler := mw.IsConnectionAllowed(nextHandler)
@@ -43,7 +43,7 @@ func TestMiddleware(t *testing.T) {
 	})
 
 	t.Run("IP Limit Reached", func(t *testing.T) {
-		svc := NewService(Config{})
+		svc := NewService(ServiceConfig{})
 		mw := NewMiddleware(svc)
 
 		handler := mw.IsConnectionAllowed(nextHandler)

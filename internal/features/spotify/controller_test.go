@@ -22,7 +22,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			}, nil
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher: mockFetcher,
 		})
 
@@ -55,7 +55,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			return spotify.SpotifyCurrentlyPlaying{}, errors.New("fail")
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher: mockFetcher,
 		})
 
@@ -81,7 +81,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			}, nil
 		}
 
-		svc := NewService(Config{
+		svc := NewService(ServiceConfig{
 			Fetcher: mockFetcher,
 		})
 

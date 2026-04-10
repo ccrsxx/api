@@ -8,12 +8,12 @@ import (
 )
 
 type middleware struct {
-	service *service
+	service *Service
 }
 
 var Middleware = &middleware{}
 
-func NewMiddleware(svc *service) *middleware {
+func NewMiddleware(svc *Service) *middleware {
 	return &middleware{
 		service: svc,
 	}
