@@ -50,11 +50,7 @@ func TestMiddleware(t *testing.T) {
 
 		targetIP := "2.2.2.2"
 
-		svc.mu.Lock()
-
 		svc.ipAddressCounts[targetIP] = maxClientsPerIP
-
-		svc.mu.Unlock()
 
 		w := httptest.NewRecorder()
 
