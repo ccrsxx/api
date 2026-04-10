@@ -53,6 +53,8 @@ setup-hooks:
 setup-scripts:
 	cd scripts && npm i
 
+setup: setup-tools setup-hooks setup-scripts
+
 generate-openapi:
 	npm run start:no-commit --prefix ./scripts
 
