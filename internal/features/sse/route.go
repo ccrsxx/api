@@ -8,9 +8,9 @@ import (
 	m "github.com/ccrsxx/api/internal/middleware"
 )
 
-func LoadRoutes(router *http.ServeMux, svc *service) {
-	controller := NewController(svc)
-	middleware := NewMiddleware(svc)
+func LoadRoutes(router *http.ServeMux, service *service) {
+	controller := NewController(service)
+	middleware := NewMiddleware(service)
 
 	router.Handle("GET /sse",
 		auth.Middleware.IsAuthorizedFromQuery(

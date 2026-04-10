@@ -13,10 +13,14 @@ type service struct {
 	fetcher func(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
 }
 
-var Service = &service{
-	fetcher: func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-		return spotify.DefaultClient().GetCurrentlyPlaying(ctx)
-	},
+type Config struct {
+	Fetcher func(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
+}
+
+func NewService(cfg Config) *service {
+	return &service{
+		fetcher: cfg.Fetcher,
+	}
 }
 
 func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {

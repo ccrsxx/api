@@ -14,24 +14,24 @@ import (
 )
 
 func TestController_getCurrentlyPlaying(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
-
 	t.Run("Success", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
 			return spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
 			}, nil
 		}
 
+		svc := NewService(Config{
+			Fetcher: mockFetcher,
+		})
+
+		ctrl := NewController(svc)
+
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.getCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -51,14 +51,20 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
 			return spotify.SpotifyCurrentlyPlaying{}, errors.New("fail")
 		}
+
+		svc := NewService(Config{
+			Fetcher: mockFetcher,
+		})
+
+		ctrl := NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.getCurrentlyPlaying(w, r)
 
 		// Service error returns the error to the controller, which calls HandleHttpError
 		// Since it's a generic error, it usually results in 500
@@ -68,19 +74,25 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
 			return spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
 			}, nil
 		}
 
+		svc := NewService(Config{
+			Fetcher: mockFetcher,
+		})
+
+		ctrl := NewController(svc)
+
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.getCurrentlyPlaying(errWriter, r)
+		ctrl.getCurrentlyPlaying(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {
