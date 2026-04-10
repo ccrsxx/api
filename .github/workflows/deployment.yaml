@@ -72,6 +72,7 @@ jobs:
 
       - name: Setup env
         run: |
+          echo "OG_URL=${{ secrets.OG_URL }}" >> .env
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
 
