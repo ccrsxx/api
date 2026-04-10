@@ -23,12 +23,20 @@ import (
 func RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
+	ipInfoClient := ipinfo.NewClient(config.Env().IpInfoToken)
+
+	spotifyClient := spotifyClient.NewClient(spotifyClient.Config{
+		ClientID:     config.Env().SpotifyClientID,
+		ClientSecret: config.Env().SpotifyClientSecret,
+		RefreshToken: config.Env().SpotifyRefreshToken,
+	})
+
 	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
 		SecretKey: config.Env().SecretKey,
 	}))
 
 	spotifyService := spotify.NewService(spotify.ServiceConfig{
-		Fetcher: spotifyClient.DefaultClient().GetCurrentlyPlaying,
+		Fetcher: spotifyClient.GetCurrentlyPlaying,
 	})
 
 	jellyfinService := jellyfin.NewService(jellyfin.ServiceConfig{
@@ -39,7 +47,7 @@ func RegisterRoutes() http.Handler {
 	toolsController := tools.NewController(
 		tools.NewService(
 			tools.ServiceConfig{
-				Fetcher: ipinfo.DefaultClient().GetIPInfo,
+				Fetcher: ipInfoClient.GetIPInfo,
 			},
 		),
 	)

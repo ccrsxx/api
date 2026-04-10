@@ -10,11 +10,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ccrsxx/api/internal/cache"
-	"github.com/ccrsxx/api/internal/config"
 )
 
 const (
@@ -35,35 +33,22 @@ type Client struct {
 	httpClient *http.Client
 }
 
-var (
-	once     sync.Once
-	instance *Client
-)
+var ErrNoContent = errors.New("spotify currently playing no content")
 
-func New(cfg Config) *Client {
+func NewClient(cfg Config) *Client {
+	if cfg.ApiURL == "" {
+		cfg.ApiURL = defaultApiURL
+	}
+
+	if cfg.AuthURL == "" {
+		cfg.AuthURL = defaultAuthURL
+	}
+
 	return &Client{
 		config:     cfg,
 		httpClient: &http.Client{Timeout: 8 * time.Second},
 	}
 }
-
-func DefaultClient() *Client {
-	once.Do(func() {
-		instance = New(
-			Config{
-				ApiURL:       defaultApiURL,
-				AuthURL:      defaultAuthURL,
-				ClientID:     config.Env().SpotifyClientID,
-				ClientSecret: config.Env().SpotifyClientSecret,
-				RefreshToken: config.Env().SpotifyRefreshToken,
-			},
-		)
-	})
-
-	return instance
-}
-
-var ErrNoContent = errors.New("spotify currently playing no content")
 
 func (c *Client) GetCurrentlyPlaying(ctx context.Context) (SpotifyCurrentlyPlaying, error) {
 	token, err := c.getAccessToken(ctx)
