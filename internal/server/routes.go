@@ -31,6 +31,13 @@ func RegisterRoutes() http.Handler {
 		RefreshToken: config.Env().SpotifyRefreshToken,
 	})
 
+	jellyfinClient := jellyfinClient.NewClient(jellyfinClient.Config{
+		URL:      config.Env().JellyfinUrl,
+		ApiKey:   config.Env().JellyfinApiKey,
+		ImageURL: config.Env().JellyfinImageUrl,
+		Username: config.Env().JellyfinUsername,
+	})
+
 	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
 		SecretKey: config.Env().SecretKey,
 	}))
@@ -40,7 +47,7 @@ func RegisterRoutes() http.Handler {
 	})
 
 	jellyfinService := jellyfin.NewService(jellyfin.ServiceConfig{
-		Fetcher:          jellyfinClient.DefaultClient().GetSessions,
+		Fetcher:          jellyfinClient.GetSessions,
 		JellyfinUsername: config.Env().JellyfinUsername,
 	})
 

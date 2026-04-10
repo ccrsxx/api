@@ -5,10 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
-
-	"github.com/ccrsxx/api/internal/config"
 )
 
 type Config struct {
@@ -26,12 +23,7 @@ type Client struct {
 	httpClient *http.Client
 }
 
-var (
-	once   sync.Once
-	client *Client
-)
-
-func New(cfg Config) *Client {
+func NewClient(cfg Config) *Client {
 	return &Client{
 		url:        cfg.URL,
 		apiKey:     cfg.ApiKey,
@@ -39,21 +31,6 @@ func New(cfg Config) *Client {
 		username:   cfg.Username,
 		httpClient: &http.Client{Timeout: 8 * time.Second},
 	}
-}
-
-func DefaultClient() *Client {
-	once.Do(func() {
-		client = New(
-			Config{
-				URL:      config.Env().JellyfinUrl,
-				ApiKey:   config.Env().JellyfinApiKey,
-				ImageURL: config.Env().JellyfinImageUrl,
-				Username: config.Env().JellyfinUsername,
-			},
-		)
-	})
-
-	return client
 }
 
 func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
