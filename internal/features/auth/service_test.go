@@ -6,19 +6,10 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/config"
 )
 
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 	ctx := context.Background()
-
-	originalKey := config.Env().SecretKey
-
-	defer func() {
-		config.Env().SecretKey = originalKey
-	}()
-
-	config.Env().SecretKey = "test-secret"
 
 	tests := []struct {
 		name        string
@@ -64,7 +55,9 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := Service.getAuthorizationFromBearerToken(ctx, tt.headerToken)
+			svc := NewService(ServiceConfig{SecretKey: "test-secret"})
+
+			_, err := svc.getAuthorizationFromBearerToken(ctx, tt.headerToken)
 
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("getAuthorizationFromBearerToken() error = %v, wantErr %v", err, tt.wantErr)
@@ -82,14 +75,6 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 
 func TestService_getAuthorizationFromQuery(t *testing.T) {
 	ctx := context.Background()
-
-	originalKey := config.Env().SecretKey
-
-	defer func() {
-		config.Env().SecretKey = originalKey
-	}()
-
-	config.Env().SecretKey = "test-secret"
 
 	tests := []struct {
 		name       string
@@ -115,7 +100,9 @@ func TestService_getAuthorizationFromQuery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := Service.getAuthorizationFromQuery(ctx, tt.queryToken)
+			svc := NewService(ServiceConfig{SecretKey: "test-secret"})
+
+			_, err := svc.getAuthorizationFromQuery(ctx, tt.queryToken)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getAuthorizationFromQuery() error = %v, wantErr %v", err, tt.wantErr)

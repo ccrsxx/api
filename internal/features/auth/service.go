@@ -6,14 +6,23 @@ import (
 	"strings"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/config"
 )
 
-type service struct{}
+type Service struct {
+	secretKey string
+}
 
-var Service = &service{}
+type ServiceConfig struct {
+	SecretKey string
+}
 
-func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerToken string) (string, error) {
+func NewService(cfg ServiceConfig) *Service {
+	return &Service{
+		secretKey: cfg.SecretKey,
+	}
+}
+
+func (s *Service) getAuthorizationFromBearerToken(ctx context.Context, headerToken string) (string, error) {
 	if headerToken == "" {
 		return "", &api.HttpError{
 			Message:    "Invalid token",
@@ -32,7 +41,7 @@ func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerTok
 
 	token := parts[1]
 
-	if token != config.Env().SecretKey {
+	if token != s.secretKey {
 		return "", &api.HttpError{
 			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,
@@ -42,7 +51,7 @@ func (s *service) getAuthorizationFromBearerToken(ctx context.Context, headerTok
 	return token, nil
 }
 
-func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken string) (string, error) {
+func (s *Service) getAuthorizationFromQuery(ctx context.Context, queryToken string) (string, error) {
 	if queryToken == "" {
 		return "", &api.HttpError{
 			Message:    "Invalid token",
@@ -50,7 +59,7 @@ func (s *service) getAuthorizationFromQuery(ctx context.Context, queryToken stri
 		}
 	}
 
-	if queryToken != config.Env().SecretKey {
+	if queryToken != s.secretKey {
 		return "", &api.HttpError{
 			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,

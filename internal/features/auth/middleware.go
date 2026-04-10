@@ -6,15 +6,21 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 )
 
-type middleware struct{}
+type Middleware struct {
+	service *Service
+}
 
-var Middleware = &middleware{}
+func NewMiddleware(svc *Service) *Middleware {
+	return &Middleware{
+		service: svc,
+	}
+}
 
-func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
+func (m *Middleware) IsAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headerToken := r.Header.Get("Authorization")
 
-		_, err := Service.getAuthorizationFromBearerToken(r.Context(), headerToken)
+		_, err := m.service.getAuthorizationFromBearerToken(r.Context(), headerToken)
 
 		if err != nil {
 			api.HandleHttpError(w, r, err)
@@ -25,11 +31,11 @@ func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
 	})
 }
 
-func (m *middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
+func (m *Middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		queryToken := r.URL.Query().Get("token")
 
-		_, err := Service.getAuthorizationFromQuery(r.Context(), queryToken)
+		_, err := m.service.getAuthorizationFromQuery(r.Context(), queryToken)
 
 		if err != nil {
 			api.HandleHttpError(w, r, err)

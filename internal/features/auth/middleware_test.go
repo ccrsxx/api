@@ -4,31 +4,21 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/ccrsxx/api/internal/config"
 )
 
 func TestMiddleware_IsAuthorized(t *testing.T) {
-
-	originalKey := config.Env().SecretKey
-
-	defer func() {
-		config.Env().SecretKey = originalKey
-	}()
-
-	config.Env().SecretKey = "middleware-secret"
-
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	t.Run("Success (200 OK)", func(t *testing.T) {
-		w := httptest.NewRecorder()
+		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "middleware-secret"}))
 
+		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		r.Header.Set("Authorization", "Bearer middleware-secret")
 
-		Middleware.IsAuthorized(handler).ServeHTTP(w, r)
+		mw.IsAuthorized(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -36,13 +26,13 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 	})
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
+		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "middleware-secret"}))
+
 		w := httptest.NewRecorder()
-
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
-
 		r.Header.Set("Authorization", "Bearer wrong-key")
 
-		Middleware.IsAuthorized(handler).ServeHTTP(w, r)
+		mw.IsAuthorized(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusUnauthorized {
 			t.Errorf("got %d, want status 401", w.Code)
@@ -51,23 +41,17 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 }
 
 func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
-	originalKey := config.Env().SecretKey
-
-	defer func() {
-		config.Env().SecretKey = originalKey
-	}()
-
-	config.Env().SecretKey = "query-secret"
-
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	t.Run("Success (200 OK)", func(t *testing.T) {
+		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "query-secret"}))
+
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/?token=query-secret", nil)
 
-		Middleware.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
+		mw.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -75,10 +59,12 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 	})
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
+		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "query-secret"}))
+
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/?token=wrong-secret", nil)
 
-		Middleware.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
+		mw.IsAuthorizedFromQuery(handler).ServeHTTP(w, r)
 
 		if w.Code != http.StatusUnauthorized {
 			t.Errorf("got %d, want status 401", w.Code)
