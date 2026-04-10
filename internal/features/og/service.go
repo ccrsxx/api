@@ -9,13 +9,14 @@ import (
 	"time"
 )
 
-type Service struct {
-	ogUrl      string
-	httpClient *http.Client
-}
-
 var DefaultHttpClient = &http.Client{
 	Timeout: 8 * time.Second,
+}
+
+type Service struct {
+	httpClient *http.Client
+
+	ogUrl string
 }
 
 type ServiceConfig struct {

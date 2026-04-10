@@ -11,10 +11,11 @@ import (
 )
 
 type Service struct {
-	mu               sync.Mutex
+	mu            sync.Mutex
+	lastState     *model.CurrentlyPlaying
+	lastStateTime time.Time
+
 	fetcher          func(context.Context) ([]jellyfin.SessionInfo, error)
-	lastState        *model.CurrentlyPlaying
-	lastStateTime    time.Time
 	jellyfinUsername string
 	jellyfinImageUrl string
 }
