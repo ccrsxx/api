@@ -76,7 +76,7 @@ func Init() AppConfig {
 	if err := env.Parse(&appConfig); err != nil {
 		slog.Error("env parse error", "error", err)
 
-		// We panic instead of os.Exit(1) so we can test the failure state!
+		// Panic instead of os.Exit(1) so we can test the failure state!
 		panic(err)
 	}
 
