@@ -15,11 +15,11 @@ type Config struct {
 func LoadRoutes(cfg Config) {
 	mux := http.NewServeMux()
 
-	controller := NewController(cfg.Service)
+	ctrl := NewController(cfg.Service)
 
 	mux.Handle("GET /currently-playing",
 		cfg.AuthMiddleware.IsAuthorized(
-			http.HandlerFunc(controller.getCurrentlyPlaying),
+			http.HandlerFunc(ctrl.getCurrentlyPlaying),
 		),
 	)
 

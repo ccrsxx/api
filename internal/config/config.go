@@ -50,7 +50,7 @@ type AppConfig struct {
 	IsDevelopment bool
 }
 
-func Init() AppConfig {
+func Load() AppConfig {
 	// System Environment Variables have the highest priority.
 	// They override any loaded .env files.
 

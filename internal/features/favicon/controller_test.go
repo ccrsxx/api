@@ -15,9 +15,9 @@ func TestController_getFavicon(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/favicon.ico", nil)
 		w := httptest.NewRecorder()
 
-		controller := NewController(mockIcon)
+		ctrl := NewController(mockIcon)
 
-		controller.getFavicon(w, r)
+		ctrl.getFavicon(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -36,9 +36,9 @@ func TestController_getFavicon(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/favicon.ico", nil)
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		controller := NewController(mockIcon)
+		ctrl := NewController(mockIcon)
 
-		controller.getFavicon(w, r)
+		ctrl.getFavicon(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

@@ -14,7 +14,7 @@ type Config struct {
 }
 
 func LoadRoutes(cfg Config) {
-	controller := NewController()
+	ctrl := NewController()
 
 	handleHomeRequest := func(w http.ResponseWriter, r *http.Request) {
 		hostname := r.Host
@@ -31,7 +31,7 @@ func LoadRoutes(cfg Config) {
 			return
 		}
 
-		controller.ping(w, r)
+		ctrl.ping(w, r)
 	}
 
 	cfg.Router.HandleFunc("GET /{$}", handleHomeRequest)

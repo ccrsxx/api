@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	cfg := config.Init()
+	cfg := config.Load()
 
 	server := server.NewServer(cfg)
 

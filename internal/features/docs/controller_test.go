@@ -15,9 +15,9 @@ func TestController_getDocs(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 		w := httptest.NewRecorder()
 
-		controller := NewController(validJSON)
+		ctrl := NewController(validJSON)
 
-		controller.getDocs(w, r)
+		ctrl.getDocs(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -36,9 +36,9 @@ func TestController_getDocs(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 		w := httptest.NewRecorder()
 
-		controller := NewController(nil)
+		ctrl := NewController(nil)
 
-		controller.getDocs(w, r)
+		ctrl.getDocs(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want status 500", w.Code)
@@ -51,9 +51,9 @@ func TestController_getDocs(t *testing.T) {
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 
-		controller := NewController(validJSON)
+		ctrl := NewController(validJSON)
 
-		controller.getDocs(w, r)
+		ctrl.getDocs(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

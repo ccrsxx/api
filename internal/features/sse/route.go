@@ -15,14 +15,14 @@ type Config struct {
 }
 
 func LoadRoutes(cfg Config) {
-	controller := NewController(cfg.Service)
-	middleware := NewMiddleware(cfg.Service)
+	ctrl := NewController(cfg.Service)
+	mw := NewMiddleware(cfg.Service)
 
 	cfg.Router.Handle("GET /sse",
 		cfg.AuthMiddleware.IsAuthorizedFromQuery(
 			m.RateLimit(10, 10*time.Second)(
-				middleware.IsConnectionAllowed(
-					http.HandlerFunc(controller.getCurrentPlayingSSE),
+				mw.IsConnectionAllowed(
+					http.HandlerFunc(ctrl.getCurrentPlayingSSE),
 				),
 			),
 		),

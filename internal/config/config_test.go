@@ -25,7 +25,7 @@ func TestLoad_Success(t *testing.T) {
 	t.Run("Development Mode", func(t *testing.T) {
 		setValidEnv(t, string(EnvironmentDevelopment))
 
-		cfg := Init()
+		cfg := Load()
 
 		if cfg.Port != 8080 {
 			t.Errorf("got port %d, want 8080", cfg.Port)
@@ -47,7 +47,7 @@ func TestLoad_Success(t *testing.T) {
 	t.Run("Production Mode", func(t *testing.T) {
 		setValidEnv(t, string(EnvironmentProduction))
 
-		cfg := Init()
+		cfg := Load()
 
 		if !cfg.IsProduction {
 			t.Error("want IsProduction to be true")
@@ -69,7 +69,7 @@ func TestLoad_PanicOnMissingEnv(t *testing.T) {
 		}
 	}()
 
-	Init()
+	Load()
 }
 
 func TestEnvironmentApp_UnmarshalText(t *testing.T) {
@@ -117,5 +117,5 @@ func TestLoad_PanicOnInvalidAppEnv(t *testing.T) {
 		}
 	}()
 
-	Init()
+	Load()
 }

@@ -18,9 +18,9 @@ func TestController_ping(t *testing.T) {
 
 		r.Host = "api.example.com"
 
-		controller := NewController()
+		ctrl := NewController()
 
-		controller.ping(w, r)
+		ctrl.ping(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -52,9 +52,9 @@ func TestController_ping(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		controller := NewController()
+		ctrl := NewController()
 
-		controller.ping(w, r)
+		ctrl.ping(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {
