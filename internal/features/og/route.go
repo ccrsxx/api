@@ -10,8 +10,8 @@ type Config struct {
 	ControllerConfig ControllerConfig
 }
 
-func LoadRoutes(config Config) {
-	controller := NewController(config.Service, config.ControllerConfig)
+func LoadRoutes(cfg Config) {
+	controller := NewController(cfg.Service, cfg.ControllerConfig)
 
-	config.Router.HandleFunc("/og", controller.getOg)
+	cfg.Router.HandleFunc("/og", controller.getOg)
 }

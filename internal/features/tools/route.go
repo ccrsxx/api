@@ -10,14 +10,14 @@ type Config struct {
 	SharedGetIpInfoController http.Handler
 }
 
-func LoadRoutes(config Config) {
+func LoadRoutes(cfg Config) {
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /ipinfo", config.SharedGetIpInfoController)
+	mux.Handle("GET /ipinfo", cfg.SharedGetIpInfoController)
 
-	mux.HandleFunc("GET /ip", config.ToolsController.GetIpAddress)
+	mux.HandleFunc("GET /ip", cfg.ToolsController.GetIpAddress)
 
-	mux.HandleFunc("GET /headers", config.ToolsController.GetHttpHeaders)
+	mux.HandleFunc("GET /headers", cfg.ToolsController.GetHttpHeaders)
 
-	config.Router.Handle("/tools/", http.StripPrefix("/tools", mux))
+	cfg.Router.Handle("/tools/", http.StripPrefix("/tools", mux))
 }

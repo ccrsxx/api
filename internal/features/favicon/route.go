@@ -12,8 +12,8 @@ type Config struct {
 	Router *http.ServeMux
 }
 
-func LoadRoutes(config Config) {
+func LoadRoutes(cfg Config) {
 	controller := NewController(mockIcon)
 
-	config.Router.HandleFunc("GET /favicon.ico", controller.getFavicon)
+	cfg.Router.HandleFunc("GET /favicon.ico", controller.getFavicon)
 }

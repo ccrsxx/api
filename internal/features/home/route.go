@@ -13,7 +13,7 @@ type Config struct {
 	SharedGetIpInfoController http.Handler
 }
 
-func LoadRoutes(config Config) {
+func LoadRoutes(cfg Config) {
 	controller := NewController()
 
 	handleHomeRequest := func(w http.ResponseWriter, r *http.Request) {
@@ -21,18 +21,18 @@ func LoadRoutes(config Config) {
 
 		switch {
 		case strings.HasPrefix(hostname, "ip."):
-			config.ToolsController.GetIpAddress(w, r)
+			cfg.ToolsController.GetIpAddress(w, r)
 			return
 		case strings.HasPrefix(hostname, "ipinfo."):
-			config.SharedGetIpInfoController.ServeHTTP(w, r)
+			cfg.SharedGetIpInfoController.ServeHTTP(w, r)
 			return
 		case strings.HasPrefix(hostname, "headers."):
-			config.ToolsController.GetHttpHeaders(w, r)
+			cfg.ToolsController.GetHttpHeaders(w, r)
 			return
 		}
 
 		controller.ping(w, r)
 	}
 
-	config.Router.HandleFunc("GET /{$}", handleHomeRequest)
+	cfg.Router.HandleFunc("GET /{$}", handleHomeRequest)
 }

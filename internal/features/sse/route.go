@@ -14,12 +14,12 @@ type Config struct {
 	AuthMiddleware *auth.Middleware
 }
 
-func LoadRoutes(config Config) {
-	controller := NewController(config.Service)
-	middleware := NewMiddleware(config.Service)
+func LoadRoutes(cfg Config) {
+	controller := NewController(cfg.Service)
+	middleware := NewMiddleware(cfg.Service)
 
-	config.Router.Handle("GET /sse",
-		config.AuthMiddleware.IsAuthorizedFromQuery(
+	cfg.Router.Handle("GET /sse",
+		cfg.AuthMiddleware.IsAuthorizedFromQuery(
 			m.RateLimit(10, 10*time.Second)(
 				middleware.IsConnectionAllowed(
 					http.HandlerFunc(controller.getCurrentPlayingSSE),

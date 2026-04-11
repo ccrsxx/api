@@ -12,16 +12,16 @@ type Config struct {
 	AuthMiddleware *auth.Middleware
 }
 
-func LoadRoutes(config Config) {
+func LoadRoutes(cfg Config) {
 	mux := http.NewServeMux()
 
-	controller := NewController(config.Service)
+	controller := NewController(cfg.Service)
 
 	mux.Handle("GET /currently-playing",
-		config.AuthMiddleware.IsAuthorized(
+		cfg.AuthMiddleware.IsAuthorized(
 			http.HandlerFunc(controller.getCurrentlyPlaying),
 		),
 	)
 
-	config.Router.Handle("/jellyfin/", http.StripPrefix("/jellyfin", mux))
+	cfg.Router.Handle("/jellyfin/", http.StripPrefix("/jellyfin", mux))
 }

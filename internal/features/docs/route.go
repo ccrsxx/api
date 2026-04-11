@@ -12,8 +12,8 @@ type Config struct {
 	Router *http.ServeMux
 }
 
-func LoadRoutes(config Config) {
+func LoadRoutes(cfg Config) {
 	controller := NewController(openapiSpec)
 
-	config.Router.HandleFunc("GET /docs", controller.getDocs)
+	cfg.Router.HandleFunc("GET /docs", controller.getDocs)
 }
