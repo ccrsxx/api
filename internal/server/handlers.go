@@ -21,7 +21,7 @@ import (
 	"github.com/ccrsxx/api/internal/middleware"
 )
 
-func InitRoutes(cfg config.AppConfig) http.Handler {
+func LoadHandlers(cfg config.AppConfig) http.Handler {
 	router := http.NewServeMux()
 
 	memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)

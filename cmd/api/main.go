@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := config.Load()
 
-	server := server.NewServer(cfg)
+	server := server.New(cfg)
 
 	go func() {
 		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)

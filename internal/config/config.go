@@ -67,11 +67,11 @@ func Load() AppConfig {
 	// If on Docker (Production), these might fail but System Envs will take over.
 	_ = godotenv.Load(".env")
 
+	var appConfig AppConfig
+
 	// 3. Parse & Validate (The final check)
 	// This reads from the actual environment (System + Loaded Files).
 	// If "APP_ENV" is invalid or "PORT" is missing, this crashes the app HERE.
-
-	var appConfig AppConfig
 
 	if err := env.Parse(&appConfig); err != nil {
 		slog.Error("env parse error", "error", err)
