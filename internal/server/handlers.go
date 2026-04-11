@@ -134,7 +134,7 @@ func LoadHandlers(cfg config.AppConfig) http.Handler {
 		},
 	)
 
-	routes := middleware.Recovery(
+	handlers := middleware.Recovery(
 		middleware.Cors(cfg.AllowedOrigins)(
 			middleware.Logging(
 				middleware.RateLimit(100, 1*time.Minute)(
@@ -144,5 +144,5 @@ func LoadHandlers(cfg config.AppConfig) http.Handler {
 		),
 	)
 
-	return routes
+	return handlers
 }
