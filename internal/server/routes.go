@@ -73,7 +73,6 @@ func InitRoutes(cfg config.AppConfig) http.Handler {
 		Router: router,
 		Service: og.NewService(og.ServiceConfig{
 			OgUrl:      cfg.OgUrl,
-			HttpClient: og.DefaultHttpClient,
 		}),
 		ControllerConfig: og.ControllerConfig{
 			IsProduction: cfg.IsProduction,
@@ -84,7 +83,6 @@ func InitRoutes(cfg config.AppConfig) http.Handler {
 		sse.Config{
 			Router: router,
 			Service: sse.NewService(sse.ServiceConfig{
-				PollInterval:    sse.DefaultPollInterval,
 				SpotifyFetcher:  spotifyService.GetCurrentlyPlaying,
 				JellyfinFetcher: jellyfinService.GetCurrentlyPlaying,
 			}),

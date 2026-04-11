@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-var DefaultHttpClient = &http.Client{
-	Timeout: 8 * time.Second,
-}
-
 type Service struct {
 	ogUrl      string
 	httpClient *http.Client
@@ -25,7 +21,9 @@ type ServiceConfig struct {
 
 func NewService(cfg ServiceConfig) *Service {
 	if cfg.HttpClient == nil {
-		cfg.HttpClient = DefaultHttpClient
+		cfg.HttpClient = &http.Client{
+			Timeout: 8 * time.Second,
+		}
 	}
 
 	return &Service{
