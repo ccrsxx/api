@@ -72,7 +72,7 @@ func InitRoutes(cfg config.AppConfig) http.Handler {
 	og.LoadRoutes(og.Config{
 		Router: router,
 		Service: og.NewService(og.ServiceConfig{
-			OgUrl:      cfg.OgUrl,
+			OgUrl: cfg.OgUrl,
 		}),
 		ControllerConfig: og.ControllerConfig{
 			IsProduction: cfg.IsProduction,

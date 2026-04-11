@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	maxClientsPerIP  = 10
-	maxGlobalClients = 100
+	maxClientsPerIP     = 10
+	maxGlobalClients    = 100
 	defaultPollInterval = 1 * time.Second
 )
 
