@@ -72,7 +72,6 @@ func Load() AppConfig {
 	// 3. Parse & Validate (The final check)
 	// This reads from the actual environment (System + Loaded Files).
 	// If "APP_ENV" is invalid or "PORT" is missing, this crashes the app HERE.
-
 	if err := env.Parse(&appConfig); err != nil {
 		slog.Error("env parse error", "error", err)
 
