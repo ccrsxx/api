@@ -1,6 +1,6 @@
 module github.com/ccrsxx/api
 
-go 1.26
+go 1.26.2
 
 require (
 	github.com/bdpiprava/scalar-go v0.13.0
