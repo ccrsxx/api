@@ -29,17 +29,17 @@ func (e *EnvironmentApp) UnmarshalText(text []byte) error {
 
 type AppConfig struct {
 	Port           int            `env:"PORT,required"`
-	OgUrl          string         `env:"OG_URL,required"`
+	OgURL          string         `env:"OG_URL,required"`
 	AppEnv         EnvironmentApp `env:"APP_ENV,required"`
 	SecretKey      string         `env:"SECRET_KEY,required"`
 	AllowedOrigins []string       `env:"ALLOWED_ORIGINS,required"`
 
-	IpInfoToken string `env:"IPINFO_TOKEN,required"`
+	IPInfoToken string `env:"IPINFO_TOKEN,required"`
 
-	JellyfinUrl      string `env:"JELLYFIN_URL,required"`
-	JellyfinApiKey   string `env:"JELLYFIN_API_KEY,required"`
+	JellyfinURL      string `env:"JELLYFIN_URL,required"`
+	JellyfinAPIKey   string `env:"JELLYFIN_API_KEY,required"`
 	JellyfinUsername string `env:"JELLYFIN_USERNAME,required"`
-	JellyfinImageUrl string `env:"JELLYFIN_IMAGE_URL,required"`
+	JellyfinImageURL string `env:"JELLYFIN_IMAGE_URL,required"`
 
 	SpotifyClientID     string `env:"SPOTIFY_CLIENT_ID,required"`
 	SpotifyClientSecret string `env:"SPOTIFY_CLIENT_SECRET,required"`

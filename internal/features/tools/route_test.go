@@ -22,13 +22,13 @@ func TestLoadRoutes(t *testing.T) {
 
 	config := Config{
 		ToolsController:           ctrl,
-		SharedGetIpInfoController: http.HandlerFunc(ctrl.GetIpInfo),
+		SharedGetIPInfoController: http.HandlerFunc(ctrl.GetIPInfo),
 	}
 
 	LoadRoutes(Config{
 		Router:                    mux,
 		ToolsController:           config.ToolsController,
-		SharedGetIpInfoController: config.SharedGetIpInfoController,
+		SharedGetIPInfoController: config.SharedGetIPInfoController,
 	})
 
 	tests := []test.RouteTestCase{

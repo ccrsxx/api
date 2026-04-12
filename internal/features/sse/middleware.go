@@ -19,10 +19,10 @@ func NewMiddleware(svc *Service) *Middleware {
 
 func (m *Middleware) IsConnectionAllowed(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ipAddress := utils.GetIpAddressFromRequest(r)
+		ipAddress := utils.GetIPAddressFromRequest(r)
 
 		if err := m.service.IsConnectionAllowed(ipAddress); err != nil {
-			api.HandleHttpError(w, r, err)
+			api.HandleHTTPError(w, r, err)
 			return
 		}
 

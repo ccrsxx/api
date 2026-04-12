@@ -26,8 +26,8 @@ func TestController_getOg(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(ServiceConfig{
-			OgUrl:      mockServer.URL,
-			HttpClient: mockServer.Client(),
+			OgURL:      mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		// Inject false for isProduction
@@ -68,8 +68,8 @@ func TestController_getOg(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(ServiceConfig{
-			OgUrl:      mockServer.URL,
-			HttpClient: mockServer.Client(),
+			OgURL:      mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		// Inject true for isProduction
@@ -97,8 +97,8 @@ func TestController_getOg(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(ServiceConfig{
-			OgUrl:      mockServer.URL,
-			HttpClient: mockServer.Client(),
+			OgURL:      mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		ctrl := NewController(svc, ControllerConfig{})
@@ -108,7 +108,7 @@ func TestController_getOg(t *testing.T) {
 
 		ctrl.getOg(w, r)
 
-		// The controller wraps the error using api.HandleHttpError.
+		// The controller wraps the error using api.HandleHTTPError.
 		// We just check it's not OK.
 		if w.Code == http.StatusOK {
 			t.Error("want error status for upstream failure")
@@ -124,8 +124,8 @@ func TestController_getOg(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(ServiceConfig{
-			OgUrl:      mockServer.URL,
-			HttpClient: mockServer.Client(),
+			OgURL:      mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		ctrl := NewController(svc, ControllerConfig{})
@@ -143,8 +143,8 @@ func TestController_getOg(t *testing.T) {
 
 	t.Run("Stream Close Error", func(t *testing.T) {
 		svc := NewService(ServiceConfig{
-			OgUrl: "http://example.com",
-			HttpClient: &http.Client{
+			OgURL: "http://example.com",
+			HTTPClient: &http.Client{
 				Transport: test.CustomTransport(func(r *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,

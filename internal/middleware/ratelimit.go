@@ -78,7 +78,7 @@ func (rl *rateLimiter) getVisitor(ip string) *rate.Limiter {
 }
 
 func (rl *rateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) error {
-	ip := utils.GetIpAddressFromRequest(r)
+	ip := utils.GetIPAddressFromRequest(r)
 
 	limiter := rl.getVisitor(ip)
 
@@ -112,7 +112,7 @@ func (rl *rateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 
 		w.Header().Set("Retry-After", strconv.Itoa(waitSecs))
 
-		return &api.HttpError{
+		return &api.HTTPError{
 			StatusCode: http.StatusTooManyRequests,
 			Message:    "Too many requests, please try again later.",
 		}
@@ -151,7 +151,7 @@ func RateLimit(ctx context.Context, requests int, window time.Duration) func(nex
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := rl.handleRateLimit(w, r); err != nil {
 				// No need to wrap error, as it's already returning http error from handleRateLimit
-				api.HandleHttpError(w, r, err)
+				api.HandleHTTPError(w, r, err)
 				return
 			}
 

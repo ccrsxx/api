@@ -24,7 +24,7 @@ func TestLoadRoutes(t *testing.T) {
 	LoadRoutes(Config{
 		Router:                    mux,
 		ToolsController:           ctrl,
-		SharedGetIpInfoController: http.HandlerFunc(ctrl.GetIpInfo),
+		SharedGetIPInfoController: http.HandlerFunc(ctrl.GetIPInfo),
 	})
 
 	tests := []test.RouteTestCase{

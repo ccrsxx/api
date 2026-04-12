@@ -66,7 +66,7 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 
 		ctrl.getCurrentlyPlaying(w, r)
 
-		// Service error returns the error to the controller, which calls HandleHttpError
+		// Service error returns the error to the controller, which calls HandleHTTPError
 		// Since it's a generic error, it usually results in 500
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)

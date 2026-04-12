@@ -22,7 +22,7 @@ const (
 
 type clientMetadata struct {
 	ID          string
-	IpAddress   string
+	IPAddress   string
 	UserAgent   string
 	ConnectedAt time.Time
 }
@@ -67,7 +67,7 @@ func (s *Service) IsConnectionAllowed(ip string) error {
 	isGlobalClientLimitReached := len(s.clients) >= maxGlobalClients
 
 	if isGlobalClientLimitReached {
-		return &api.HttpError{
+		return &api.HTTPError{
 			Message:    "Maximum number of clients reached. Try again later.",
 			StatusCode: http.StatusServiceUnavailable,
 		}
@@ -76,7 +76,7 @@ func (s *Service) IsConnectionAllowed(ip string) error {
 	isClientIPLimitReached := s.ipAddressCounts[ip] >= maxClientsPerIP
 
 	if isClientIPLimitReached {
-		return &api.HttpError{
+		return &api.HTTPError{
 			Message:    "Maximum number of clients for your IP reached. Try again later.",
 			StatusCode: http.StatusTooManyRequests,
 		}
@@ -98,7 +98,7 @@ func (s *Service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 
 	meta := clientMetadata{
 		ID:          uuid.New().String(),
-		IpAddress:   ipAddress,
+		IPAddress:   ipAddress,
 		UserAgent:   userAgent,
 		ConnectedAt: time.Now(),
 	}
@@ -108,7 +108,7 @@ func (s *Service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 
 	slog.Info("sse client connected",
 		"id", meta.ID,
-		"ip_address", meta.IpAddress,
+		"ip_address", meta.IPAddress,
 		"user_agent", meta.UserAgent,
 		"active_clients", len(s.clients),
 	)
@@ -141,15 +141,15 @@ func (s *Service) RemoveClient(ctx context.Context, clientChan chan string) {
 
 	close(clientChan)
 
-	s.ipAddressCounts[meta.IpAddress]--
+	s.ipAddressCounts[meta.IPAddress]--
 
-	if s.ipAddressCounts[meta.IpAddress] <= 0 {
-		delete(s.ipAddressCounts, meta.IpAddress)
+	if s.ipAddressCounts[meta.IPAddress] <= 0 {
+		delete(s.ipAddressCounts, meta.IPAddress)
 	}
 
 	slog.Info("sse client disconnected",
 		"id", meta.ID,
-		"ip_address", meta.IpAddress,
+		"ip_address", meta.IPAddress,
 		"user_agent", meta.UserAgent,
 		"duration", time.Since(meta.ConnectedAt).String(),
 		"active_clients", len(s.clients),

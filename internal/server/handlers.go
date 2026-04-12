@@ -27,7 +27,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 
 	memoryCache := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
-	ipInfoClient := ipinfo.NewClient(cfg.IpInfoToken)
+	ipInfoClient := ipinfo.NewClient(cfg.IPInfoToken)
 
 	spotifyClient := spotifyClient.NewClient(spotifyClient.Config{
 		ClientID:     cfg.SpotifyClientID,
@@ -37,9 +37,9 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 	})
 
 	jellyfinClient := jellyfinClient.NewClient(jellyfinClient.Config{
-		URL:      cfg.JellyfinUrl,
-		ApiKey:   cfg.JellyfinApiKey,
-		ImageURL: cfg.JellyfinImageUrl,
+		URL:      cfg.JellyfinURL,
+		APIKey:   cfg.JellyfinAPIKey,
+		ImageURL: cfg.JellyfinImageURL,
 		Username: cfg.JellyfinUsername,
 	})
 
@@ -54,7 +54,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 	jellyfinService := jellyfin.NewService(jellyfin.ServiceConfig{
 		Fetcher:          jellyfinClient.GetSessions,
 		JellyfinUsername: cfg.JellyfinUsername,
-		JellyfinImageUrl: cfg.JellyfinImageUrl,
+		JellyfinImageURL: cfg.JellyfinImageURL,
 	})
 
 	toolsController := tools.NewController(
@@ -66,14 +66,14 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 	)
 
 	// Shared rate-limited handler for GetIpInfo. Limits to 10 requests per 10 seconds.
-	sharedGetIpInfoController := middleware.RateLimit(ctx, 10, 10*time.Second)(
-		http.HandlerFunc(toolsController.GetIpInfo),
+	sharedGetIPInfoController := middleware.RateLimit(ctx, 10, 10*time.Second)(
+		http.HandlerFunc(toolsController.GetIPInfo),
 	)
 
 	og.LoadRoutes(og.Config{
 		Router: router,
 		Service: og.NewService(og.ServiceConfig{
-			OgUrl: cfg.OgUrl,
+			OgURL: cfg.OgURL,
 		}),
 		ControllerConfig: og.ControllerConfig{
 			IsProduction: cfg.IsProduction,
@@ -96,7 +96,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 		home.Config{
 			Router:                    router,
 			ToolsController:           toolsController,
-			SharedGetIpInfoController: sharedGetIpInfoController,
+			SharedGetIPInfoController: sharedGetIPInfoController,
 		},
 	)
 
@@ -110,7 +110,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 		tools.Config{
 			Router:                    router,
 			ToolsController:           toolsController,
-			SharedGetIpInfoController: sharedGetIpInfoController,
+			SharedGetIPInfoController: sharedGetIPInfoController,
 		},
 	)
 

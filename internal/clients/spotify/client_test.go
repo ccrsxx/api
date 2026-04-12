@@ -30,7 +30,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      "http://bad\x7f",
-			ApiURL:       "http://api",
+			APIURL:       "http://api",
 		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
@@ -44,7 +44,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      "http://127.0.0.1:0",
-			ApiURL:       "http://api",
+			APIURL:       "http://api",
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -66,7 +66,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      s.URL,
-			ApiURL:       "http://api",
+			APIURL:       "http://api",
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -90,7 +90,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      s.URL,
-			ApiURL:       "http://api",
+			APIURL:       "http://api",
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -106,7 +106,7 @@ func TestClient_GetCurrentlyPlaying_TokenErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      "http://auth",
-			ApiURL:       "http://api",
+			APIURL:       "http://api",
 		})
 
 		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
@@ -144,7 +144,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       "http://bad\x7f",
+			APIURL:       "http://bad\x7f",
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -164,7 +164,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       "http://",
+			APIURL:       "http://",
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -190,7 +190,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       apiSrv.URL,
+			APIURL:       apiSrv.URL,
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -222,7 +222,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       apiSrv.URL,
+			APIURL:       apiSrv.URL,
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -238,7 +238,7 @@ func TestClient_GetCurrentlyPlaying_APIErrors(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      "http://auth",
-			ApiURL:       "http://api",
+			APIURL:       "http://api",
 		})
 
 		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
@@ -290,7 +290,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       apiSrv.URL,
+			APIURL:       apiSrv.URL,
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -332,7 +332,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       apiSrv.URL,
+			APIURL:       apiSrv.URL,
 			MemoryCache:  memoryCache,
 		})
 
@@ -367,7 +367,7 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 			ClientSecret: "sec",
 			RefreshToken: "ref",
 			AuthURL:      authSrv.URL,
-			ApiURL:       apiSrv.URL,
+			APIURL:       apiSrv.URL,
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)

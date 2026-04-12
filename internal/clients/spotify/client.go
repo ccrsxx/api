@@ -17,11 +17,11 @@ import (
 
 const (
 	defaultAuthURL = "https://accounts.spotify.com/api/token"
-	defaultApiURL  = "https://api.spotify.com/v1/me/player/currently-playing"
+	defaultAPIURL  = "https://api.spotify.com/v1/me/player/currently-playing"
 )
 
 type Config struct {
-	ApiURL       string
+	APIURL       string
 	AuthURL      string
 	ClientID     string
 	MemoryCache  cache.Cache
@@ -42,8 +42,8 @@ type Client struct {
 var ErrNoContent = errors.New("spotify currently playing no content")
 
 func NewClient(cfg Config) *Client {
-	if cfg.ApiURL == "" {
-		cfg.ApiURL = defaultApiURL
+	if cfg.APIURL == "" {
+		cfg.APIURL = defaultAPIURL
 	}
 
 	if cfg.AuthURL == "" {
@@ -51,7 +51,7 @@ func NewClient(cfg Config) *Client {
 	}
 
 	return &Client{
-		apiURL:      cfg.ApiURL,
+		apiURL:      cfg.APIURL,
 		secret:      cfg.ClientSecret,
 		authURL:     cfg.AuthURL,
 		refresh:     cfg.RefreshToken,

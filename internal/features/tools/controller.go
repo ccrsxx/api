@@ -18,8 +18,8 @@ func NewController(svc *Service) *Controller {
 	}
 }
 
-func (c *Controller) GetIpAddress(w http.ResponseWriter, r *http.Request) {
-	ipAddress := utils.GetIpAddressFromRequest(r)
+func (c *Controller) GetIPAddress(w http.ResponseWriter, r *http.Request) {
+	ipAddress := utils.GetIPAddressFromRequest(r)
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
@@ -29,14 +29,14 @@ func (c *Controller) GetIpAddress(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
-	queryIp := r.URL.Query().Get("ip")
-	requestIp := utils.GetIpAddressFromRequest(r)
+func (c *Controller) GetIPInfo(w http.ResponseWriter, r *http.Request) {
+	queryIP := r.URL.Query().Get("ip")
+	requestIP := utils.GetIPAddressFromRequest(r)
 
-	ipInfo, err := c.service.getIpInfo(queryIp, requestIp)
+	ipInfo, err := c.service.getIPInfo(queryIP, requestIP)
 
 	if err != nil {
-		api.HandleHttpError(w, r, err)
+		api.HandleHTTPError(w, r, err)
 		return
 	}
 
@@ -45,8 +45,8 @@ func (c *Controller) GetIpInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Controller) GetHttpHeaders(w http.ResponseWriter, r *http.Request) {
-	headers := utils.GetHttpHeadersFromRequest(r)
+func (c *Controller) GetHTTPHeaders(w http.ResponseWriter, r *http.Request) {
+	headers := utils.GetHTTPHeadersFromRequest(r)
 
 	if err := api.NewSuccessResponse(w, http.StatusOK, headers); err != nil {
 		slog.Warn("headers response error", "error", err)

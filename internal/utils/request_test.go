@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGetIpAddressFromRequest(t *testing.T) {
+func TestGetIPAddressFromRequest(t *testing.T) {
 	tests := []struct {
 		name       string
 		headers    map[string]string
@@ -56,11 +56,11 @@ func TestGetIpAddressFromRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-			setHttpHeaders(r, tt.headers)
+			setHTTPHeaders(r, tt.headers)
 
 			r.RemoteAddr = tt.remoteAddr
 
-			got := GetIpAddressFromRequest(r)
+			got := GetIPAddressFromRequest(r)
 
 			if got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)
@@ -91,9 +91,9 @@ func TestGetHttpHeadersFromRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-			setHttpHeaders(r, tt.headers)
+			setHTTPHeaders(r, tt.headers)
 
-			got := GetHttpHeadersFromRequest(r)
+			got := GetHTTPHeadersFromRequest(r)
 
 			for k, v := range tt.want {
 				if got[k] != v {
@@ -141,13 +141,13 @@ func TestGetPublicUrlFromRequest(t *testing.T) {
 
 			r.Host = tt.host
 
-			setHttpHeaders(r, tt.headers)
+			setHTTPHeaders(r, tt.headers)
 
 			if tt.isTLS {
 				r.TLS = &tls.ConnectionState{}
 			}
 
-			got := GetPublicUrlFromRequest(r)
+			got := GetPublicURLFromRequest(r)
 
 			if got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)
@@ -156,7 +156,7 @@ func TestGetPublicUrlFromRequest(t *testing.T) {
 	}
 }
 
-func setHttpHeaders(r *http.Request, headers map[string]string) {
+func setHTTPHeaders(r *http.Request, headers map[string]string) {
 	for k, v := range headers {
 		r.Header.Set(k, v)
 	}

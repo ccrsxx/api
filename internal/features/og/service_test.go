@@ -36,8 +36,8 @@ func TestService_getOg(t *testing.T) {
 
 		// Inject the mock server directly
 		svc := NewService(ServiceConfig{
-			OgUrl:      mockServer.URL,
-			HttpClient: mockServer.Client(),
+			OgURL:      mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		stream, err := svc.getOg(context.Background(), "title=hello")
@@ -71,8 +71,8 @@ func TestService_getOg(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(ServiceConfig{
-			OgUrl:      mockServer.URL,
-			HttpClient: mockServer.Client(),
+			OgURL:      mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		_, err := svc.getOg(context.Background(), "")
@@ -88,8 +88,8 @@ func TestService_getOg(t *testing.T) {
 
 	t.Run("Network Error", func(t *testing.T) {
 		svc := NewService(ServiceConfig{
-			OgUrl:      "http://127.0.0.1:0", // Invalid port
-			HttpClient: &http.Client{Timeout: 1 * time.Millisecond},
+			OgURL:      "http://127.0.0.1:0", // Invalid port
+			HTTPClient: &http.Client{Timeout: 1 * time.Millisecond},
 		})
 
 		_, err := svc.getOg(context.Background(), "")
@@ -105,7 +105,7 @@ func TestService_getOg(t *testing.T) {
 
 	t.Run("Request Creation Error", func(t *testing.T) {
 		svc := NewService(ServiceConfig{
-			OgUrl: "http://\x7f",
+			OgURL: "http://\x7f",
 		})
 
 		_, err := svc.getOg(context.Background(), "")
@@ -117,8 +117,8 @@ func TestService_getOg(t *testing.T) {
 
 	t.Run("Status Error Body Close Failure", func(t *testing.T) {
 		svc := NewService(ServiceConfig{
-			OgUrl: "http://example.com",
-			HttpClient: &http.Client{
+			OgURL: "http://example.com",
+			HTTPClient: &http.Client{
 				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusBadRequest,

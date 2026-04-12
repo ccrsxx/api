@@ -25,30 +25,30 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) getIpInfo(queryIp string, requestIp string) (*ipinfoLib.Core, error) {
-	if queryIp != "" && net.ParseIP(queryIp) == nil {
-		return nil, &api.HttpError{
+func (s *Service) getIPInfo(queryIP string, requestIP string) (*ipinfoLib.Core, error) {
+	if queryIP != "" && net.ParseIP(queryIP) == nil {
+		return nil, &api.HTTPError{
 			Message:    "Invalid IP address",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
-	ipAddress := queryIp
+	ipAddress := queryIP
 
 	if ipAddress == "" {
-		ipAddress = requestIp
+		ipAddress = requestIP
 	}
 
-	parsedIp := net.ParseIP(ipAddress)
+	parsedIP := net.ParseIP(ipAddress)
 
-	if parsedIp == nil {
-		return nil, &api.HttpError{
+	if parsedIP == nil {
+		return nil, &api.HTTPError{
 			Message:    "Invalid IP address",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
-	info, err := s.fetcher(parsedIp)
+	info, err := s.fetcher(parsedIP)
 
 	if err != nil {
 		return nil, fmt.Errorf("get ip info error: %w", err)

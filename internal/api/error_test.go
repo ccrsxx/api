@@ -10,7 +10,7 @@ import (
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestHandleHttpError(t *testing.T) {
+func TestHandleHTTPError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/test", nil)
 
 	t.Run("PanicError - Standard (Production)", func(t *testing.T) {
@@ -24,7 +24,7 @@ func TestHandleHttpError(t *testing.T) {
 			Value:   "nil pointer",
 		}
 
-		HandleHttpError(w, r, panicErr)
+		HandleHTTPError(w, r, panicErr)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want %d", w.Code, http.StatusInternalServerError)
@@ -54,7 +54,7 @@ func TestHandleHttpError(t *testing.T) {
 			Stack:   "goroutine stack trace...",
 		}
 
-		HandleHttpError(w, r, panicErr)
+		HandleHTTPError(w, r, panicErr)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)
@@ -63,13 +63,13 @@ func TestHandleHttpError(t *testing.T) {
 
 	t.Run("HttpError - Custom Status", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		httpErr := &HttpError{
+		httpErr := &HTTPError{
 			StatusCode: http.StatusBadRequest,
 			Message:    "Invalid ID",
 			Details:    []string{"id must be uuid"},
 		}
 
-		HandleHttpError(w, r, httpErr)
+		HandleHTTPError(w, r, httpErr)
 
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("got %d, want 400", w.Code)
@@ -92,7 +92,7 @@ func TestHandleHttpError(t *testing.T) {
 		w := httptest.NewRecorder()
 		genericErr := errors.New("database connection failed")
 
-		HandleHttpError(w, r, genericErr)
+		HandleHTTPError(w, r, genericErr)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got status %d, want 500", w.Code)
@@ -102,7 +102,7 @@ func TestHandleHttpError(t *testing.T) {
 	t.Run("Write Failures (Triggers logErrorResponse)", func(t *testing.T) {
 		w1 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHttpError(w1, r, &HttpError{StatusCode: 400, Message: "bad"})
+		HandleHTTPError(w1, r, &HTTPError{StatusCode: 400, Message: "bad"})
 
 		if w1.Code != 400 {
 			t.Errorf("got %d, want 400", w1.Code)
@@ -113,7 +113,7 @@ func TestHandleHttpError(t *testing.T) {
 
 		w2 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHttpError(w2, r, &PanicError{Message: "crash"})
+		HandleHTTPError(w2, r, &PanicError{Message: "crash"})
 
 		if w2.Code != 500 {
 			t.Errorf("got %d, want 500", w2.Code)
@@ -121,7 +121,7 @@ func TestHandleHttpError(t *testing.T) {
 
 		w3 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHttpError(w3, r, errors.New("generic"))
+		HandleHTTPError(w3, r, errors.New("generic"))
 
 		if w3.Code != 500 {
 			t.Errorf("got %d, want 500", w3.Code)
@@ -139,7 +139,7 @@ func TestErrorTypes(t *testing.T) {
 	})
 
 	t.Run("HttpError.Error()", func(t *testing.T) {
-		he := &HttpError{Message: "http msg"}
+		he := &HTTPError{Message: "http msg"}
 
 		if he.Error() != "http msg" {
 			t.Errorf("got %q, want %q", he.Error(), "http msg")

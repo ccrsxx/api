@@ -2,7 +2,13 @@ version: '2'
 
 linters:
   default: standard
+  enable:
+    - revive
   settings:
+    revive:
+      rules:
+        # Enforce consistent variable naming
+        - name: var-naming
     govet:
       enable:
         # Prefer keyed struct over positional struct initialization.

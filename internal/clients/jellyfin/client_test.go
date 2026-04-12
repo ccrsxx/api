@@ -27,7 +27,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 			id := "1"
 
-			if err := json.NewEncoder(w).Encode([]SessionInfo{{Id: &id}}); err != nil {
+			if err := json.NewEncoder(w).Encode([]SessionInfo{{ID: &id}}); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))

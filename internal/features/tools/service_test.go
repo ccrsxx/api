@@ -10,7 +10,7 @@ import (
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
-func TestService_getIpInfo(t *testing.T) {
+func TestService_getIPInfo(t *testing.T) {
 	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
 		if ip.String() == "8.8.8.8" {
 			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8"), City: "Mountain View"}, nil
@@ -25,41 +25,41 @@ func TestService_getIpInfo(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		queryIp    string
-		requestIp  string
+		queryIP    string
+		requestIP  string
 		wantError  bool
 		wantStatus int
 	}{
 		{
 			name:      "Success with Query IP",
-			queryIp:   "8.8.8.8",
-			requestIp: "127.0.0.1",
+			queryIP:   "8.8.8.8",
+			requestIP: "127.0.0.1",
 			wantError: false,
 		},
 		{
 			name:      "Success with Request IP",
-			queryIp:   "",
-			requestIp: "8.8.8.8",
+			queryIP:   "",
+			requestIP: "8.8.8.8",
 			wantError: false,
 		},
 		{
 			name:       "Invalid Query IP",
-			queryIp:    "invalid-ip",
-			requestIp:  "8.8.8.8",
+			queryIP:    "invalid-ip",
+			requestIP:  "8.8.8.8",
 			wantError:  true,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "Invalid Request IP (fallback)",
-			queryIp:    "",
-			requestIp:  "invalid-ip",
+			queryIP:    "",
+			requestIP:  "invalid-ip",
 			wantError:  true,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "Fetcher Error",
-			queryIp:    "1.1.1.1",
-			requestIp:  "127.0.0.1",
+			queryIP:    "1.1.1.1",
+			requestIP:  "127.0.0.1",
 			wantError:  true,
 			wantStatus: 0, // General error, not HttpError
 		},
@@ -69,7 +69,7 @@ func TestService_getIpInfo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := NewService(ServiceConfig{Fetcher: mockFetcher})
 
-			info, err := svc.getIpInfo(tt.queryIp, tt.requestIp)
+			info, err := svc.getIPInfo(tt.queryIP, tt.requestIP)
 
 			if tt.wantError {
 				if err == nil {
@@ -78,12 +78,12 @@ func TestService_getIpInfo(t *testing.T) {
 				}
 
 				if tt.wantStatus != 0 {
-					if httpErr, ok := errors.AsType[*api.HttpError](err); ok {
+					if httpErr, ok := errors.AsType[*api.HTTPError](err); ok {
 						if httpErr.StatusCode != tt.wantStatus {
 							t.Errorf("got status %d, want %d", httpErr.StatusCode, tt.wantStatus)
 						}
 					} else {
-						t.Error("want HttpError type")
+						t.Error("want HTTPError type")
 					}
 				}
 

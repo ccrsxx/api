@@ -13,7 +13,7 @@ func Test_parseJellyfinSessions(t *testing.T) {
 	t.Run("Full Data", func(t *testing.T) {
 		session := jellyfin.SessionInfo{
 			NowPlayingItem: &jellyfin.BaseItem{
-				Id:           "item-1",
+				ID:           "item-1",
 				Name:         new("Song"),
 				Album:        new("Album"),
 				Artists:      []string{"Artist"},

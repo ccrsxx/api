@@ -8,7 +8,7 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-func parseJellyfinSessions(session jellyfin.SessionInfo, jellyfinImageUrl string) model.CurrentlyPlaying {
+func parseJellyfinSessions(session jellyfin.SessionInfo, jellyfinImageURL string) model.CurrentlyPlaying {
 	item := session.NowPlayingItem
 	playState := session.PlayState
 
@@ -32,10 +32,10 @@ func parseJellyfinSessions(session jellyfin.SessionInfo, jellyfinImageUrl string
 		albumName = *item.OriginalTitle
 	}
 
-	albumImageUrl := ""
+	albumImageURL := ""
 
-	if item.Id != "" {
-		albumImageUrl = fmt.Sprintf("%s/Items/%s/Images/Primary", jellyfinImageUrl, item.Id)
+	if item.ID != "" {
+		albumImageURL = fmt.Sprintf("%s/Items/%s/Images/Primary", jellyfinImageURL, item.ID)
 	}
 
 	// Jellyfin uses "Ticks". 1 ms = 10,000 Ticks. Convert to ms.
@@ -62,7 +62,7 @@ func parseJellyfinSessions(session jellyfin.SessionInfo, jellyfinImageUrl string
 			ArtistName:    artistName,
 			DurationMs:    durationMs,
 			ProgressMs:    progressMs,
-			AlbumImageURL: &albumImageUrl,
+			AlbumImageURL: &albumImageURL,
 		},
 	}
 }

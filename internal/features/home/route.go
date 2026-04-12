@@ -10,7 +10,7 @@ import (
 type Config struct {
 	Router                    *http.ServeMux
 	ToolsController           *tools.Controller
-	SharedGetIpInfoController http.Handler
+	SharedGetIPInfoController http.Handler
 }
 
 func LoadRoutes(cfg Config) {
@@ -21,13 +21,13 @@ func LoadRoutes(cfg Config) {
 
 		switch {
 		case strings.HasPrefix(hostname, "ip."):
-			cfg.ToolsController.GetIpAddress(w, r)
+			cfg.ToolsController.GetIPAddress(w, r)
 			return
 		case strings.HasPrefix(hostname, "ipinfo."):
-			cfg.SharedGetIpInfoController.ServeHTTP(w, r)
+			cfg.SharedGetIPInfoController.ServeHTTP(w, r)
 			return
 		case strings.HasPrefix(hostname, "headers."):
-			cfg.ToolsController.GetHttpHeaders(w, r)
+			cfg.ToolsController.GetHTTPHeaders(w, r)
 			return
 		}
 

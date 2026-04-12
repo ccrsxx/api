@@ -21,7 +21,7 @@ func (c *Controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request)
 	data, err := c.service.GetCurrentlyPlaying(r.Context())
 
 	if err != nil {
-		api.HandleHttpError(w, r, err)
+		api.HandleHTTPError(w, r, err)
 		return
 	}
 

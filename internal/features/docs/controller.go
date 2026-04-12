@@ -22,7 +22,7 @@ func NewController(openapiSpec []byte) *Controller {
 
 func (c *Controller) getDocs(w http.ResponseWriter, r *http.Request) {
 	serverOverride := scalargo.ServerOverride{
-		URL:         utils.GetPublicUrlFromRequest(r),
+		URL:         utils.GetPublicURLFromRequest(r),
 		Description: "Production server",
 	}
 
@@ -34,7 +34,7 @@ func (c *Controller) getDocs(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		api.HandleHttpError(w, r, fmt.Errorf("docs render error: %w", err))
+		api.HandleHTTPError(w, r, fmt.Errorf("docs render error: %w", err))
 		return
 	}
 

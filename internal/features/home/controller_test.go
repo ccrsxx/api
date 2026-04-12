@@ -41,10 +41,10 @@ func TestController_ping(t *testing.T) {
 			t.Fatalf("got %q, want message %q", res.Data.Message, wantMsg)
 		}
 
-		wantDocUrl := "http://api.example.com/docs"
+		wantDocURL := "http://api.example.com/docs"
 
-		if res.Data.DocumentationURL != wantDocUrl {
-			t.Errorf("got %q, want docs url %q", res.Data.DocumentationURL, wantDocUrl)
+		if res.Data.DocumentationURL != wantDocURL {
+			t.Errorf("got %q, want docs url %q", res.Data.DocumentationURL, wantDocURL)
 		}
 	})
 

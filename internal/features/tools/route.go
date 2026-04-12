@@ -7,17 +7,17 @@ import (
 type Config struct {
 	Router                    *http.ServeMux
 	ToolsController           *Controller
-	SharedGetIpInfoController http.Handler
+	SharedGetIPInfoController http.Handler
 }
 
 func LoadRoutes(cfg Config) {
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /ipinfo", cfg.SharedGetIpInfoController)
+	mux.Handle("GET /ipinfo", cfg.SharedGetIPInfoController)
 
-	mux.HandleFunc("GET /ip", cfg.ToolsController.GetIpAddress)
+	mux.HandleFunc("GET /ip", cfg.ToolsController.GetIPAddress)
 
-	mux.HandleFunc("GET /headers", cfg.ToolsController.GetHttpHeaders)
+	mux.HandleFunc("GET /headers", cfg.ToolsController.GetHTTPHeaders)
 
 	cfg.Router.Handle("/tools/", http.StripPrefix("/tools", mux))
 }

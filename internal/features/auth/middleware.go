@@ -23,7 +23,7 @@ func (m *Middleware) IsAuthorized(next http.Handler) http.Handler {
 		_, err := m.service.getAuthorizationFromBearerToken(r.Context(), headerToken)
 
 		if err != nil {
-			api.HandleHttpError(w, r, err)
+			api.HandleHTTPError(w, r, err)
 			return
 		}
 
@@ -38,7 +38,7 @@ func (m *Middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
 		_, err := m.service.getAuthorizationFromQuery(r.Context(), queryToken)
 
 		if err != nil {
-			api.HandleHttpError(w, r, err)
+			api.HandleHTTPError(w, r, err)
 			return
 		}
 

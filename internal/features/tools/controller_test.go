@@ -12,7 +12,7 @@ import (
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
-func TestController_GetIpAddress(t *testing.T) {
+func TestController_GetIPAddress(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := NewService(ServiceConfig{Fetcher: nil})
 		ctrl := NewController(svc)
@@ -23,7 +23,7 @@ func TestController_GetIpAddress(t *testing.T) {
 
 		r.RemoteAddr = "192.0.2.1:1234"
 
-		ctrl.GetIpAddress(w, r)
+		ctrl.GetIPAddress(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -43,7 +43,7 @@ func TestController_GetIpAddress(t *testing.T) {
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.GetIpAddress(errWriter, r)
+		ctrl.GetIPAddress(errWriter, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
@@ -51,7 +51,7 @@ func TestController_GetIpAddress(t *testing.T) {
 	})
 }
 
-func TestController_GetIpInfo(t *testing.T) {
+func TestController_GetIPInfo(t *testing.T) {
 	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
 		if ip.String() == "8.8.8.8" {
 			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8")}, nil
@@ -66,7 +66,7 @@ func TestController_GetIpInfo(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=8.8.8.8", nil)
 		w := httptest.NewRecorder()
 
-		ctrl.GetIpInfo(w, r)
+		ctrl.GetIPInfo(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -96,7 +96,7 @@ func TestController_GetIpInfo(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=1.1.1.1", nil)
 
-		ctrl.GetIpInfo(w, r)
+		ctrl.GetIPInfo(w, r)
 
 		if w.Code == http.StatusOK {
 			t.Error("got 200, want error status")
@@ -112,7 +112,7 @@ func TestController_GetIpInfo(t *testing.T) {
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.GetIpInfo(errWriter, r)
+		ctrl.GetIPInfo(errWriter, r)
 
 		// The handler should have attempted to write a 200 before the write failed.
 		if w.Code != http.StatusOK {
@@ -121,7 +121,7 @@ func TestController_GetIpInfo(t *testing.T) {
 	})
 }
 
-func TestController_GetHttpHeaders(t *testing.T) {
+func TestController_GetHTTPHeaders(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := NewService(ServiceConfig{Fetcher: nil})
 		ctrl := NewController(svc)
@@ -130,7 +130,7 @@ func TestController_GetHttpHeaders(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/headers", nil)
 		r.Header.Set("User-Agent", "Test-Agent")
 
-		ctrl.GetHttpHeaders(w, r)
+		ctrl.GetHTTPHeaders(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -156,7 +156,7 @@ func TestController_GetHttpHeaders(t *testing.T) {
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.GetHttpHeaders(errWriter, r)
+		ctrl.GetHTTPHeaders(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

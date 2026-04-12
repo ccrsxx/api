@@ -22,7 +22,7 @@ func (c *Controller) ping(w http.ResponseWriter, r *http.Request) {
 
 	err := api.NewSuccessResponse(w, http.StatusOK, response{
 		Message:          "Welcome to the API! The server is up and running.",
-		DocumentationURL: utils.GetPublicUrlFromRequest(r) + "/docs",
+		DocumentationURL: utils.GetPublicURLFromRequest(r) + "/docs",
 	})
 
 	if err != nil {

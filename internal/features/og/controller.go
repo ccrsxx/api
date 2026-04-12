@@ -30,7 +30,7 @@ func (c *Controller) getOg(w http.ResponseWriter, r *http.Request) {
 	imageStream, err := c.service.getOg(r.Context(), q.Encode())
 
 	if err != nil {
-		api.HandleHttpError(w, r, err)
+		api.HandleHTTPError(w, r, err)
 		return
 	}
 
