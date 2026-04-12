@@ -21,7 +21,8 @@ test:
 	go test -cover $(PKG)
 
 test-race:
-	go test -cover -race $(PKG)
+	-gotestsum -- -cover -race $(PKG)
+	gotestsum --watch -- -cover -race $(PKG)
 
 test-watch:
 	-gotestsum -- -cover $(PKG)
