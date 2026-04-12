@@ -7,6 +7,6 @@ import (
 )
 
 func LoadLoaders(cfg config.AppConfig) {
-	api.Init(cfg.IsDevelopment)
-	logger.Init(cfg.IsDevelopment)
+	api.Load(cfg.IsDevelopment)
+	logger.Load(cfg.IsDevelopment)
 }

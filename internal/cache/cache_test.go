@@ -11,7 +11,9 @@ func TestGetOrFetch(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Cache Miss -> Fetch -> Set", func(t *testing.T) {
-		c := NewMemoryCache(DefaultCleanupInterval)
+		ctx := t.Context()
+
+		c := NewMemoryCache(ctx, DefaultCleanupInterval)
 
 		key := "miss-key"
 		want := "fetched-want"
@@ -43,7 +45,10 @@ func TestGetOrFetch(t *testing.T) {
 	})
 
 	t.Run("Cache Hit -> Return Immediate", func(t *testing.T) {
-		c := NewMemoryCache(DefaultCleanupInterval)
+		ctx := t.Context()
+
+		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+
 		key := "hit-key"
 		want := "cached-want"
 
@@ -70,7 +75,10 @@ func TestGetOrFetch(t *testing.T) {
 	})
 
 	t.Run("Fetcher Error -> Return Error", func(t *testing.T) {
-		c := NewMemoryCache(DefaultCleanupInterval)
+		ctx := t.Context()
+
+		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+
 		wantErr := errors.New("db dead")
 
 		fetcher := func() (string, error) {
@@ -139,7 +147,10 @@ func TestGetOrFetchCoverage(t *testing.T) {
 	})
 
 	t.Run("Type Assertion Failure (Wrong Type in Cache)", func(t *testing.T) {
-		c := NewMemoryCache(DefaultCleanupInterval)
+		ctx := t.Context()
+
+		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+
 		key := "wrong-type-key"
 		err := c.Set(ctx, key, 999, time.Minute)
 

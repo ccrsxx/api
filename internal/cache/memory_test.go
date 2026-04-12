@@ -1,23 +1,23 @@
 package cache
 
 import (
-	"context"
 	"testing"
 	"time"
 )
 
 func TestMemoryCache_SetGet(t *testing.T) {
-	c := NewMemoryCache(DefaultCleanupInterval)
-	ctx := context.Background()
+	ctx := t.Context()
+
+	mc := NewMemoryCache(ctx, DefaultCleanupInterval)
 
 	key := "user:123"
 	val := "john_doe"
 
-	if err := c.Set(ctx, key, val, time.Minute); err != nil {
+	if err := mc.Set(ctx, key, val, time.Minute); err != nil {
 		t.Fatalf("Set failed: %v", err)
 	}
 
-	got, err := c.Get(ctx, key)
+	got, err := mc.Get(ctx, key)
 
 	if err != nil {
 		t.Fatalf("Get failed: %v", err)
@@ -29,11 +29,11 @@ func TestMemoryCache_SetGet(t *testing.T) {
 
 	newVal := "jane_doe"
 
-	if err := c.Set(ctx, key, newVal, time.Minute); err != nil {
+	if err := mc.Set(ctx, key, newVal, time.Minute); err != nil {
 		t.Fatalf("Set overwrite failed: %v", err)
 	}
 
-	got, err = c.Get(ctx, key)
+	got, err = mc.Get(ctx, key)
 
 	if err != nil {
 		t.Fatalf("Get after overwrite failed: %v", err)
@@ -45,20 +45,21 @@ func TestMemoryCache_SetGet(t *testing.T) {
 }
 
 func TestMemoryCache_Expiration(t *testing.T) {
-	c := NewMemoryCache(DefaultCleanupInterval)
-	ctx := context.Background()
+	ctx := t.Context()
+
+	mc := NewMemoryCache(ctx, DefaultCleanupInterval)
 
 	key := "temp-key"
 	val := "temp-data"
 	ttl := 5 * time.Millisecond
 
 	// Set with very short TTL
-	if err := c.Set(ctx, key, val, ttl); err != nil {
+	if err := mc.Set(ctx, key, val, ttl); err != nil {
 		t.Fatalf("Set failed: %v", err)
 	}
 
 	// Verify it exists immediately
-	got, err := c.Get(ctx, key)
+	got, err := mc.Get(ctx, key)
 
 	if err != nil || got != val {
 		t.Fatal("Item should exist immediately after Set")
@@ -68,7 +69,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 	time.Sleep(ttl * 2)
 
 	// Verify it is gone (Lazy expiration check in Get)
-	_, err = c.Get(ctx, key)
+	_, err = mc.Get(ctx, key)
 
 	if err != ErrCacheMiss {
 		t.Errorf("got %v, want ErrCacheMiss for expired item", err)
@@ -76,30 +77,31 @@ func TestMemoryCache_Expiration(t *testing.T) {
 }
 
 func TestMemoryCache_Delete(t *testing.T) {
-	c := NewMemoryCache(DefaultCleanupInterval)
-	ctx := context.Background()
+	ctx := t.Context()
+
+	mc := NewMemoryCache(ctx, DefaultCleanupInterval)
 
 	key := "del-key"
 	val := "delete-me"
 
-	err := c.Set(ctx, key, val, time.Minute)
+	err := mc.Set(ctx, key, val, time.Minute)
 
 	if err != nil {
 		t.Fatalf("Set failed: %v", err)
 	}
 
 	// Verify exists
-	if _, err := c.Get(ctx, key); err != nil {
+	if _, err := mc.Get(ctx, key); err != nil {
 		t.Fatal("Pre-requisite failed: item not set")
 	}
 
 	// Delete
-	if err := c.Delete(ctx, key); err != nil {
+	if err := mc.Delete(ctx, key); err != nil {
 		t.Fatalf("Delete failed: %v", err)
 	}
 
 	// Verify gone
-	_, err = c.Get(ctx, key)
+	_, err = mc.Get(ctx, key)
 
 	if err != ErrCacheMiss {
 		t.Errorf("got %v, want ErrCacheMiss after Delete", err)
@@ -107,10 +109,11 @@ func TestMemoryCache_Delete(t *testing.T) {
 }
 
 func TestMemoryCache_Miss(t *testing.T) {
-	c := NewMemoryCache(DefaultCleanupInterval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	_, err := c.Get(ctx, "ghost-key")
+	mc := NewMemoryCache(ctx, DefaultCleanupInterval)
+
+	_, err := mc.Get(ctx, "ghost-key")
 
 	if err != ErrCacheMiss {
 		t.Errorf("got %v, want ErrCacheMiss for unknown key", err)
@@ -120,13 +123,14 @@ func TestMemoryCache_Miss(t *testing.T) {
 func TestMemoryCache_Cleanup(t *testing.T) {
 	interval := 10 * time.Millisecond
 
-	c := NewMemoryCache(interval)
-	ctx := context.Background()
+	ctx := t.Context()
+
+	mc := NewMemoryCache(ctx, interval)
 
 	key := "cleanup-key"
 	val := "cleanup-data"
 
-	err := c.Set(ctx, key, val, 1*time.Millisecond)
+	err := mc.Set(ctx, key, val, 1*time.Millisecond)
 
 	if err != nil {
 		t.Fatalf("Set failed: %v", err)
@@ -136,7 +140,7 @@ func TestMemoryCache_Cleanup(t *testing.T) {
 
 	// Coverage Check: The 'cleanup' goroutine loop code should have run.
 	// We verify the side effect (item is gone).
-	_, err = c.Get(ctx, key)
+	_, err = mc.Get(ctx, key)
 
 	if err != ErrCacheMiss {
 		t.Errorf("cleanup loop failed to remove expired item")
@@ -145,27 +149,33 @@ func TestMemoryCache_Cleanup(t *testing.T) {
 
 func TestMemoryCache_DefaultCleanupInterval(t *testing.T) {
 	t.Run("Positive Interval", func(t *testing.T) {
-		c := NewMemoryCache(1)
+		ctx := t.Context()
 
-		if c.cleanupInterval != 1 {
-			t.Errorf("got %v, want 1", c.cleanupInterval)
+		mc := NewMemoryCache(ctx, 1)
+
+		if mc.cleanupInterval != 1 {
+			t.Errorf("got %v, want 1", mc.cleanupInterval)
 		}
 	})
 
 	t.Run("Zero Interval Fallback", func(t *testing.T) {
-		c := NewMemoryCache(0)
+		ctx := t.Context()
 
-		if c.cleanupInterval != DefaultCleanupInterval {
-			t.Errorf("got %v, want default %v", c.cleanupInterval, DefaultCleanupInterval)
+		mc := NewMemoryCache(ctx, 0)
+
+		if mc.cleanupInterval != DefaultCleanupInterval {
+			t.Errorf("got %v, want default %v", mc.cleanupInterval, DefaultCleanupInterval)
 		}
 	})
 
 	t.Run("Negative Interval Fallback", func(t *testing.T) {
-		// Pass a negative number to trigger the if statement
-		c := NewMemoryCache(-1 * time.Minute)
+		ctx := t.Context()
 
-		if c.cleanupInterval != DefaultCleanupInterval {
-			t.Errorf("got %v, want default %v", c.cleanupInterval, DefaultCleanupInterval)
+		// Pass a negative number to trigger the if statement
+		mc := NewMemoryCache(ctx, -1*time.Minute)
+
+		if mc.cleanupInterval != DefaultCleanupInterval {
+			t.Errorf("got %v, want default %v", mc.cleanupInterval, DefaultCleanupInterval)
 		}
 	})
 }

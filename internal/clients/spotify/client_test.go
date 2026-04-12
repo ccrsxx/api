@@ -323,7 +323,9 @@ func TestClient_GetCurrentlyPlaying_Logic(t *testing.T) {
 
 		defer apiSrv.Close()
 
-		memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)
+		ctx := t.Context()
+
+		memoryCache := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		c := NewClient(Config{
 			ClientID:     "id",

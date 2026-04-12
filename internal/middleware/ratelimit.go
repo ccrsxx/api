@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
@@ -27,7 +28,7 @@ type rateLimiter struct {
 	visitors map[string]*visitor
 }
 
-func newLimiterFromConfig(requests int, window time.Duration) *rateLimiter {
+func newLimiterFromConfig(ctx context.Context, requests int, window time.Duration) *rateLimiter {
 	// Convert requests/window to requests/second (Token Bucket Rate)
 	// Example: 100 reqs / 60s = 1.666 reqs/sec
 	limit := rate.Limit(float64(requests) / window.Seconds())
@@ -48,9 +49,7 @@ func newLimiterFromConfig(requests int, window time.Duration) *rateLimiter {
 	// Calculate cleanup interval based on window (min 1 minute)
 	interval := max(window*4, time.Minute)
 
-	// Start the background cleanup routine.
-	// We pass 'nil' for the stop channel so it runs forever in production.
-	go rl.cleanup(interval, nil)
+	go rl.cleanup(ctx, interval)
 
 	return rl
 }
@@ -122,34 +121,31 @@ func (rl *rateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) e
 	return nil
 }
 
-func (rl *rateLimiter) pruneVisitors(interval time.Duration) {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
-
-	for ip, v := range rl.visitors {
-		if time.Since(v.lastSeen) > interval {
-			delete(rl.visitors, ip)
-		}
-	}
-}
-
-func (rl *rateLimiter) cleanup(interval time.Duration, stop <-chan struct{}) {
+func (rl *rateLimiter) cleanup(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-stop:
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			rl.pruneVisitors(interval)
+			rl.mu.Lock()
+
+			for ip, v := range rl.visitors {
+				if time.Since(v.lastSeen) > interval {
+					delete(rl.visitors, ip)
+				}
+			}
+
+			rl.mu.Unlock()
 		}
 	}
 }
 
-func RateLimit(requests int, window time.Duration) func(next http.Handler) http.Handler {
-	rl := newLimiterFromConfig(requests, window)
+func RateLimit(ctx context.Context, requests int, window time.Duration) func(next http.Handler) http.Handler {
+	rl := newLimiterFromConfig(ctx, requests, window)
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

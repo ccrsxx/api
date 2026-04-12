@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -21,10 +22,10 @@ import (
 	"github.com/ccrsxx/api/internal/middleware"
 )
 
-func LoadHandlers(cfg config.AppConfig) http.Handler {
+func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 	router := http.NewServeMux()
 
-	memoryCache := cache.NewMemoryCache(cache.DefaultCleanupInterval)
+	memoryCache := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 	ipInfoClient := ipinfo.NewClient(cfg.IpInfoToken)
 
@@ -65,7 +66,7 @@ func LoadHandlers(cfg config.AppConfig) http.Handler {
 	)
 
 	// Shared rate-limited handler for GetIpInfo. Limits to 10 requests per 10 seconds.
-	sharedGetIpInfoController := middleware.RateLimit(10, 10*time.Second)(
+	sharedGetIpInfoController := middleware.RateLimit(ctx, 10, 10*time.Second)(
 		http.HandlerFunc(toolsController.GetIpInfo),
 	)
 
@@ -86,6 +87,7 @@ func LoadHandlers(cfg config.AppConfig) http.Handler {
 				SpotifyFetcher:  spotifyService.GetCurrentlyPlaying,
 				JellyfinFetcher: jellyfinService.GetCurrentlyPlaying,
 			}),
+			AppContext:     ctx,
 			AuthMiddleware: authMiddleware,
 		},
 	)
@@ -137,7 +139,7 @@ func LoadHandlers(cfg config.AppConfig) http.Handler {
 	handlers := middleware.Recovery(
 		middleware.Cors(cfg.AllowedOrigins)(
 			middleware.Logging(
-				middleware.RateLimit(100, 1*time.Minute)(
+				middleware.RateLimit(ctx, 100, 1*time.Minute)(
 					router,
 				),
 			),

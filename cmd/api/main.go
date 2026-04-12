@@ -14,7 +14,11 @@ import (
 func main() {
 	cfg := config.Load()
 
-	server := server.New(cfg)
+	shutdownCtx, cancelShutdown := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+
+	defer cancelShutdown()
+
+	server := server.New(shutdownCtx, cfg)
 
 	go func() {
 		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)
@@ -24,26 +28,22 @@ func main() {
 		}
 	}()
 
-	shutdown, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-
-	defer stop()
-
-	<-shutdown.Done()
+	<-shutdownCtx.Done()
 
 	slog.Info("server stopping gracefully")
 
 	// Allow forced stop signal to exit immediately
 	// Use case: if graceful shutdown is waiting too long, user can send
 	// a second signal (CTRL+C) to force stop the application immediately
-	stop()
+	cancelShutdown()
 
 	// Give the server 60 seconds to shutdown gracefully
 	// Basically a hard timeout to avoid hanging forever
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	shutdownTimeoutCtx, cancelShutdownTimeout := context.WithTimeout(context.Background(), 60*time.Second)
 
-	defer cancel()
+	defer cancelShutdownTimeout()
 
-	if err := server.Shutdown(shutdownCtx); err != nil {
+	if err := server.Shutdown(shutdownTimeoutCtx); err != nil {
 		slog.Error("server shutdown failed", "error", err)
 	}
 

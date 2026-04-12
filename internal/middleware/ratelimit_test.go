@@ -17,7 +17,9 @@ func TestRateLimit(t *testing.T) {
 	})
 
 	t.Run("Allows requests within limit", func(t *testing.T) {
-		mw := RateLimit(5, time.Second)
+		ctx := t.Context()
+
+		mw := RateLimit(ctx, 5, time.Second)
 		server := mw(nextHandler)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -33,7 +35,9 @@ func TestRateLimit(t *testing.T) {
 	})
 
 	t.Run("Blocks requests exceeding limit", func(t *testing.T) {
-		mw := RateLimit(1, time.Minute)
+		ctx := t.Context()
+
+		mw := RateLimit(ctx, 1, time.Minute)
 		server := mw(nextHandler)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -65,7 +69,9 @@ func TestRateLimit(t *testing.T) {
 	})
 
 	t.Run("Headers are set correctly", func(t *testing.T) {
-		mw := RateLimit(10, 60*time.Second)
+		ctx := t.Context()
+
+		mw := RateLimit(ctx, 10, 60*time.Second)
 
 		server := mw(nextHandler)
 
@@ -83,8 +89,7 @@ func TestRateLimit(t *testing.T) {
 	})
 }
 
-// TestRateLimiter_PruneVisitors tests the logic synchronously
-func TestRateLimiter_PruneVisitors(t *testing.T) {
+func TestRateLimiter_Cleanup(t *testing.T) {
 	rl := &rateLimiter{
 		visitors: map[string]*visitor{},
 	}
@@ -93,18 +98,28 @@ func TestRateLimiter_PruneVisitors(t *testing.T) {
 
 	rl.visitors[staleIP] = &visitor{
 		limiter:  rate.NewLimiter(rate.Limit(1), 1),
-		lastSeen: time.Now().Add(-2 * time.Minute),
+		lastSeen: time.Now().Add(-2 * time.Minute), // Way in the past, gets cleaned up
 	}
 
 	freshIP := "192.168.1.101"
 
 	rl.visitors[freshIP] = &visitor{
 		limiter:  rate.NewLimiter(rate.Limit(1), 1),
-		lastSeen: time.Now(),
+		lastSeen: time.Now().Add(4 * time.Minute), // In the future, should not be cleaned up
 	}
 
-	// Prune anything older than 1 minute
-	rl.pruneVisitors(time.Minute)
+	ctx := t.Context()
+
+	// Start cleanup with a 10ms interval
+	go rl.cleanup(ctx, 10*time.Millisecond)
+
+	time.Sleep(20 * time.Millisecond) // Wait for cleanup to run
+
+	// Lock required to prevent race condition
+	// We make sure that cleanup function has unlocked before we check the map
+	// otherwise we might be checking while it's still locked and gets a incorrect result
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
 
 	if _, exists := rl.visitors[staleIP]; exists {
 		t.Errorf("want stale IP %s to be cleaned up", staleIP)
@@ -112,38 +127,5 @@ func TestRateLimiter_PruneVisitors(t *testing.T) {
 
 	if _, exists := rl.visitors[freshIP]; !exists {
 		t.Errorf("want fresh IP %s to remain", freshIP)
-	}
-}
-
-// TestRateLimiter_CleanupLoop tests the goroutine lifecycle
-func TestRateLimiter_CleanupLoop(t *testing.T) {
-	rl := &rateLimiter{
-		visitors: map[string]*visitor{},
-	}
-
-	// use separate channels to signal completion and stopping
-	// to make sure we can detect if the loop exits properly after receiving the stop signal
-	done := make(chan struct{})
-
-	stop := make(chan struct{})
-
-	// Start the cleanup loop with a tiny interval (1ms)
-	go func() {
-		rl.cleanup(time.Millisecond, stop)
-
-		// Signal that the loop has exited cleanly
-		close(done)
-	}()
-
-	// Let it run for a bit to ensure it hits the ticker case
-	time.Sleep(10 * time.Millisecond)
-
-	close(stop)
-
-	select {
-	case <-done:
-		// Success will exit here if the loop exits cleanly after receiving the stop signal
-	case <-time.After(100 * time.Millisecond):
-		t.Fatal("cleanup loop failed to exit after stop signal")
 	}
 }

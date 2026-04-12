@@ -17,10 +17,13 @@ func TestLoadRoutes(t *testing.T) {
 
 	authMiddleware := auth.NewMiddleware(authService)
 
+	ctx := t.Context()
+
 	LoadRoutes(
 		Config{
 			Router:         mux,
 			Service:        service,
+			AppContext:     ctx,
 			AuthMiddleware: authMiddleware,
 		},
 	)

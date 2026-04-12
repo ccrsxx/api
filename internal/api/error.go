@@ -12,7 +12,7 @@ import (
 
 var isDevelopmentMode bool
 
-func Init(isDevelopment bool) {
+func Load(isDevelopment bool) {
 	isDevelopmentMode = isDevelopment
 }
 

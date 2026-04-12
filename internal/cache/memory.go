@@ -19,7 +19,7 @@ type item struct {
 	expiresAt time.Time
 }
 
-func NewMemoryCache(cleanupInterval time.Duration) *MemoryCache {
+func NewMemoryCache(ctx context.Context, cleanupInterval time.Duration) *MemoryCache {
 	if cleanupInterval <= 0 {
 		cleanupInterval = DefaultCleanupInterval
 	}
@@ -29,16 +29,16 @@ func NewMemoryCache(cleanupInterval time.Duration) *MemoryCache {
 		cleanupInterval: cleanupInterval,
 	}
 
-	go store.cleanup()
+	go store.cleanup(ctx, cleanupInterval)
 
 	return store
 }
 
-func (m *MemoryCache) Get(ctx context.Context, key string) (any, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+func (mc *MemoryCache) Get(ctx context.Context, key string) (any, error) {
+	mc.mu.RLock()
+	defer mc.mu.RUnlock()
 
-	val, found := m.items[key]
+	val, found := mc.items[key]
 
 	if !found || time.Now().After(val.expiresAt) {
 		return nil, ErrCacheMiss
@@ -47,11 +47,11 @@ func (m *MemoryCache) Get(ctx context.Context, key string) (any, error) {
 	return val.value, nil
 }
 
-func (m *MemoryCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	m.items[key] = item{
+	mc.items[key] = item{
 		value:     value,
 		expiresAt: time.Now().Add(ttl),
 	}
@@ -59,31 +59,36 @@ func (m *MemoryCache) Set(ctx context.Context, key string, value any, ttl time.D
 	return nil
 }
 
-func (m *MemoryCache) Delete(ctx context.Context, key string) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Delete(ctx context.Context, key string) error {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	delete(m.items, key)
+	delete(mc.items, key)
 
 	return nil
 }
 
-func (m *MemoryCache) cleanup() {
-	ticker := time.NewTicker(m.cleanupInterval)
+func (mc *MemoryCache) cleanup(ctx context.Context, interval time.Duration) {
+	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 
-	for range ticker.C {
-		m.mu.Lock()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			mc.mu.Lock()
 
-		now := time.Now()
+			now := time.Now()
 
-		for key, item := range m.items {
-			if now.After(item.expiresAt) {
-				delete(m.items, key)
+			for key, item := range mc.items {
+				if now.After(item.expiresAt) {
+					delete(mc.items, key)
+				}
 			}
-		}
 
-		m.mu.Unlock()
+			mc.mu.Unlock()
+		}
 	}
 }

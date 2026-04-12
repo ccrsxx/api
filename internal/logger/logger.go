@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func Init(isDevelopment bool) {
+func Load(isDevelopment bool) {
 	if isDevelopment {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 		return

@@ -1,6 +1,7 @@
 package sse
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -9,11 +10,13 @@ import (
 )
 
 type Controller struct {
+	ctx     context.Context
 	service *Service
 }
 
-func NewController(svc *Service) *Controller {
+func NewController(ctx context.Context, svc *Service) *Controller {
 	return &Controller{
+		ctx:     ctx,
 		service: svc,
 	}
 }
@@ -31,10 +34,15 @@ func (c *Controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request
 
 	defer c.service.RemoveClient(ctx, clientChan)
 
+	appShutdown := c.ctx.Done()
+
 	clientDisconnected := r.Context().Done()
 
 	for {
 		select {
+		case <-appShutdown:
+			slog.Info("server is shutting down, closing sse connection", "ip", ipAddress)
+			return
 		case <-clientDisconnected:
 			slog.Info("sse client disconnected", "ip", ipAddress)
 			return

@@ -14,7 +14,7 @@ func TestHandleHttpError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/test", nil)
 
 	t.Run("PanicError - Standard (Production)", func(t *testing.T) {
-		Init(false)
+		Load(false)
 
 		w := httptest.NewRecorder()
 
@@ -43,9 +43,9 @@ func TestHandleHttpError(t *testing.T) {
 	})
 
 	t.Run("PanicError - Development Mode (Stack Trace)", func(t *testing.T) {
-		Init(true)
+		Load(true)
 
-		defer Init(false)
+		defer Load(false)
 
 		w := httptest.NewRecorder()
 
