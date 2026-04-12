@@ -39,6 +39,8 @@ func main() {
 
 	// Give the server 60 seconds to shutdown gracefully
 	// Basically a hard timeout to avoid hanging forever
+	// Any open handler will not receive further requests
+	// Ongoing handlers will have 60 seconds to finish before the application is forcefully terminated
 	shutdownTimeoutCtx, cancelShutdownTimeout := context.WithTimeout(context.Background(), 60*time.Second)
 
 	defer cancelShutdownTimeout()
