@@ -1,3 +1,4 @@
+// nolint:revive // test package name intentionally short
 package utils
 
 import (
