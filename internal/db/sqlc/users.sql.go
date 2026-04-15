@@ -18,11 +18,11 @@ RETURNING id, name, role, image, email, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID    pgtype.UUID
-	Name  string
-	Email pgtype.Text
-	Image pgtype.Text
-	Role  string
+	ID    pgtype.UUID `json:"id"`
+	Name  string      `json:"name"`
+	Email pgtype.Text `json:"email"`
+	Image pgtype.Text `json:"image"`
+	Role  string      `json:"role"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -144,9 +144,9 @@ RETURNING id, name, role, image, email, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID    pgtype.UUID
-	Name  pgtype.Text
-	Image pgtype.Text
+	ID    pgtype.UUID `json:"id"`
+	Name  pgtype.Text `json:"name"`
+	Image pgtype.Text `json:"image"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -173,8 +173,8 @@ RETURNING id, name, role, image, email, created_at, updated_at
 `
 
 type UpdateUserRoleParams struct {
-	ID   pgtype.UUID
-	Role string
+	ID   pgtype.UUID `json:"id"`
+	Role string      `json:"role"`
 }
 
 func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error) {
