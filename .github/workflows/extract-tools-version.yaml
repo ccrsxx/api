@@ -6,6 +6,12 @@ on:
       go-version:
         description: 'Go version from package.json'
         value: ${{ jobs.extract.outputs.go-version }}
+      sqlc-version:
+        description: 'sqlc version from Makefile'
+        value: ${{ jobs.extract.outputs.sqlc-version }}
+      goose-version:
+        description: 'goose version from Makefile'
+        value: ${{ jobs.extract.outputs.goose-version }}
       golangci-lint-version:
         description: 'golangci-lint version from Makefile'
         value: ${{ jobs.extract.outputs.golangci-lint-version }}
@@ -15,6 +21,8 @@ jobs:
     runs-on: self-hosted
     outputs:
       go-version: ${{ steps.extract.outputs.go-version }}
+      sqlc-version: ${{ steps.extract.outputs.sqlc-version }}
+      goose-version: ${{ steps.extract.outputs.goose-version }}
       golangci-lint-version: ${{ steps.extract.outputs.golangci-lint-version }}
     steps:
       - uses: actions/checkout@v6
@@ -24,6 +32,14 @@ jobs:
           GO_VERSION=$(awk '/^go/ {print $2}' go.mod)
           echo "go-version=$GO_VERSION" >> $GITHUB_OUTPUT
           echo "Detected Go version: $GO_VERSION"
+
+          SQLC_VERSION=$(awk '/^SQLC_VERSION/ {print $3}' Makefile)
+          echo "sqlc-version=$SQLC_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected sqlc version: $SQLC_VERSION"
+
+          GOOSE_VERSION=$(awk '/^GOOSE_VERSION/ {print $3}' Makefile)
+          echo "goose-version=$GOOSE_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected goose version: $GOOSE_VERSION"
 
           GOLANGCI_LINT_VERSION=$(awk '/^GOLANGCI_LINT_VERSION/ {print $3}' Makefile)
           echo "golangci-lint-version=$GOLANGCI_LINT_VERSION" >> $GITHUB_OUTPUT

@@ -11,9 +11,52 @@ services:
       - TZ=Asia/Jakarta
       - PORT=4000
       - APP_ENV=production
+      - DATABASE_URL=postgres://postgres:${DATABASE_PASSWORD:-postgres}@db:5432/postgres
     read_only: true
     cap_drop:
       - ALL
     security_opt:
       - 'no-new-privileges:true'
     user: '10001:10001'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    container_name: db
+    restart: unless-stopped
+    environment:
+      - PGDATA=/data/postgres
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-postgres}
+    ports:
+      - '5444:5432'
+    volumes:
+      - db_data:/data/postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-backup:
+    image: prodrigestivill/postgres-backup-local:18
+    container_name: db-backup
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Jakarta
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-postgres}
+      - POSTGRES_CLUSTER=true
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+    volumes:
+      - /backup/database/api:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

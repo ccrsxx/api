@@ -10,6 +10,7 @@ import (
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
 	"github.com/ccrsxx/api/internal/config"
+	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/features/favicon"
@@ -19,10 +20,11 @@ import (
 	"github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/features/sse"
 	"github.com/ccrsxx/api/internal/features/tools"
+	"github.com/ccrsxx/api/internal/features/users"
 	"github.com/ccrsxx/api/internal/middleware"
 )
 
-func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
+func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) http.Handler {
 	router := http.NewServeMux()
 
 	memoryCache := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
@@ -41,6 +43,10 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 		APIKey:   cfg.JellyfinAPIKey,
 		ImageURL: cfg.JellyfinImageURL,
 		Username: cfg.JellyfinUsername,
+	})
+
+	usersServices := users.NewService(users.ServiceConfig{
+		Database: db,
 	})
 
 	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
@@ -103,6 +109,13 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig) http.Handler {
 	docs.LoadRoutes(
 		docs.Config{
 			Router: router,
+		},
+	)
+
+	users.LoadRoutes(
+		users.Config{
+			Router:  router,
+			Service: usersServices,
 		},
 	)
 

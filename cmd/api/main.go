@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/config"
+	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/server"
 )
 
@@ -18,7 +19,11 @@ func main() {
 
 	defer cancelShutdown()
 
-	server := server.New(shutdownCtx, cfg)
+	pool, database := sqlc.NewQueries(shutdownCtx, cfg.DatabaseURL)
+
+	defer pool.Close()
+
+	server := server.New(shutdownCtx, cfg, database)
 
 	go func() {
 		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)

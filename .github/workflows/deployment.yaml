@@ -19,13 +19,40 @@ jobs:
   extract-tools-version:
     uses: ./.github/workflows/extract-tools-version.yaml
 
-  deploy:
-    name: Build and deploy via Docker on VPS
+  migrate:
+    name: Migrate database
     runs-on: self-hosted
     environment: production
 
     needs:
       - ci
+      - extract-tools-version
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ needs.extract-tools-version.outputs.go-version }}
+
+      - uses: mscno/setup-goose@v1
+        with:
+          version: ${{ needs.extract-tools-version.outputs.goose-version }}
+
+      - name: Run migration
+        env:
+          GOOSE_DRIVER: postgres
+          GOOSE_DBSTRING: ${{ secrets.DATABASE_URL }}
+          GOOSE_MIGRATION_DIR: internal/db/migrations
+        run: make db-migrate
+
+  deploy:
+    name: Build and deploy via Docker on VPS
+    runs-on: self-hosted
+
+    needs:
+      - migrate
       - extract-tools-version
 
     permissions:
@@ -77,6 +104,8 @@ jobs:
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
 
           echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
+
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
 
           echo "JELLYFIN_URL=${{ secrets.JELLYFIN_URL }}" >> .env
           echo "JELLYFIN_API_KEY=${{ secrets.JELLYFIN_API_KEY }}" >> .env

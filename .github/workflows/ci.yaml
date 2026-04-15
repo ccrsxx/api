@@ -13,6 +13,29 @@ jobs:
   extract-tools-version:
     uses: ./.github/workflows/extract-tools-version.yaml
 
+  vet:
+    name: Vet
+    runs-on: self-hosted
+
+    needs: extract-tools-version
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ needs.extract-tools-version.outputs.go-version }}
+
+      - uses: sqlc-dev/setup-sqlc@v5
+        with:
+          sqlc-version: ${{ needs.extract-tools-version.outputs.sqlc-version }}
+
+      - name: Run vet
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: make db-vet
+
   lint:
     name: Lint
     runs-on: self-hosted

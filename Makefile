@@ -1,6 +1,8 @@
 PKG ?= ./...
 
 AIR_VERSION = v1.64.5
+SQLC_VERSION = v1.30.0
+GOOSE_VERSION = v3.27.0
 NILAWAY_VERSION = v0.0.0-20260213150243-937701de96c7
 GOTESTSUM_VERSION = v1.13.0
 GOLANGCI_LINT_VERSION = v2.10.1
@@ -41,10 +43,27 @@ lint-nill:
 format:
 	go fmt $(PKG)
 
+db-vet:
+	sqlc vet
+
+db-generate:
+	sqlc generate
+
+db-status:
+	goose status
+
+db-migrate:
+	goose up
+
+db-rollback:
+	goose down
+
 setup-tools:
 	go install gotest.tools/gotestsum@$(GOTESTSUM_VERSION)
 	go install github.com/air-verse/air@$(AIR_VERSION)
 	go install go.uber.org/nilaway/cmd/nilaway@$(NILAWAY_VERSION)
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION)
+	go install github.com/pressly/goose/v3/cmd/goose@$(GOOSE_VERSION)
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 setup-hooks:

@@ -34,6 +34,8 @@ type AppConfig struct {
 	SecretKey      string         `env:"SECRET_KEY,required"`
 	AllowedOrigins []string       `env:"ALLOWED_ORIGINS,required"`
 
+	DatabaseURL string `env:"DATABASE_URL,required"`
+
 	IPInfoToken string `env:"IPINFO_TOKEN,required"`
 
 	JellyfinURL      string `env:"JELLYFIN_URL,required"`
