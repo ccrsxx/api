@@ -19,6 +19,9 @@ jobs:
 
     needs: extract-tools-version
 
+    env:
+      POSTGRES_VET_ID: postgres-vet-${{ github.run_id }}
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -27,14 +30,46 @@ jobs:
         with:
           go-version: ${{ needs.extract-tools-version.outputs.go-version }}
 
+      - id: sqlc-version
+        name: Strip v prefix from sqlc version
+        # Needed because sqlc github action only allow number without the v prefix
+        run: |
+          VERSION="${{ needs.extract-tools-version.outputs.sqlc-version }}"
+          echo "sqlc-version=${VERSION#v}" >> $GITHUB_OUTPUT
+
       - uses: sqlc-dev/setup-sqlc@v5
         with:
-          sqlc-version: ${{ needs.extract-tools-version.outputs.sqlc-version }}
+          sqlc-version: ${{ steps.sqlc-version.outputs.sqlc-version }}
+
+      - name: Start PostgreSQL before vet
+        id: postgres
+        run: |
+          docker run -d --name $POSTGRES_VET_ID \
+            -e POSTGRES_PASSWORD=postgres \
+            -p 0:5432 \
+            --health-cmd pg_isready \
+            --health-interval 5s \
+            --health-timeout 5s \
+            --health-retries 5 \
+            postgres:18-alpine
+
+          until docker inspect --format='{{.State.Health.Status}}' $POSTGRES_VET_ID | grep -q healthy; do
+            sleep 1
+          done
+
+          PORT=$(docker port $POSTGRES_VET_ID 5432 | cut -d: -f2)
+
+          echo "port=$PORT" >> $GITHUB_OUTPUT
 
       - name: Run vet
         env:
-          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          DATABASE_URL: postgres://postgres:postgres@host.docker.internal:${{ steps.postgres.outputs.port }}/postgres
         run: make db-vet
+
+      - name: Remove PostgreSQL
+        # Always run even if the vet fails
+        if: always()
+        run: docker rm -f ${{ env.POSTGRES_VET_ID }}
 
   lint:
     name: Lint

@@ -10,6 +10,7 @@ func setValidEnv(t *testing.T, appEnv string) {
 	t.Setenv("OG_URL", "http://localhost")
 	t.Setenv("APP_ENV", appEnv)
 	t.Setenv("SECRET_KEY", "secret")
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/dbname")
 	t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
 	t.Setenv("IPINFO_TOKEN", "token")
 	t.Setenv("JELLYFIN_URL", "url")

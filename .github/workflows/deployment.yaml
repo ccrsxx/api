@@ -40,10 +40,15 @@ jobs:
         with:
           version: ${{ needs.extract-tools-version.outputs.goose-version }}
 
+      - name: Start PostgreSQL before migration
+        env:
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        run: docker compose up -d --wait db
+
       - name: Run migration
         env:
           GOOSE_DRIVER: postgres
-          GOOSE_DBSTRING: ${{ secrets.DATABASE_URL }}
+          GOOSE_DBSTRING: postgres://postgres:${{ secrets.DATABASE_PASSWORD }}@host.docker.internal:5432/postgres
           GOOSE_MIGRATION_DIR: internal/db/migrations
         run: make db-migrate
 
@@ -120,3 +125,6 @@ jobs:
         run: |
           docker compose pull
           docker compose up -d
+
+      - name: Remove env
+        run: rm .env
