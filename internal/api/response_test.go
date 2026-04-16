@@ -39,35 +39,37 @@ func TestNewSuccessResponse(t *testing.T) {
 		}
 	})
 
-	t.Run("Wraps Pointer to Struct in Data Field", func(t *testing.T) {
+	t.Run("Wraps Slices in Data Field", func(t *testing.T) {
 		w := httptest.NewRecorder()
+		data := []string{"a", "b"}
 
-		data := &testUser{Name: "Jane", Age: 25}
-
-		err := NewSuccessResponse(w, http.StatusCreated, data)
-
-		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
-		}
-
-		want := `{"data":{"name":"Jane","age":25}}`
-
-		if strings.TrimSpace(w.Body.String()) != want {
-			t.Errorf("got body %q, want %q", w.Body.String(), want)
-		}
-	})
-
-	t.Run("Does Not Wrap Maps", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		data := map[string]string{"foo": "bar"}
-
+		// Proves that NewSuccessResponse now unconditionally wraps
 		err := NewSuccessResponse(w, http.StatusOK, data)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
 		}
 
-		want := `{"foo":"bar"}`
+		want := `{"data":["a","b"]}`
+
+		if strings.TrimSpace(w.Body.String()) != want {
+			t.Errorf("got body %q, want %q", w.Body.String(), want)
+		}
+	})
+}
+
+func TestNewSuccessRawResponse(t *testing.T) {
+	t.Run("Does Not Wrap Struct", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		data := testUser{Name: "John", Age: 30}
+
+		err := NewSuccessRawResponse(w, http.StatusOK, data)
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		want := `{"name":"John","age":30}`
 
 		if strings.TrimSpace(w.Body.String()) != want {
 			t.Errorf("got body %q, want %q", w.Body.String(), want)
@@ -78,7 +80,7 @@ func TestNewSuccessResponse(t *testing.T) {
 		w := httptest.NewRecorder()
 		data := []string{"a", "b"}
 
-		err := NewSuccessResponse(w, http.StatusOK, data)
+		err := NewSuccessRawResponse(w, http.StatusOK, data)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)

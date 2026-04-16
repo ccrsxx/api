@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 
 	"github.com/google/uuid"
 )
@@ -64,23 +63,16 @@ func newResponse(w http.ResponseWriter, status int, v any) error {
 	return nil
 }
 
+// NewSuccessResponse unconditionally wraps the data in a {"data": ...} struct.
 func NewSuccessResponse[T any](w http.ResponseWriter, statusCode int, data T) error {
-	var response any = data
+	return newResponse(w, statusCode, SuccessResponse[T]{
+		Data: data,
+	})
+}
 
-	val := reflect.ValueOf(data)
-	kind := val.Kind()
-
-	if kind == reflect.Pointer && !val.IsNil() {
-		kind = val.Elem().Kind()
-	}
-
-	if kind == reflect.Struct {
-		response = SuccessResponse[T]{
-			Data: data,
-		}
-	}
-
-	return newResponse(w, statusCode, response)
+// NewSuccessRawResponse writes the data exactly as provided, without wrapping.
+func NewSuccessRawResponse[T any](w http.ResponseWriter, statusCode int, data T) error {
+	return newResponse(w, statusCode, data)
 }
 
 func NewErrorResponse(w http.ResponseWriter, statusCode int, message string, details []string, id string) error {

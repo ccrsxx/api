@@ -48,7 +48,7 @@ func (c *Controller) GetIPInfo(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) GetHTTPHeaders(w http.ResponseWriter, r *http.Request) {
 	headers := utils.GetHTTPHeadersFromRequest(r)
 
-	if err := api.NewSuccessResponse(w, http.StatusOK, headers); err != nil {
+	if err := api.NewSuccessRawResponse(w, http.StatusOK, headers); err != nil {
 		slog.Warn("headers response error", "error", err)
 	}
 }
