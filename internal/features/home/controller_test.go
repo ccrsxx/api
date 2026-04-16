@@ -26,10 +26,7 @@ func TestController_ping(t *testing.T) {
 			t.Errorf("got %d, want status 200", w.Code)
 		}
 
-		var res api.SuccessResponse[struct {
-			Message          string `json:"message"`
-			DocumentationURL string `json:"documentationUrl"`
-		}]
+		var res api.SuccessResponse[PingResponse]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)

@@ -16,15 +16,6 @@ func (w *ErrorResponseRecorder) Write(b []byte) (int, error) {
 	return 0, errors.New("forced write error")
 }
 
-// Mocks a broken network connection (always fails Write) for http.ResponseWriter interface.
-type ErrorResponseWriter struct {
-	http.ResponseWriter
-}
-
-func (w *ErrorResponseWriter) Write(b []byte) (int, error) {
-	return 0, errors.New("forced write error")
-}
-
 // Mocks a ResponseWriter that does NOT implement http.Flusher, to test flush errors.
 type NonFlusherResponseWriter struct {
 	http.ResponseWriter

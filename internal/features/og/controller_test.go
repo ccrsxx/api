@@ -133,7 +133,7 @@ func TestController_getOg(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()
 
-		errWriter := &test.ErrorResponseWriter{ResponseWriter: w}
+		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 		ctrl.getOg(errWriter, r)
 
 		if w.Code != http.StatusOK {

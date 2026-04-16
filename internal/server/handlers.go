@@ -12,15 +12,18 @@ import (
 	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/features/contents"
 	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/features/favicon"
 	"github.com/ccrsxx/api/internal/features/home"
 	"github.com/ccrsxx/api/internal/features/jellyfin"
+	"github.com/ccrsxx/api/internal/features/likes"
 	"github.com/ccrsxx/api/internal/features/og"
 	"github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/features/sse"
+	"github.com/ccrsxx/api/internal/features/statistics"
 	"github.com/ccrsxx/api/internal/features/tools"
-	"github.com/ccrsxx/api/internal/features/users"
+	"github.com/ccrsxx/api/internal/features/views"
 	"github.com/ccrsxx/api/internal/middleware"
 )
 
@@ -43,10 +46,6 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		APIKey:   cfg.JellyfinAPIKey,
 		ImageURL: cfg.JellyfinImageURL,
 		Username: cfg.JellyfinUsername,
-	})
-
-	usersServices := users.NewService(users.ServiceConfig{
-		Database: db,
 	})
 
 	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
@@ -112,10 +111,39 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		},
 	)
 
-	users.LoadRoutes(
-		users.Config{
-			Router:  router,
-			Service: usersServices,
+	views.LoadRoutes(
+		views.Config{
+			Router: router,
+			Service: views.NewService(views.ServiceConfig{
+				Database: db,
+			}),
+		},
+	)
+
+	likes.LoadRoutes(
+		likes.Config{
+			Router: router,
+			Service: likes.NewService(likes.ServiceConfig{
+				Database: db,
+			}),
+		},
+	)
+
+	contents.LoadRoutes(
+		contents.Config{
+			Router: router,
+			Service: contents.NewService(contents.ServiceConfig{
+				Database: db,
+			}),
+		},
+	)
+
+	statistics.LoadRoutes(
+		statistics.Config{
+			Router: router,
+			Service: statistics.NewService(statistics.ServiceConfig{
+				Database: db,
+			}),
 		},
 	)
 

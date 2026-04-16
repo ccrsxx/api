@@ -26,7 +26,7 @@ func TestController_GetIPAddress(t *testing.T) {
 		ctrl.GetIPAddress(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("got %d, want 200", w.Code)
+			t.Fatalf("got %d, want 200", w.Code)
 		}
 
 		if w.Body.String() != "192.0.2.1" {
@@ -69,7 +69,7 @@ func TestController_GetIPInfo(t *testing.T) {
 		ctrl.GetIPInfo(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("got %d, want 200", w.Code)
+			t.Fatalf("got %d, want 200", w.Code)
 		}
 
 		var res map[string]any
@@ -133,7 +133,7 @@ func TestController_GetHTTPHeaders(t *testing.T) {
 		ctrl.GetHTTPHeaders(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("got %d, want 200", w.Code)
+			t.Fatalf("got %d, want 200", w.Code)
 		}
 
 		var res map[string]string

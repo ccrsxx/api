@@ -1,4 +1,4 @@
-package users
+package likes
 
 import (
 	"net/http"
@@ -14,7 +14,8 @@ func LoadRoutes(cfg Config) {
 
 	ctrl := NewController(cfg.Service)
 
-	mux.HandleFunc("GET /", ctrl.GetListUsers)
+	mux.HandleFunc("GET /{slug}", ctrl.GetLikeStatus)
+	mux.HandleFunc("POST /{slug}", ctrl.IncrementLike)
 
-	cfg.Router.Handle("/users/", http.StripPrefix("/users", mux))
+	cfg.Router.Handle("/likes/", http.StripPrefix("/likes", mux))
 }

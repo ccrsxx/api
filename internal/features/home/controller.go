@@ -14,13 +14,13 @@ func NewController() *Controller {
 	return &Controller{}
 }
 
-func (c *Controller) ping(w http.ResponseWriter, r *http.Request) {
-	type response struct {
-		Message          string `json:"message"`
-		DocumentationURL string `json:"documentationUrl"`
-	}
+type PingResponse struct {
+	Message          string `json:"message"`
+	DocumentationURL string `json:"documentationUrl"`
+}
 
-	err := api.NewSuccessResponse(w, http.StatusOK, response{
+func (c *Controller) ping(w http.ResponseWriter, r *http.Request) {
+	err := api.NewSuccessResponse(w, http.StatusOK, PingResponse{
 		Message:          "Welcome to the API! The server is up and running.",
 		DocumentationURL: utils.GetPublicURLFromRequest(r) + "/docs",
 	})
