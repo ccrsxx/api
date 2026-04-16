@@ -117,7 +117,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 
 		if svc.stopChan != nil {
 			// Wait a bit for stopWorker to finish
-			time.Sleep(20 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 
 			if svc.stopChan != nil {
 				t.Error("want poller to stop")
