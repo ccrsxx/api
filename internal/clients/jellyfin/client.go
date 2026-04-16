@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -51,7 +52,7 @@ func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
 
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			fmt.Println("jellyfin currently playing close body error:", err)
+			slog.Warn("jellyfin currently playing close body error:", "error", err)
 		}
 	}()
 

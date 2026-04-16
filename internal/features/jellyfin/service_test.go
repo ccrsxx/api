@@ -3,7 +3,6 @@ package jellyfin
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -68,8 +67,6 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		})
 
 		got, err := svc.GetCurrentlyPlaying(context.Background())
-
-		fmt.Printf("Got state: %+v\n", got)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
