@@ -15,6 +15,7 @@ func LoadRoutes(cfg Config) {
 	ctrl := NewController(cfg.Service)
 
 	mux.HandleFunc("GET /{slug}", ctrl.GetLikeStatus)
+
 	mux.HandleFunc("POST /{slug}", ctrl.IncrementLike)
 
 	cfg.Router.Handle("/likes/", http.StripPrefix("/likes", mux))

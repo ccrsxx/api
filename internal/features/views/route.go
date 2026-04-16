@@ -15,6 +15,7 @@ func LoadRoutes(cfg Config) {
 	ctrl := NewController(cfg.Service)
 
 	mux.HandleFunc("GET /{slug}", ctrl.GetViewCount)
+
 	mux.HandleFunc("POST /{slug}", ctrl.IncrementView)
 
 	cfg.Router.Handle("/views/", http.StripPrefix("/views", mux))

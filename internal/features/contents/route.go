@@ -15,6 +15,7 @@ func LoadRoutes(cfg Config) {
 	ctrl := NewController(cfg.Service)
 
 	mux.HandleFunc("GET /{type}", ctrl.GetContentData)
+
 	mux.HandleFunc("POST /{type}", ctrl.UpsertContent)
 
 	cfg.Router.Handle("/content/", http.StripPrefix("/content", mux))
