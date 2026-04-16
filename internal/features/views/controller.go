@@ -45,7 +45,7 @@ func (c *Controller) IncrementView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := api.NewSuccessResponse(w, http.StatusCreated, views); err != nil {
+	if err := api.NewSuccessResponse(w, http.StatusOK, views); err != nil {
 		slog.Warn("increment view response error", "error", err)
 	}
 }

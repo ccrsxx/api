@@ -99,7 +99,7 @@ func TestController_IncrementLike(t *testing.T) {
 
 		ctrl.IncrementLike(w, r)
 
-		if w.Code != http.StatusCreated {
+		if w.Code != http.StatusOK {
 			t.Fatalf("got %d, want 201", w.Code)
 		}
 
@@ -153,8 +153,8 @@ func TestController_IncrementLike(t *testing.T) {
 
 		ctrl.IncrementLike(errWriter, r)
 
-		if w.Code != http.StatusCreated {
-			t.Errorf("got %d, want %d", w.Code, http.StatusCreated)
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
 		}
 	})
 }

@@ -47,7 +47,7 @@ func (c *Controller) IncrementLike(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := api.NewSuccessResponse(w, http.StatusCreated, status); err != nil {
+	if err := api.NewSuccessResponse(w, http.StatusOK, status); err != nil {
 		slog.Warn("increment like response error", "error", err)
 	}
 }
