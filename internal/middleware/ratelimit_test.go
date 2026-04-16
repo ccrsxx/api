@@ -54,7 +54,7 @@ func TestRateLimit(t *testing.T) {
 		server.ServeHTTP(w2, r)
 
 		if w2.Code != http.StatusTooManyRequests {
-			t.Errorf("second request should fail")
+			t.Fatalf("second request should fail")
 		}
 
 		var res api.ErrorResponse

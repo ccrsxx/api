@@ -22,7 +22,7 @@ func TestRecovery(t *testing.T) {
 	Recovery(panicHandler).ServeHTTP(w, r)
 
 	if w.Code != http.StatusInternalServerError {
-		t.Errorf("got status %d, want 500", w.Code)
+		t.Fatalf("got status %d, want 500", w.Code)
 	}
 
 	var res api.ErrorResponse
