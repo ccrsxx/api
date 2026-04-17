@@ -3,7 +3,6 @@ package statistics
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
@@ -37,8 +36,6 @@ type ContentStatistics struct {
 }
 
 func (s *Service) GetContentStatistics(ctx context.Context, contentType string) (ContentStatistics, error) {
-	slog.Info("get content statistics", "type", contentType)
-
 	if err := utils.Validate.Var(contentType, "content_type"); err != nil {
 		return ContentStatistics{}, &api.HTTPError{
 			Message:    "Invalid content type",
