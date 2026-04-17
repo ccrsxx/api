@@ -48,8 +48,12 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		Username: cfg.JellyfinUsername,
 	})
 
-	authMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
+	publicAuthMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
 		SecretKey: cfg.SecretKey,
+	}))
+
+	privateAuthMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
+		SecretKey: cfg.PrivateSecretKey,
 	}))
 
 	spotifyService := spotify.NewService(spotify.ServiceConfig{
@@ -93,7 +97,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 				JellyfinFetcher: jellyfinService.GetCurrentlyPlaying,
 			}),
 			AppContext:     ctx,
-			AuthMiddleware: authMiddleware,
+			AuthMiddleware: publicAuthMiddleware,
 		},
 	)
 
@@ -131,7 +135,8 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 
 	contents.LoadRoutes(
 		contents.Config{
-			Router: router,
+			Router:         router,
+			AuthMiddleware: privateAuthMiddleware,
 			Service: contents.NewService(contents.ServiceConfig{
 				Database: db,
 			}),
@@ -165,7 +170,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		spotify.Config{
 			Router:         router,
 			Service:        spotifyService,
-			AuthMiddleware: authMiddleware,
+			AuthMiddleware: publicAuthMiddleware,
 		},
 	)
 
@@ -173,7 +178,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		jellyfin.Config{
 			Router:         router,
 			Service:        jellyfinService,
-			AuthMiddleware: authMiddleware,
+			AuthMiddleware: publicAuthMiddleware,
 		},
 	)
 

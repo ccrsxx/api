@@ -28,11 +28,12 @@ func (e *EnvironmentApp) UnmarshalText(text []byte) error {
 }
 
 type AppConfig struct {
-	Port           int            `env:"PORT,required"`
-	OgURL          string         `env:"OG_URL,required"`
-	AppEnv         EnvironmentApp `env:"APP_ENV,required"`
-	SecretKey      string         `env:"SECRET_KEY,required"`
-	AllowedOrigins []string       `env:"ALLOWED_ORIGINS,required"`
+	Port             int            `env:"PORT,required"`
+	OgURL            string         `env:"OG_URL,required"`
+	AppEnv           EnvironmentApp `env:"APP_ENV,required"`
+	SecretKey        string         `env:"SECRET_KEY,required"`
+	AllowedOrigins   []string       `env:"ALLOWED_ORIGINS,required"`
+	PrivateSecretKey string         `env:"PRIVATE_SECRET_KEY,required"`
 
 	DatabaseURL string `env:"DATABASE_URL,required"`
 

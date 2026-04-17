@@ -21,7 +21,7 @@ func TestLoadRoutes(t *testing.T) {
 		},
 		{
 			Path:   "/contents",
-			Method: http.MethodGet,
+			Method: http.MethodPost,
 		},
 	}
 
