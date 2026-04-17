@@ -32,7 +32,7 @@ services:
     ports:
       - '5444:5432'
     volumes:
-      - db_data:/data/postgres
+      - db-data:/data/postgres
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
@@ -59,4 +59,4 @@ services:
         condition: service_healthy
 
 volumes:
-  db_data:
+  db-data:
