@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func DecodeJSON(r *http.Request, v any) error {
+func DecodeJSON[T any](r *http.Request, v *T) error {
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		return &HTTPError{
 			Message:    "Invalid request body",
