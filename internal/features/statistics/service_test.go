@@ -30,30 +30,6 @@ func newMockQuerier() *mockQuerier {
 	}
 }
 
-func TestValidateContentType(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		err := validateContentType("blog")
-
-		if err != nil {
-			t.Fatalf("got %v, want nil", err)
-		}
-
-		err = validateContentType("project")
-
-		if err != nil {
-			t.Fatalf("got %v, want nil", err)
-		}
-	})
-
-	t.Run("Invalid Content Type", func(t *testing.T) {
-		err := validateContentType("invalid")
-
-		if err == nil {
-			t.Fatal("got nil, want error")
-		}
-	})
-}
-
 func TestService_GetContentStatistics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()

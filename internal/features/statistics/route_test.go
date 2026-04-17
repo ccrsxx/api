@@ -18,11 +18,11 @@ func TestLoadRoutes(t *testing.T) {
 
 	tests := []test.RouteTestCase{
 		{
-			Path:   "/statistics/blog",
+			Path:   "/statistics",
 			Method: http.MethodGet,
 		},
 		{
-			Path:   "/statistics/project",
+			Path:   "/statistics",
 			Method: http.MethodPost,
 		},
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 const getContentBySlug = `-- name: GetContentBySlug :one
-SELECT id, slug, type, created_at, updated_at
+SELECT id, slug, kind, created_at, updated_at
 FROM content
 WHERE slug = $1
 LIMIT 1
@@ -22,7 +22,7 @@ func (q *Queries) GetContentBySlug(ctx context.Context, slug string) (Content, e
 	err := row.Scan(
 		&i.ID,
 		&i.Slug,
-		&i.Type,
+		&i.Kind,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -30,23 +30,22 @@ func (q *Queries) GetContentBySlug(ctx context.Context, slug string) (Content, e
 }
 
 const getContentStatsByType = `-- name: GetContentStatsByType :one
-SELECT COUNT(DISTINCT c.id)::int AS total_posts,
-       COUNT(DISTINCT cv.id)::int AS total_views,
-       COUNT(cl.id)::int AS total_likes
-FROM content c
-LEFT JOIN content_view cv ON cv.content_id = c.id
-LEFT JOIN content_like cl ON cl.content_id = c.id
-WHERE c.type = $1
+SELECT COUNT(DISTINCT c.id)::bigint AS total_posts,
+    COALESCE(SUM(cm.views), 0)::bigint AS total_views,
+    COALESCE(SUM(cm.likes), 0)::bigint AS total_likes
+FROM content AS c
+    LEFT JOIN content_meta AS cm ON c.id = cm.content_id
+WHERE c.kind = $1
 `
 
 type GetContentStatsByTypeRow struct {
-	TotalPosts int32 `json:"totalPosts"`
-	TotalViews int32 `json:"totalViews"`
-	TotalLikes int32 `json:"totalLikes"`
+	TotalPosts int64 `json:"totalPosts"`
+	TotalViews int64 `json:"totalViews"`
+	TotalLikes int64 `json:"totalLikes"`
 }
 
-func (q *Queries) GetContentStatsByType(ctx context.Context, type_ string) (GetContentStatsByTypeRow, error) {
-	row := q.db.QueryRow(ctx, getContentStatsByType, type_)
+func (q *Queries) GetContentStatsByType(ctx context.Context, kind string) (GetContentStatsByTypeRow, error) {
+	row := q.db.QueryRow(ctx, getContentStatsByType, kind)
 	var i GetContentStatsByTypeRow
 	err := row.Scan(&i.TotalPosts, &i.TotalViews, &i.TotalLikes)
 	return i, err
@@ -54,24 +53,24 @@ func (q *Queries) GetContentStatsByType(ctx context.Context, type_ string) (GetC
 
 const listContentByType = `-- name: ListContentByType :many
 SELECT c.slug,
-       COUNT(DISTINCT cv.id)::int AS views,
-       COUNT(cl.id)::int AS likes
+    COALESCE(SUM(cm.views), 0)::bigint AS views,
+    COALESCE(SUM(cm.likes), 0)::bigint AS likes
 FROM content c
-LEFT JOIN content_view cv ON cv.content_id = c.id
-LEFT JOIN content_like cl ON cl.content_id = c.id
-WHERE c.type = $1
-GROUP BY c.id
+    LEFT JOIN content_meta AS cm ON c.id = cm.content_id
+WHERE c.kind = $1
+GROUP BY c.id,
+    c.slug
 ORDER BY c.created_at
 `
 
 type ListContentByTypeRow struct {
 	Slug  string `json:"slug"`
-	Views int32  `json:"views"`
-	Likes int32  `json:"likes"`
+	Views int64  `json:"views"`
+	Likes int64  `json:"likes"`
 }
 
-func (q *Queries) ListContentByType(ctx context.Context, type_ string) ([]ListContentByTypeRow, error) {
-	rows, err := q.db.Query(ctx, listContentByType, type_)
+func (q *Queries) ListContentByType(ctx context.Context, kind string) ([]ListContentByTypeRow, error) {
+	rows, err := q.db.Query(ctx, listContentByType, kind)
 	if err != nil {
 		return nil, err
 	}
@@ -91,25 +90,25 @@ func (q *Queries) ListContentByType(ctx context.Context, type_ string) ([]ListCo
 }
 
 const upsertContent = `-- name: UpsertContent :one
-INSERT INTO content (slug, type)
-VALUES ($1, $2)
-ON CONFLICT (slug) DO UPDATE
+INSERT INTO content (slug, kind)
+VALUES ($1, $2) ON CONFLICT (slug) DO
+UPDATE
 SET slug = EXCLUDED.slug
-RETURNING id, slug, type, created_at, updated_at
+RETURNING id, slug, kind, created_at, updated_at
 `
 
 type UpsertContentParams struct {
 	Slug string `json:"slug"`
-	Type string `json:"type"`
+	Kind string `json:"kind"`
 }
 
 func (q *Queries) UpsertContent(ctx context.Context, arg UpsertContentParams) (Content, error) {
-	row := q.db.QueryRow(ctx, upsertContent, arg.Slug, arg.Type)
+	row := q.db.QueryRow(ctx, upsertContent, arg.Slug, arg.Kind)
 	var i Content
 	err := row.Scan(
 		&i.ID,
 		&i.Slug,
-		&i.Type,
+		&i.Kind,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

@@ -21,23 +21,17 @@ type Account struct {
 type Content struct {
 	ID        pgtype.UUID        `json:"id"`
 	Slug      string             `json:"slug"`
-	Type      string             `json:"type"`
+	Kind      string             `json:"kind"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
 
-type ContentLike struct {
+type ContentMetum struct {
 	ID          pgtype.UUID        `json:"id"`
 	ContentID   pgtype.UUID        `json:"contentId"`
 	IpAddressID pgtype.UUID        `json:"ipAddressId"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
-}
-
-type ContentView struct {
-	ID          pgtype.UUID        `json:"id"`
-	ContentID   pgtype.UUID        `json:"contentId"`
-	IpAddressID pgtype.UUID        `json:"ipAddressId"`
+	Views       int32              `json:"views"`
+	Likes       int32              `json:"likes"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 }

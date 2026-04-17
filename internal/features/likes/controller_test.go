@@ -100,7 +100,7 @@ func TestController_IncrementLike(t *testing.T) {
 		ctrl.IncrementLike(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Fatalf("got %d, want 201", w.Code)
+			t.Fatalf("got %d, want 200", w.Code)
 		}
 
 		var res api.SuccessResponse[sqlc.GetContentLikeStatusRow]

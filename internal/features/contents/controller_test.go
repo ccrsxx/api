@@ -14,16 +14,17 @@ import (
 	"github.com/ccrsxx/api/internal/test"
 )
 
+var validPath = "/?type=blog"
+
 func TestController_GetContentData(t *testing.T) {
+
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
 		w := httptest.NewRecorder()
 
@@ -58,9 +59,7 @@ func TestController_GetContentData(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
 		w := httptest.NewRecorder()
 
@@ -77,9 +76,7 @@ func TestController_GetContentData(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
 		w := httptest.NewRecorder()
 
@@ -100,17 +97,15 @@ func TestController_UpsertContent(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		body := upsertContentRequest{Slug: "new-post"}
+		input := UpsertContentInput{Slug: "new-post", Type: "blog"}
 
-		jsonBytes, err := json.Marshal(body)
+		jsonBytes, err := json.Marshal(input)
 
 		if err != nil {
 			t.Fatalf("failed to marshal request body: %v", err)
 		}
 
-		r := httptest.NewRequest(http.MethodPost, "/blog", bytes.NewReader(jsonBytes))
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodPost, validPath, bytes.NewReader(jsonBytes))
 
 		w := httptest.NewRecorder()
 
@@ -130,8 +125,8 @@ func TestController_UpsertContent(t *testing.T) {
 			t.Fatalf("got %s, want new-post", res.Data.Slug)
 		}
 
-		if res.Data.Type != "blog" {
-			t.Fatalf("got %s, want blog", res.Data.Type)
+		if res.Data.Kind != "blog" {
+			t.Fatalf("got %s, want blog", res.Data.Kind)
 		}
 	})
 
@@ -141,9 +136,7 @@ func TestController_UpsertContent(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodPost, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodPost, validPath, nil)
 
 		w := httptest.NewRecorder()
 
@@ -164,17 +157,15 @@ func TestController_UpsertContent(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		body := upsertContentRequest{Slug: "new-post"}
+		input := UpsertContentInput{Slug: "new-post", Type: "blog"}
 
-		jsonBytes, err := json.Marshal(body)
+		jsonBytes, err := json.Marshal(input)
 
 		if err != nil {
 			t.Fatalf("failed to marshal request body: %v", err)
 		}
 
-		r := httptest.NewRequest(http.MethodPost, "/blog", bytes.NewReader(jsonBytes))
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodPost, validPath, bytes.NewReader(jsonBytes))
 
 		w := httptest.NewRecorder()
 
@@ -191,17 +182,15 @@ func TestController_UpsertContent(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		body := upsertContentRequest{Slug: "new-post"}
+		input := UpsertContentInput{Slug: "new-post", Type: "blog"}
 
-		jsonBytes, err := json.Marshal(body)
+		jsonBytes, err := json.Marshal(input)
 
 		if err != nil {
 			t.Fatalf("failed to marshal request body: %v", err)
 		}
 
-		r := httptest.NewRequest(http.MethodPost, "/blog", bytes.NewReader(jsonBytes))
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodPost, validPath, bytes.NewReader(jsonBytes))
 
 		w := httptest.NewRecorder()
 

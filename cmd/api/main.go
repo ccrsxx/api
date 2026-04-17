@@ -19,11 +19,11 @@ func main() {
 
 	defer cancelShutdown()
 
-	pool, database := sqlc.NewQueries(shutdownCtx, cfg.DatabaseURL)
+	pool, db := sqlc.NewQueries(shutdownCtx, cfg.DatabaseURL)
 
 	defer pool.Close()
 
-	server := server.New(shutdownCtx, cfg, database)
+	server := server.New(shutdownCtx, cfg, db)
 
 	go func() {
 		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)

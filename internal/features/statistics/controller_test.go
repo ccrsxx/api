@@ -13,6 +13,8 @@ import (
 	"github.com/ccrsxx/api/internal/test"
 )
 
+var validPath = "/?type=blog"
+
 func TestController_GetContentStatistics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
@@ -20,9 +22,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
 		w := httptest.NewRecorder()
 
@@ -67,9 +67,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
 		w := httptest.NewRecorder()
 
@@ -86,9 +84,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 		svc := NewService(ServiceConfig{Database: db})
 		ctrl := NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/blog", nil)
-
-		r.SetPathValue("type", "blog")
+		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
 		w := httptest.NewRecorder()
 

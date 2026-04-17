@@ -16,7 +16,7 @@ import (
 type mockQuerier struct {
 	getContentBySlugFn     func(ctx context.Context, slug string) (sqlc.Content, error)
 	getContentLikeStatusFn func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error)
-	createContentLikeFn    func(ctx context.Context, arg sqlc.CreateContentLikeParams) error
+	incrementContentLikeFn func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error)
 	upsertIPAddressFn      func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error)
 }
 
@@ -28,18 +28,25 @@ func (m *mockQuerier) GetContentLikeStatus(ctx context.Context, arg sqlc.GetCont
 	return m.getContentLikeStatusFn(ctx, arg)
 }
 
-func (m *mockQuerier) CreateContentLike(ctx context.Context, arg sqlc.CreateContentLikeParams) error {
-	return m.createContentLikeFn(ctx, arg)
+func (m *mockQuerier) IncrementContentLike(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
+	return m.incrementContentLikeFn(ctx, arg)
 }
 
 func (m *mockQuerier) UpsertIPAddress(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
 	return m.upsertIPAddressFn(ctx, ipAddress)
 }
 
-var mockContentID = pgtype.UUID{Bytes: [16]byte{1}, Valid: true}
-var mockIPAddressID = pgtype.UUID{Bytes: [16]byte{2}, Valid: true}
+var (
+	likes     = 10
+	userLikes = 1
 
-var mockContentLikeStatus = sqlc.GetContentLikeStatusRow{Likes: 10, UserLikes: 2}
+	mockContentID   = pgtype.UUID{Bytes: [16]byte{1}, Valid: true}
+	mockIPAddressID = pgtype.UUID{Bytes: [16]byte{2}, Valid: true}
+
+	mockContentLikeStatus = sqlc.GetContentLikeStatusRow{Likes: int64(likes), UserLikes: int64(userLikes)}
+
+	mockIncrementContentLike = sqlc.IncrementContentLikeRow{Likes: int32(likes)}
+)
 
 func newMockQuerier() *mockQuerier {
 	return &mockQuerier{
@@ -49,8 +56,8 @@ func newMockQuerier() *mockQuerier {
 		getContentLikeStatusFn: func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
 			return mockContentLikeStatus, nil
 		},
-		createContentLikeFn: func(ctx context.Context, arg sqlc.CreateContentLikeParams) error {
-			return nil
+		incrementContentLikeFn: func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
+			return mockIncrementContentLike, nil
 		},
 		upsertIPAddressFn: func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
 			return sqlc.IpAddress{ID: mockIPAddressID, IpAddress: ipAddress}, nil
@@ -129,7 +136,7 @@ func TestService_getLikeStatus(t *testing.T) {
 
 		svc := NewService(ServiceConfig{Database: db})
 
-		status, err := svc.getLikeStatus(context.Background(), "test-slug", mockIPAddressID)
+		status, err := svc.getLikeStatus(context.Background(), mockContentID, mockIPAddressID)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -153,7 +160,7 @@ func TestService_getLikeStatus(t *testing.T) {
 
 		svc := NewService(ServiceConfig{Database: db})
 
-		_, err := svc.getLikeStatus(context.Background(), "test-slug", mockIPAddressID)
+		_, err := svc.getLikeStatus(context.Background(), mockContentID, mockIPAddressID)
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -317,16 +324,16 @@ func TestService_IncrementLike(t *testing.T) {
 			t.Fatalf("expected HTTPError, got %v", err)
 		}
 
-		if httpErr.StatusCode != http.StatusForbidden {
-			t.Errorf("expected 403 HTTPError, got %v", err)
+		if httpErr.StatusCode != http.StatusUnprocessableEntity {
+			t.Errorf("expected 422 HTTPError, got %v", err)
 		}
 	})
 
 	t.Run("Create Content Like Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.createContentLikeFn = func(ctx context.Context, arg sqlc.CreateContentLikeParams) error {
-			return errors.New("db error")
+		db.incrementContentLikeFn = func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
+			return sqlc.IncrementContentLikeRow{}, errors.New("db error")
 		}
 
 		svc := NewService(ServiceConfig{Database: db})

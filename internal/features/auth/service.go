@@ -22,7 +22,7 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) getAuthorizationFromBearerToken(ctx context.Context, headerToken string) (string, error) {
+func (s *Service) getAuthorizationFromBearerToken(_ context.Context, headerToken string) (string, error) {
 	if headerToken == "" {
 		return "", &api.HTTPError{
 			Message:    "Invalid token",
@@ -51,7 +51,7 @@ func (s *Service) getAuthorizationFromBearerToken(ctx context.Context, headerTok
 	return token, nil
 }
 
-func (s *Service) getAuthorizationFromQuery(ctx context.Context, queryToken string) (string, error) {
+func (s *Service) getAuthorizationFromQuery(_ context.Context, queryToken string) (string, error) {
 	if queryToken == "" {
 		return "", &api.HTTPError{
 			Message:    "Invalid token",

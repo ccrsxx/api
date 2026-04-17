@@ -29,33 +29,9 @@ func newMockQuerier() *mockQuerier {
 			}, nil
 		},
 		upsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
-			return sqlc.Content{Slug: arg.Slug, Type: arg.Type}, nil
+			return sqlc.Content{Slug: arg.Slug, Kind: arg.Kind}, nil
 		},
 	}
-}
-
-func TestValidateContentType(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		err := validateContentType("blog")
-
-		if err != nil {
-			t.Fatalf("got %v, want nil", err)
-		}
-
-		err = validateContentType("project")
-
-		if err != nil {
-			t.Fatalf("got %v, want nil", err)
-		}
-	})
-
-	t.Run("Invalid Content Type", func(t *testing.T) {
-		err := validateContentType("invalid")
-
-		if err == nil {
-			t.Fatal("got nil, want error")
-		}
-	})
 }
 
 func TestService_GetContentData(t *testing.T) {
@@ -133,7 +109,13 @@ func TestService_UpsertContent(t *testing.T) {
 		db := newMockQuerier()
 
 		svc := NewService(ServiceConfig{Database: db})
-		content, err := svc.UpsertContent(context.Background(), "new-post", "blog")
+
+		input := UpsertContentInput{
+			Slug: "new-post",
+			Type: "blog",
+		}
+
+		content, err := svc.UpsertContent(context.Background(), input)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -143,8 +125,8 @@ func TestService_UpsertContent(t *testing.T) {
 			t.Fatalf("got %s, want new-post", content.Slug)
 		}
 
-		if content.Type != "blog" {
-			t.Fatalf("got %s, want blog", content.Type)
+		if content.Kind != "blog" {
+			t.Fatalf("got %s, want blog", content.Kind)
 		}
 	})
 
@@ -153,7 +135,12 @@ func TestService_UpsertContent(t *testing.T) {
 
 		svc := NewService(ServiceConfig{Database: db})
 
-		_, err := svc.UpsertContent(context.Background(), "new-post", "invalid")
+		input := UpsertContentInput{
+			Slug: "new-post",
+			Type: "invalid",
+		}
+
+		_, err := svc.UpsertContent(context.Background(), input)
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -169,7 +156,12 @@ func TestService_UpsertContent(t *testing.T) {
 
 		svc := NewService(ServiceConfig{Database: db})
 
-		_, err := svc.UpsertContent(context.Background(), "new-post", "blog")
+		input := UpsertContentInput{
+			Slug: "new-post",
+			Type: "blog",
+		}
+
+		_, err := svc.UpsertContent(context.Background(), input)
 
 		if err == nil {
 			t.Fatal("got nil, want error")

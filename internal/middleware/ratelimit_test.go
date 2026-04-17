@@ -113,7 +113,7 @@ func TestRateLimiter_Cleanup(t *testing.T) {
 	// Start cleanup with a 10ms interval
 	go rl.cleanup(ctx, 10*time.Millisecond)
 
-	time.Sleep(10 * time.Millisecond) // Wait for cleanup to run
+	time.Sleep(20 * time.Millisecond) // Wait for cleanup to run
 
 	// Lock required to prevent race condition
 	// We make sure that cleanup function has unlocked before we check the map

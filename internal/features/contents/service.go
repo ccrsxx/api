@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"slices"
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/utils"
 )
 
 type querier interface {
@@ -29,27 +29,18 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-var validContentTypes = []string{"blog", "project"}
-
-func validateContentType(contentType string) error {
-	if !slices.Contains(validContentTypes, contentType) {
-		return &api.HTTPError{
-			Message:    "Invalid content type",
-			StatusCode: http.StatusBadRequest,
-		}
-	}
-
-	return nil
-}
-
 type ContentData struct {
 	Type string                      `json:"type"`
 	Data []sqlc.ListContentByTypeRow `json:"data"`
 }
 
 func (s *Service) GetContentData(ctx context.Context, contentType string) (ContentData, error) {
-	if err := validateContentType(contentType); err != nil {
-		return ContentData{}, err
+	if err := utils.Validate.Var(contentType, "content_type"); err != nil {
+		return ContentData{}, &api.HTTPError{
+			Message:    "Invalid content type",
+			StatusCode: http.StatusBadRequest,
+			Details:    nil,
+		}
 	}
 
 	data, err := s.db.ListContentByType(ctx, contentType)
@@ -68,14 +59,25 @@ func (s *Service) GetContentData(ctx context.Context, contentType string) (Conte
 	}, nil
 }
 
-func (s *Service) UpsertContent(ctx context.Context, slug string, contentType string) (sqlc.Content, error) {
-	if err := validateContentType(contentType); err != nil {
-		return sqlc.Content{}, err
+type UpsertContentInput struct {
+	Slug string `json:"slug" validate:"required"`
+	Type string `json:"type" validate:"required,content_type"`
+}
+
+func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (sqlc.Content, error) {
+	if err := utils.Validate.Struct(input); err != nil {
+		_, details := utils.FormatValidationError(err)
+
+		return sqlc.Content{}, &api.HTTPError{
+			Message:    "Invalid body",
+			Details:    details,
+			StatusCode: http.StatusBadRequest,
+		}
 	}
 
 	content, err := s.db.UpsertContent(ctx, sqlc.UpsertContentParams{
-		Slug: slug,
-		Type: contentType,
+		Slug: input.Slug,
+		Kind: input.Type,
 	})
 
 	if err != nil {

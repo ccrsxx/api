@@ -18,7 +18,7 @@ func NewController(svc *Service) *Controller {
 }
 
 func (c *Controller) GetContentData(w http.ResponseWriter, r *http.Request) {
-	contentType := r.PathValue("type")
+	contentType := r.URL.Query().Get("type")
 
 	data, err := c.service.GetContentData(r.Context(), contentType)
 
@@ -32,21 +32,15 @@ func (c *Controller) GetContentData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type upsertContentRequest struct {
-	Slug string `json:"slug"`
-}
-
 func (c *Controller) UpsertContent(w http.ResponseWriter, r *http.Request) {
-	contentType := r.PathValue("type")
+	var input UpsertContentInput
 
-	var body upsertContentRequest
-
-	if err := api.DecodeJSON(r, &body); err != nil {
+	if err := api.DecodeJSON(r, &input); err != nil {
 		api.HandleHTTPError(w, r, err)
 		return
 	}
 
-	content, err := c.service.UpsertContent(r.Context(), body.Slug, contentType)
+	content, err := c.service.UpsertContent(r.Context(), input)
 
 	if err != nil {
 		api.HandleHTTPError(w, r, err)

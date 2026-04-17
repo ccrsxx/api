@@ -11,6 +11,7 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/test"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func TestController_GetViewCount(t *testing.T) {
@@ -36,7 +37,7 @@ func TestController_GetViewCount(t *testing.T) {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if res.Data.Views != mockContentViewCount {
+		if res.Data.Views != int64(mockContentViewCount) {
 			t.Errorf("got %d, want %d", res.Data.Views, mockContentViewCount)
 		}
 	})
@@ -44,8 +45,8 @@ func TestController_GetViewCount(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentViewCountFn = func(ctx context.Context, slug string) (int32, error) {
-			return 0, errors.New("db error")
+		db.getTotalContentMeta = func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
+			return sqlc.GetTotalContentMetaRow{}, errors.New("db error")
 		}
 
 		svc := NewService(ServiceConfig{Database: db})
@@ -96,7 +97,7 @@ func TestController_IncrementView(t *testing.T) {
 		ctrl.IncrementView(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Fatalf("got %d, want 201", w.Code)
+			t.Fatalf("got %d, want 200", w.Code)
 		}
 
 		var res api.SuccessResponse[ViewCount]
@@ -105,7 +106,7 @@ func TestController_IncrementView(t *testing.T) {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if res.Data.Views != mockContentViewCount {
+		if res.Data.Views != int64(mockContentViewCount) {
 			t.Errorf("got %d, want %d", res.Data.Views, mockContentViewCount)
 		}
 	})

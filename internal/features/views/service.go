@@ -9,12 +9,13 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type querier interface {
 	GetContentBySlug(ctx context.Context, slug string) (sqlc.Content, error)
-	GetContentViewCount(ctx context.Context, slug string) (int32, error)
-	CreateContentView(ctx context.Context, arg sqlc.CreateContentViewParams) error
+	GetTotalContentMeta(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error)
+	IncrementContentView(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error)
 	UpsertIPAddress(ctx context.Context, ipAddress string) (sqlc.IpAddress, error)
 }
 
@@ -33,7 +34,7 @@ func NewService(cfg ServiceConfig) *Service {
 }
 
 type ViewCount struct {
-	Views int32 `json:"views"`
+	Views int64 `json:"views"`
 }
 
 func (s *Service) getContentBySlug(ctx context.Context, slug string) (sqlc.Content, error) {
@@ -54,22 +55,27 @@ func (s *Service) getContentBySlug(ctx context.Context, slug string) (sqlc.Conte
 }
 
 func (s *Service) GetViewCount(ctx context.Context, slug string) (ViewCount, error) {
-	_, err := s.getContentBySlug(ctx, slug)
+	content, err := s.getContentBySlug(ctx, slug)
 
 	if err != nil {
 		return ViewCount{}, err
 	}
 
-	views, err := s.db.GetContentViewCount(ctx, slug)
+	meta, err := s.db.GetTotalContentMeta(ctx, content.ID)
 
 	if err != nil {
 		return ViewCount{}, fmt.Errorf("get view count error: %w", err)
 	}
 
-	return ViewCount{Views: views}, nil
+	return ViewCount{Views: meta.TotalViews}, nil
 }
 
 func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress string) (ViewCount, error) {
+	/*
+		TODO: Better approach maybe be in the future with less call to db, it's possible to apply to /likes too
+		Get content with full stats -> Increment -> Increment from the first struct
+	*/
+
 	content, err := s.getContentBySlug(ctx, slug)
 
 	if err != nil {
@@ -82,7 +88,7 @@ func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress stri
 		return ViewCount{}, fmt.Errorf("upsert ip address error: %w", err)
 	}
 
-	err = s.db.CreateContentView(ctx, sqlc.CreateContentViewParams{
+	_, err = s.db.IncrementContentView(ctx, sqlc.IncrementContentViewParams{
 		ContentID:   content.ID,
 		IpAddressID: ip.ID,
 	})
@@ -91,11 +97,11 @@ func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress stri
 		return ViewCount{}, fmt.Errorf("create content view error: %w", err)
 	}
 
-	views, err := s.db.GetContentViewCount(ctx, slug)
+	meta, err := s.db.GetTotalContentMeta(ctx, content.ID)
 
 	if err != nil {
 		return ViewCount{}, fmt.Errorf("get view count after increment error: %w", err)
 	}
 
-	return ViewCount{Views: views}, nil
+	return ViewCount{Views: meta.TotalViews}, nil
 }

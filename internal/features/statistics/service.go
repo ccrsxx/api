@@ -3,11 +3,12 @@ package statistics
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
-	"slices"
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/utils"
 )
 
 type querier interface {
@@ -28,29 +29,21 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-var validContentTypes = []string{"blog", "project"}
-
-func validateContentType(contentType string) error {
-	if !slices.Contains(validContentTypes, contentType) {
-		return &api.HTTPError{
-			Message:    "Invalid content type",
-			StatusCode: http.StatusBadRequest,
-		}
-	}
-
-	return nil
-}
-
 type ContentStatistics struct {
 	Type       string `json:"type"`
-	TotalPosts int32  `json:"totalPosts"`
-	TotalViews int32  `json:"totalViews"`
-	TotalLikes int32  `json:"totalLikes"`
+	TotalPosts int64  `json:"totalPosts"`
+	TotalViews int64  `json:"totalViews"`
+	TotalLikes int64  `json:"totalLikes"`
 }
 
 func (s *Service) GetContentStatistics(ctx context.Context, contentType string) (ContentStatistics, error) {
-	if err := validateContentType(contentType); err != nil {
-		return ContentStatistics{}, err
+	slog.Info("get content statistics", "type", contentType)
+
+	if err := utils.Validate.Var(contentType, "content_type"); err != nil {
+		return ContentStatistics{}, &api.HTTPError{
+			Message:    "Invalid content type",
+			StatusCode: http.StatusBadRequest,
+		}
 	}
 
 	stats, err := s.db.GetContentStatsByType(ctx, contentType)

@@ -18,7 +18,7 @@ func NewController(svc *Service) *Controller {
 }
 
 func (c *Controller) GetContentStatistics(w http.ResponseWriter, r *http.Request) {
-	contentType := r.PathValue("type")
+	contentType := r.URL.Query().Get("type")
 
 	stats, err := c.service.GetContentStatistics(r.Context(), contentType)
 
