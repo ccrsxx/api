@@ -105,8 +105,10 @@ jobs:
       - name: Setup env
         run: |
           echo "OG_URL=${{ secrets.OG_URL }}" >> .env
-          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
+          
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "PRIVATE_SECRET_KEY=${{ secrets.PRIVATE_SECRET_KEY }}" >> .env
 
           echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
 
