@@ -60,7 +60,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+		db.getContentStatsByTypeFn = func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
 			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
 		}
 

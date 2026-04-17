@@ -52,7 +52,7 @@ func TestController_GetContentData(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		db.listContentByTypeFn = func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, errors.New("db error")
 		}
 

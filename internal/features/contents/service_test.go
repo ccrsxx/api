@@ -8,12 +8,12 @@ import (
 )
 
 type mockQuerier struct {
-	listContentByTypeFn func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
+	listContentByTypeFn func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error)
 	upsertContentFn     func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
 }
 
-func (m *mockQuerier) ListContentByType(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
-	return m.listContentByTypeFn(ctx, type_)
+func (m *mockQuerier) ListContentByType(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
+	return m.listContentByTypeFn(ctx, kind)
 }
 
 func (m *mockQuerier) UpsertContent(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
@@ -22,7 +22,7 @@ func (m *mockQuerier) UpsertContent(ctx context.Context, arg sqlc.UpsertContentP
 
 func newMockQuerier() *mockQuerier {
 	return &mockQuerier{
-		listContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		listContentByTypeFn: func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
 			return []sqlc.ListContentByTypeRow{
 				{Slug: "test-post", Views: 10, Likes: 5},
 				{Slug: "another-post", Views: 20, Likes: 8},
@@ -57,7 +57,7 @@ func TestService_GetContentData(t *testing.T) {
 	t.Run("Valid Empty Data", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		db.listContentByTypeFn = func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, nil
 		}
 
@@ -91,7 +91,7 @@ func TestService_GetContentData(t *testing.T) {
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		db.listContentByTypeFn = func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, context.DeadlineExceeded
 		}
 

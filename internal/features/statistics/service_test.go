@@ -9,11 +9,11 @@ import (
 )
 
 type mockQuerier struct {
-	getContentStatsByTypeFn func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error)
+	getContentStatsByTypeFn func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error)
 }
 
-func (m *mockQuerier) GetContentStatsByType(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
-	return m.getContentStatsByTypeFn(ctx, type_)
+func (m *mockQuerier) GetContentStatsByType(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
+	return m.getContentStatsByTypeFn(ctx, kind)
 }
 
 var mockContentStatsByType = sqlc.GetContentStatsByTypeRow{
@@ -24,7 +24,7 @@ var mockContentStatsByType = sqlc.GetContentStatsByTypeRow{
 
 func newMockQuerier() *mockQuerier {
 	return &mockQuerier{
-		getContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+		getContentStatsByTypeFn: func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
 			return mockContentStatsByType, nil
 		},
 	}
@@ -72,7 +72,7 @@ func TestService_GetContentStatistics(t *testing.T) {
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+		db.getContentStatsByTypeFn = func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
 			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
 		}
 

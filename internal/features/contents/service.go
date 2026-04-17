@@ -11,7 +11,7 @@ import (
 )
 
 type querier interface {
-	ListContentByType(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
+	ListContentByType(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error)
 	UpsertContent(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
 }
 

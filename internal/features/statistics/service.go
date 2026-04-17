@@ -11,7 +11,7 @@ import (
 )
 
 type querier interface {
-	GetContentStatsByType(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error)
+	GetContentStatsByType(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error)
 }
 
 type Service struct {
