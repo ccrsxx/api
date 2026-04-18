@@ -121,6 +121,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 			Service: views.NewService(views.ServiceConfig{
 				Database: db,
 			}),
+			AppContext: ctx,
 		},
 	)
 
@@ -135,11 +136,11 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 
 	contents.LoadRoutes(
 		contents.Config{
-			Router:         router,
-			AuthMiddleware: privateAuthMiddleware,
+			Router: router,
 			Service: contents.NewService(contents.ServiceConfig{
 				Database: db,
 			}),
+			AuthMiddleware: privateAuthMiddleware,
 		},
 	)
 

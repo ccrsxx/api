@@ -1,6 +1,7 @@
 package views
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -14,7 +15,9 @@ func TestLoadRoutes(t *testing.T) {
 
 	svc := NewService(ServiceConfig{Database: db})
 
-	LoadRoutes(Config{Router: mux, Service: svc})
+	ctx := context.Background()
+
+	LoadRoutes(Config{Router: mux, Service: svc, AppContext: ctx})
 
 	tests := []test.RouteTestCase{
 		{

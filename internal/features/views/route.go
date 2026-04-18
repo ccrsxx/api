@@ -1,12 +1,17 @@
 package views
 
 import (
+	"context"
 	"net/http"
+	"time"
+
+	"github.com/ccrsxx/api/internal/middleware"
 )
 
 type Config struct {
-	Router  *http.ServeMux
-	Service *Service
+	Router     *http.ServeMux
+	Service    *Service
+	AppContext context.Context
 }
 
 func LoadRoutes(cfg Config) {
@@ -16,7 +21,11 @@ func LoadRoutes(cfg Config) {
 
 	mux.HandleFunc("GET /{slug}", ctrl.GetViewCount)
 
-	mux.HandleFunc("POST /{slug}", ctrl.IncrementView)
+	mux.Handle("POST /{slug}",
+		middleware.RateLimit(cfg.AppContext, 100, 1*time.Hour)(
+			http.HandlerFunc(ctrl.IncrementView),
+		),
+	)
 
 	cfg.Router.Handle("/views/", http.StripPrefix("/views", mux))
 }
