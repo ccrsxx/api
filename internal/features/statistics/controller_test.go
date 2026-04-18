@@ -32,10 +32,14 @@ func TestController_GetContentsStatistics(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[sqlc.GetContentStatsByTypeRow]
+		var res api.SuccessResponse[ContentsStatistics]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
+		}
+
+		if res.Data.Type != "blog" {
+			t.Fatalf("got %s, want %s", res.Data.Type, "blog")
 		}
 
 		if res.Data.TotalPosts != mockContentStatsByType.TotalPosts {

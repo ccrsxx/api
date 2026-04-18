@@ -54,6 +54,21 @@ func TestService_GetContentsStatistics(t *testing.T) {
 		}
 	})
 
+	t.Run("Success Empty Type", func(t *testing.T) {
+		db := newMockQuerier()
+
+		svc := NewService(ServiceConfig{Database: db})
+		stats, err := svc.GetContentsStatistics(context.Background(), "")
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		if stats.Type != "all" {
+			t.Errorf("got %s, want all", stats.Type)
+		}
+	})
+
 	t.Run("Invalid Content Type", func(t *testing.T) {
 		db := newMockQuerier()
 
