@@ -11,7 +11,7 @@ import (
 )
 
 type querier interface {
-	GetContentStatsByType(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error)
+	GetContentStatsByType(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error)
 }
 
 type Service struct {
@@ -28,29 +28,23 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-type ContentStatistics struct {
-	Type       string `json:"type"`
-	TotalPosts int64  `json:"totalPosts"`
-	TotalViews int64  `json:"totalViews"`
-	TotalLikes int64  `json:"totalLikes"`
-}
-
-func (s *Service) GetContentStatistics(ctx context.Context, contentType string) (ContentStatistics, error) {
-	if err := utils.Validate.Var(contentType, "content_type"); err != nil {
-		return ContentStatistics{}, &api.HTTPError{
-			Message:    "Invalid content type",
-			StatusCode: http.StatusBadRequest,
+func (s *Service) GetContentsStatistics(ctx context.Context, contentType string) (sqlc.GetContentStatsByTypeRow, error) {
+	if contentType != "" {
+		if err := utils.Validate.Var(contentType, "content_type"); err != nil {
+			return sqlc.GetContentStatsByTypeRow{}, &api.HTTPError{
+				Message:    "Invalid content type",
+				StatusCode: http.StatusBadRequest,
+			}
 		}
 	}
 
 	stats, err := s.db.GetContentStatsByType(ctx, contentType)
 
 	if err != nil {
-		return ContentStatistics{}, fmt.Errorf("get content stats by type error: %w", err)
+		return sqlc.GetContentStatsByTypeRow{}, fmt.Errorf("get content stats by type error: %w", err)
 	}
 
-	return ContentStatistics{
-		Type:       contentType,
+	return sqlc.GetContentStatsByTypeRow{
 		TotalPosts: stats.TotalPosts,
 		TotalViews: stats.TotalViews,
 		TotalLikes: stats.TotalLikes,

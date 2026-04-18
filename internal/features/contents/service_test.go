@@ -8,12 +8,12 @@ import (
 )
 
 type mockQuerier struct {
-	listContentByTypeFn func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error)
+	listContentByTypeFn func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
 	upsertContentFn     func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
 }
 
-func (m *mockQuerier) ListContentByType(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
-	return m.listContentByTypeFn(ctx, kind)
+func (m *mockQuerier) ListContentByType(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+	return m.listContentByTypeFn(ctx, type_)
 }
 
 func (m *mockQuerier) UpsertContent(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
@@ -22,58 +22,58 @@ func (m *mockQuerier) UpsertContent(ctx context.Context, arg sqlc.UpsertContentP
 
 func newMockQuerier() *mockQuerier {
 	return &mockQuerier{
-		listContentByTypeFn: func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
+		listContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return []sqlc.ListContentByTypeRow{
-				{Slug: "test-post", Views: 10, Likes: 5},
-				{Slug: "another-post", Views: 20, Likes: 8},
+				{Slug: "test-post", Type: "blog", Views: 10, Likes: 5},
+				{Slug: "another-post", Type: "blog", Views: 20, Likes: 8},
 			}, nil
 		},
 		upsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
-			return sqlc.Content{Slug: arg.Slug, Kind: arg.Kind}, nil
+			return sqlc.Content{Slug: arg.Slug, Type: arg.Type}, nil
 		},
 	}
 }
 
-func TestService_GetContentData(t *testing.T) {
+func TestService_GetContentsData(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
 		svc := NewService(ServiceConfig{Database: db})
-		data, err := svc.GetContentData(context.Background(), "blog")
+		data, err := svc.GetContentsData(context.Background(), "blog")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
 		}
 
-		if data.Type != "blog" {
-			t.Fatalf("got %s, want blog", data.Type)
+		if len(data) != 2 {
+			t.Fatalf("got %d, want 2", len(data))
 		}
 
-		if len(data.Data) != 2 {
-			t.Fatalf("got %d, want 2", len(data.Data))
+		if data[0].Type != "blog" {
+			t.Fatalf("got %s, want blog", data[0].Type)
 		}
 	})
 
 	t.Run("Valid Empty Data", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
+		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, nil
 		}
 
 		svc := NewService(ServiceConfig{Database: db})
-		data, err := svc.GetContentData(context.Background(), "blog")
+		data, err := svc.GetContentsData(context.Background(), "blog")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
 		}
 
-		if data.Data == nil {
+		if data == nil {
 			t.Fatal("got nil, want empty slice")
 		}
 
-		if len(data.Data) != 0 {
-			t.Fatalf("got %d, want 0", len(data.Data))
+		if len(data) != 0 {
+			t.Fatalf("got %d, want 0", len(data))
 		}
 	})
 
@@ -81,7 +81,7 @@ func TestService_GetContentData(t *testing.T) {
 		db := newMockQuerier()
 
 		svc := NewService(ServiceConfig{Database: db})
-		_, err := svc.GetContentData(context.Background(), "invalid")
+		_, err := svc.GetContentsData(context.Background(), "invalid")
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -91,12 +91,12 @@ func TestService_GetContentData(t *testing.T) {
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
+		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, context.DeadlineExceeded
 		}
 
 		svc := NewService(ServiceConfig{Database: db})
-		_, err := svc.GetContentData(context.Background(), "blog")
+		_, err := svc.GetContentsData(context.Background(), "blog")
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -125,8 +125,8 @@ func TestService_UpsertContent(t *testing.T) {
 			t.Fatalf("got %s, want new-post", content.Slug)
 		}
 
-		if content.Kind != "blog" {
-			t.Fatalf("got %s, want blog", content.Kind)
+		if content.Type != "blog" {
+			t.Fatalf("got %s, want blog", content.Type)
 		}
 	})
 

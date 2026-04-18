@@ -21,7 +21,7 @@ type Account struct {
 type Content struct {
 	ID        pgtype.UUID        `json:"id"`
 	Slug      string             `json:"slug"`
-	Kind      string             `json:"kind"`
+	Type      string             `json:"type"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }

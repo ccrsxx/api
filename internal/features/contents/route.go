@@ -17,7 +17,7 @@ func LoadRoutes(cfg Config) {
 
 	ctrl := NewController(cfg.Service)
 
-	mux.HandleFunc("GET /", ctrl.GetContentData)
+	mux.HandleFunc("GET /", ctrl.GetContentsData)
 
 	mux.Handle("POST /",
 		cfg.AuthMiddleware.IsAuthorized(

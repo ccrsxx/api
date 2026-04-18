@@ -9,11 +9,11 @@ import (
 )
 
 type mockQuerier struct {
-	getContentStatsByTypeFn func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error)
+	getContentStatsByTypeFn func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error)
 }
 
-func (m *mockQuerier) GetContentStatsByType(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
-	return m.getContentStatsByTypeFn(ctx, kind)
+func (m *mockQuerier) GetContentStatsByType(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+	return m.getContentStatsByTypeFn(ctx, type_)
 }
 
 var mockContentStatsByType = sqlc.GetContentStatsByTypeRow{
@@ -24,25 +24,21 @@ var mockContentStatsByType = sqlc.GetContentStatsByTypeRow{
 
 func newMockQuerier() *mockQuerier {
 	return &mockQuerier{
-		getContentStatsByTypeFn: func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
+		getContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
 			return mockContentStatsByType, nil
 		},
 	}
 }
 
-func TestService_GetContentStatistics(t *testing.T) {
+func TestService_GetContentsStatistics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
 		svc := NewService(ServiceConfig{Database: db})
-		stats, err := svc.GetContentStatistics(context.Background(), "blog")
+		stats, err := svc.GetContentsStatistics(context.Background(), "blog")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
-		}
-
-		if stats.Type != "blog" {
-			t.Fatalf("got %s, want blog", stats.Type)
 		}
 
 		if stats.TotalPosts != mockContentStatsByType.TotalPosts {
@@ -62,7 +58,7 @@ func TestService_GetContentStatistics(t *testing.T) {
 		db := newMockQuerier()
 
 		svc := NewService(ServiceConfig{Database: db})
-		_, err := svc.GetContentStatistics(context.Background(), "invalid")
+		_, err := svc.GetContentsStatistics(context.Background(), "invalid")
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -72,13 +68,13 @@ func TestService_GetContentStatistics(t *testing.T) {
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentStatsByTypeFn = func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
+		db.getContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
 			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
 		}
 
 		svc := NewService(ServiceConfig{Database: db})
 
-		_, err := svc.GetContentStatistics(context.Background(), "blog")
+		_, err := svc.GetContentsStatistics(context.Background(), "blog")
 
 		if err == nil {
 			t.Error("got nil, want error")

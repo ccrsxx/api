@@ -17,10 +17,10 @@ func NewController(svc *Service) *Controller {
 	}
 }
 
-func (c *Controller) GetContentStatistics(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetContentsStatistics(w http.ResponseWriter, r *http.Request) {
 	contentType := r.URL.Query().Get("type")
 
-	stats, err := c.service.GetContentStatistics(r.Context(), contentType)
+	stats, err := c.service.GetContentsStatistics(r.Context(), contentType)
 
 	if err != nil {
 		api.HandleHTTPError(w, r, err)

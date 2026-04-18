@@ -40,10 +40,10 @@ CREATE TABLE ip_address (
 CREATE TABLE content (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     slug text NOT NULL UNIQUE,
-    kind text NOT NULL,
+    type text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz,
-    CONSTRAINT check_content_kind CHECK (kind IN ('blog', 'project'))
+    CONSTRAINT check_content_type CHECK (type IN ('blog', 'project'))
 );
 
 CREATE TABLE content_meta (

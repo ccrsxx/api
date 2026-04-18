@@ -11,7 +11,7 @@ import (
 )
 
 type querier interface {
-	ListContentByType(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error)
+	ListContentByType(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
 	UpsertContent(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
 }
 
@@ -29,34 +29,28 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-type ContentData struct {
-	Type string                      `json:"type"`
-	Data []sqlc.ListContentByTypeRow `json:"data"`
-}
-
-func (s *Service) GetContentData(ctx context.Context, contentType string) (ContentData, error) {
-	if err := utils.Validate.Var(contentType, "content_type"); err != nil {
-		return ContentData{}, &api.HTTPError{
-			Message:    "Invalid content type",
-			StatusCode: http.StatusBadRequest,
-			Details:    nil,
+func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]sqlc.ListContentByTypeRow, error) {
+	if contentType != "" {
+		if err := utils.Validate.Var(contentType, "content_type"); err != nil {
+			return nil, &api.HTTPError{
+				Message:    "Invalid content type",
+				StatusCode: http.StatusBadRequest,
+				Details:    nil,
+			}
 		}
 	}
 
 	data, err := s.db.ListContentByType(ctx, contentType)
 
 	if err != nil {
-		return ContentData{}, fmt.Errorf("list content by type error: %w", err)
+		return nil, fmt.Errorf("list content by type error: %w", err)
 	}
 
 	if data == nil {
 		data = []sqlc.ListContentByTypeRow{}
 	}
 
-	return ContentData{
-		Type: contentType,
-		Data: data,
-	}, nil
+	return data, nil
 }
 
 type UpsertContentInput struct {
@@ -77,7 +71,7 @@ func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (
 
 	content, err := s.db.UpsertContent(ctx, sqlc.UpsertContentParams{
 		Slug: input.Slug,
-		Kind: input.Type,
+		Type: input.Type,
 	})
 
 	if err != nil {

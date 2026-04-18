@@ -17,10 +17,10 @@ func NewController(svc *Service) *Controller {
 	}
 }
 
-func (c *Controller) GetContentData(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetContentsData(w http.ResponseWriter, r *http.Request) {
 	contentType := r.URL.Query().Get("type")
 
-	data, err := c.service.GetContentData(r.Context(), contentType)
+	data, err := c.service.GetContentsData(r.Context(), contentType)
 
 	if err != nil {
 		api.HandleHTTPError(w, r, err)

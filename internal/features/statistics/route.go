@@ -14,7 +14,7 @@ func LoadRoutes(cfg Config) {
 
 	ctrl := NewController(cfg.Service)
 
-	mux.HandleFunc("GET /", ctrl.GetContentStatistics)
+	mux.HandleFunc("GET /", ctrl.GetContentsStatistics)
 
 	cfg.Router.Handle("/statistics/", http.StripPrefix("/statistics", mux))
 }

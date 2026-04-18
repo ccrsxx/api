@@ -16,8 +16,7 @@ import (
 
 var validPath = "/?type=blog"
 
-func TestController_GetContentData(t *testing.T) {
-
+func TestController_GetContentsData(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
@@ -28,31 +27,34 @@ func TestController_GetContentData(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		ctrl.GetContentData(w, r)
+		ctrl.GetContentsData(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[ContentData]
+		var res api.SuccessResponse[[]sqlc.ListContentByTypeRow]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if res.Data.Type != "blog" {
-			t.Fatalf("got %s, want blog", res.Data.Type)
+		t.Logf("response: %+v", res)
+
+		if len(res.Data) != 2 {
+			t.Fatalf("got %d, want 2", len(res.Data))
 		}
 
-		if len(res.Data.Data) != 2 {
-			t.Fatalf("got %d, want 2", len(res.Data.Data))
+		if res.Data[0].Type != "blog" {
+			t.Fatalf("got %s, want blog", res.Data[0].Type)
 		}
+
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, kind string) ([]sqlc.ListContentByTypeRow, error) {
+		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, errors.New("db error")
 		}
 
@@ -63,7 +65,7 @@ func TestController_GetContentData(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		ctrl.GetContentData(w, r)
+		ctrl.GetContentsData(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)
@@ -82,7 +84,7 @@ func TestController_GetContentData(t *testing.T) {
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.GetContentData(errWriter, r)
+		ctrl.GetContentsData(errWriter, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
@@ -125,8 +127,8 @@ func TestController_UpsertContent(t *testing.T) {
 			t.Fatalf("got %s, want new-post", res.Data.Slug)
 		}
 
-		if res.Data.Kind != "blog" {
-			t.Fatalf("got %s, want blog", res.Data.Kind)
+		if res.Data.Type != "blog" {
+			t.Fatalf("got %s, want blog", res.Data.Type)
 		}
 	})
 

@@ -15,7 +15,7 @@ import (
 
 var validPath = "/?type=blog"
 
-func TestController_GetContentStatistics(t *testing.T) {
+func TestController_GetContentsStatistics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
@@ -26,22 +26,16 @@ func TestController_GetContentStatistics(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		ctrl.GetContentStatistics(w, r)
+		ctrl.GetContentsStatistics(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[ContentStatistics]
+		var res api.SuccessResponse[sqlc.GetContentStatsByTypeRow]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
-		}
-
-		t.Logf("%+v", res.Data)
-
-		if res.Data.Type != "blog" {
-			t.Fatalf("got %s, want blog", res.Data.Type)
 		}
 
 		if res.Data.TotalPosts != mockContentStatsByType.TotalPosts {
@@ -60,7 +54,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentStatsByTypeFn = func(ctx context.Context, kind string) (sqlc.GetContentStatsByTypeRow, error) {
+		db.getContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
 			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
 		}
 
@@ -71,7 +65,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		ctrl.GetContentStatistics(w, r)
+		ctrl.GetContentsStatistics(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)
@@ -90,7 +84,7 @@ func TestController_GetContentStatistics(t *testing.T) {
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.GetContentStatistics(errWriter, r)
+		ctrl.GetContentsStatistics(errWriter, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
