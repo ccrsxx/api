@@ -2,11 +2,14 @@ package likes
 
 import (
 	"net/http"
+
+	"github.com/ccrsxx/api/internal/features/auth"
 )
 
 type Config struct {
-	Router  *http.ServeMux
-	Service *Service
+	Router         *http.ServeMux
+	Service        *Service
+	AuthMiddleware *auth.Middleware
 }
 
 func LoadRoutes(cfg Config) {
@@ -16,7 +19,11 @@ func LoadRoutes(cfg Config) {
 
 	mux.HandleFunc("GET /{slug}", ctrl.GetLikeStatus)
 
-	mux.HandleFunc("POST /{slug}", ctrl.IncrementLike)
+	mux.Handle("POST /{slug}",
+		cfg.AuthMiddleware.IsAuthorized(
+			http.HandlerFunc(ctrl.IncrementLike),
+		),
+	)
 
 	cfg.Router.Handle("/likes/", http.StripPrefix("/likes", mux))
 }

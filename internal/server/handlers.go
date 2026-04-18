@@ -121,7 +121,8 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 			Service: views.NewService(views.ServiceConfig{
 				Database: db,
 			}),
-			AppContext: ctx,
+			AppContext:     ctx,
+			AuthMiddleware: publicAuthMiddleware,
 		},
 	)
 
@@ -131,6 +132,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 			Service: likes.NewService(likes.ServiceConfig{
 				Database: db,
 			}),
+			AuthMiddleware: publicAuthMiddleware,
 		},
 	)
 

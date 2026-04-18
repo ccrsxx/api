@@ -4,15 +4,22 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	service := NewService(ServiceConfig{Database: newMockQuerier()})
+	svc := NewService(ServiceConfig{Database: newMockQuerier()})
 
-	LoadRoutes(Config{Router: mux, Service: service})
+	authMw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{}))
+
+	LoadRoutes(Config{
+		Router:         mux,
+		Service:        svc,
+		AuthMiddleware: authMw,
+	})
 
 	tests := []test.RouteTestCase{
 		{
