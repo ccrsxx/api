@@ -22,7 +22,7 @@ func LoadRoutes(cfg Config) {
 	mux.HandleFunc("GET /{slug}", ctrl.GetViewCount)
 
 	mux.Handle("POST /{slug}",
-		middleware.RateLimit(cfg.AppContext, 100, 1*time.Hour)(
+		middleware.RateLimit(cfg.AppContext, 60, 1*time.Hour)(
 			http.HandlerFunc(ctrl.IncrementView),
 		),
 	)
