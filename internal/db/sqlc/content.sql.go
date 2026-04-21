@@ -103,7 +103,7 @@ func (q *Queries) ListContentByType(ctx context.Context, type_ string) ([]ListCo
 }
 
 const upsertContent = `-- name: UpsertContent :one
-INSERT INTO content (slug, "type")
+INSERT INTO content (slug, type)
 VALUES ($1, $2) ON CONFLICT (slug) DO
 UPDATE
 SET slug = EXCLUDED.slug

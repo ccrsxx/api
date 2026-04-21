@@ -130,23 +130,6 @@ func TestService_UpsertContent(t *testing.T) {
 		}
 	})
 
-	t.Run("Invalid Content Type", func(t *testing.T) {
-		db := newMockQuerier()
-
-		svc := NewService(ServiceConfig{Database: db})
-
-		input := UpsertContentInput{
-			Slug: "new-post",
-			Type: "invalid",
-		}
-
-		_, err := svc.UpsertContent(context.Background(), input)
-
-		if err == nil {
-			t.Fatal("got nil, want error")
-		}
-	})
-
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 

@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/cache"
-	"github.com/ccrsxx/api/internal/clients/ipinfo"
+	githubClient "github.com/ccrsxx/api/internal/clients/github"
+	ipInfoClient "github.com/ccrsxx/api/internal/clients/ipinfo"
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
 	"github.com/ccrsxx/api/internal/config"
@@ -15,6 +16,7 @@ import (
 	"github.com/ccrsxx/api/internal/features/contents"
 	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/features/favicon"
+	"github.com/ccrsxx/api/internal/features/guestbook"
 	"github.com/ccrsxx/api/internal/features/home"
 	"github.com/ccrsxx/api/internal/features/jellyfin"
 	"github.com/ccrsxx/api/internal/features/likes"
@@ -25,14 +27,19 @@ import (
 	"github.com/ccrsxx/api/internal/features/tools"
 	"github.com/ccrsxx/api/internal/features/views"
 	"github.com/ccrsxx/api/internal/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 )
 
-func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) http.Handler {
+func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool, db *sqlc.Queries) http.Handler {
 	router := http.NewServeMux()
 
 	memoryCache := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
-	ipInfoClient := ipinfo.NewClient(cfg.IPInfoToken)
+	ipInfoClient := ipInfoClient.NewClient(cfg.IPInfoToken)
+
+	githubClient := githubClient.NewClient(githubClient.Config{})
 
 	spotifyClient := spotifyClient.NewClient(spotifyClient.Config{
 		ClientID:     cfg.SpotifyClientID,
@@ -48,14 +55,6 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		Username: cfg.JellyfinUsername,
 	})
 
-	publicAuthMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
-		SecretKey: cfg.SecretKey,
-	}))
-
-	privateAuthMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
-		SecretKey: cfg.PrivateSecretKey,
-	}))
-
 	spotifyService := spotify.NewService(spotify.ServiceConfig{
 		Fetcher: spotifyClient.GetCurrentlyPlaying,
 	})
@@ -65,6 +64,28 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		JellyfinUsername: cfg.JellyfinUsername,
 		JellyfinImageURL: cfg.JellyfinImageURL,
 	})
+
+	authService := auth.ServiceConfig{
+		Pool:              pool,
+		Database:          &auth.AuthDatabaseWrapper{Queries: db},
+		SecretKey:         cfg.SecretKey,
+		JwtSecret:         cfg.JWTSecret,
+		GetGithubUser:     githubClient.GetCurrentUser,
+		FrontendBaseURL:   cfg.FrontendBaseURL,
+		FrontendPublicURL: cfg.FrontendPublicURL,
+		GithubOauthConfig: &oauth2.Config{
+			Endpoint:     github.Endpoint,
+			ClientID:     cfg.OauthGithubClientID,
+			ClientSecret: cfg.OauthGithubClientSecret,
+			Scopes:       []string{"read:user"},
+		},
+	}
+
+	publicAuthMiddleware := auth.NewMiddleware(auth.NewService(authService))
+
+	privateAuthMiddleware := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{
+		SecretKey: cfg.PrivateSecretKey,
+	}))
 
 	toolsController := tools.NewController(
 		tools.NewService(
@@ -79,15 +100,25 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		http.HandlerFunc(toolsController.GetIPInfo),
 	)
 
-	og.LoadRoutes(og.Config{
-		Router: router,
-		Service: og.NewService(og.ServiceConfig{
-			OgURL: cfg.OgURL,
-		}),
-		ControllerConfig: og.ControllerConfig{
-			IsProduction: cfg.IsProduction,
+	auth.LoadRoutes(
+		auth.Config{
+			Router:         router,
+			Service:        auth.NewService(authService),
+			AuthMiddleware: publicAuthMiddleware,
 		},
-	})
+	)
+
+	og.LoadRoutes(
+		og.Config{
+			Router: router,
+			Service: og.NewService(og.ServiceConfig{
+				OgURL: cfg.OgURL,
+			}),
+			ControllerConfig: og.ControllerConfig{
+				IsProduction: cfg.IsProduction,
+			},
+		},
+	)
 
 	sse.LoadRoutes(
 		sse.Config{
@@ -136,25 +167,6 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 		},
 	)
 
-	contents.LoadRoutes(
-		contents.Config{
-			Router: router,
-			Service: contents.NewService(contents.ServiceConfig{
-				Database: db,
-			}),
-			AuthMiddleware: privateAuthMiddleware,
-		},
-	)
-
-	statistics.LoadRoutes(
-		statistics.Config{
-			Router: router,
-			Service: statistics.NewService(statistics.ServiceConfig{
-				Database: db,
-			}),
-		},
-	)
-
 	tools.LoadRoutes(
 		tools.Config{
 			Router:                    router,
@@ -182,6 +194,35 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, db *sqlc.Queries) h
 			Router:         router,
 			Service:        jellyfinService,
 			AuthMiddleware: publicAuthMiddleware,
+		},
+	)
+
+	contents.LoadRoutes(
+		contents.Config{
+			Router: router,
+			Service: contents.NewService(contents.ServiceConfig{
+				Database: db,
+			}),
+			AuthMiddleware: privateAuthMiddleware,
+		},
+	)
+
+	statistics.LoadRoutes(
+		statistics.Config{
+			Router: router,
+			Service: statistics.NewService(statistics.ServiceConfig{
+				Database: db,
+			}),
+		},
+	)
+
+	guestbook.LoadRoutes(
+		guestbook.Config{
+			Router:         router,
+			AuthMiddleware: publicAuthMiddleware,
+			Service: guestbook.NewService(guestbook.ServiceConfig{
+				Database: db,
+			}),
 		},
 	)
 

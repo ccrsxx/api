@@ -57,7 +57,7 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := NewService(ServiceConfig{SecretKey: "test-secret"})
 
-			_, err := svc.getAuthorizationFromBearerToken(ctx, tt.headerToken)
+			_, err := svc.GetAuthorizationFromBearerToken(ctx, tt.headerToken)
 
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("getAuthorizationFromBearerToken() error = %v, wantErr %v", err, tt.wantErr)
@@ -102,7 +102,7 @@ func TestService_getAuthorizationFromQuery(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := NewService(ServiceConfig{SecretKey: "test-secret"})
 
-			_, err := svc.getAuthorizationFromQuery(ctx, tt.queryToken)
+			_, err := svc.GetAuthorizationFromQuery(ctx, tt.queryToken)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getAuthorizationFromQuery() error = %v, wantErr %v", err, tt.wantErr)

@@ -58,6 +58,9 @@ db-migrate:
 db-rollback:
 	goose down
 
+db-reset:
+	goose reset
+
 setup-tools:
 	go install gotest.tools/gotestsum@$(GOTESTSUM_VERSION)
 	go install github.com/air-verse/air@$(AIR_VERSION)

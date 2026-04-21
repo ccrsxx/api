@@ -6,10 +6,12 @@ require (
 	github.com/bdpiprava/scalar-go v0.13.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-playground/validator/v10 v10.30.2
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/ipinfo/go/v2 v2.12.0
 	github.com/jackc/pgx/v5 v5.9.1
 	github.com/joho/godotenv v1.5.1
+	golang.org/x/oauth2 v0.36.0
 	golang.org/x/time v0.14.0
 )
 

@@ -15,10 +15,15 @@ import (
 	"github.com/ccrsxx/api/internal/cache"
 )
 
-const (
-	defaultAuthURL = "https://accounts.spotify.com/api/token"
-	defaultAPIURL  = "https://api.spotify.com/v1/me/player/currently-playing"
-)
+type Client struct {
+	apiURL      string
+	secret      string
+	authURL     string
+	refresh     string
+	clientID    string
+	httpClient  *http.Client
+	memoryCache cache.Cache
+}
 
 type Config struct {
 	APIURL       string
@@ -29,15 +34,10 @@ type Config struct {
 	RefreshToken string
 }
 
-type Client struct {
-	apiURL      string
-	secret      string
-	authURL     string
-	refresh     string
-	clientID    string
-	httpClient  *http.Client
-	memoryCache cache.Cache
-}
+const (
+	defaultAuthURL = "https://accounts.spotify.com/api/token"
+	defaultAPIURL  = "https://api.spotify.com/v1/me/player/currently-playing"
+)
 
 var ErrNoContent = errors.New("spotify currently playing no content")
 

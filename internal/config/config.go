@@ -35,6 +35,14 @@ type AppConfig struct {
 	AllowedOrigins   []string       `env:"ALLOWED_ORIGINS,required"`
 	PrivateSecretKey string         `env:"PRIVATE_SECRET_KEY,required"`
 
+	FrontendBaseURL   string `env:"FRONTEND_BASE_URL,required"`
+	FrontendPublicURL string `env:"FRONTEND_PUBLIC_URL,required"`
+
+	JWTSecret string `env:"JWT_SECRET,required"`
+
+	OauthGithubClientID     string `env:"OAUTH_GITHUB_CLIENT_ID,required"`
+	OauthGithubClientSecret string `env:"OAUTH_GITHUB_CLIENT_SECRET,required"`
+
 	DatabaseURL string `env:"DATABASE_URL,required"`
 
 	IPInfoToken string `env:"IPINFO_TOKEN,required"`

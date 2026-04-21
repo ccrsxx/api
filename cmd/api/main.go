@@ -23,7 +23,7 @@ func main() {
 
 	defer pool.Close()
 
-	server := server.New(shutdownCtx, cfg, db)
+	server := server.New(shutdownCtx, cfg, pool, db)
 
 	go func() {
 		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)

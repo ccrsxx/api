@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/ccrsxx/api/internal/test"
 )
@@ -48,7 +47,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		c := NewClient(Config{URL: "http://localhost\x7f"})
+		c := NewClient(Config{URL: "http://invalid.url.local"})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -58,9 +57,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Network Error", func(t *testing.T) {
-		c := NewClient(Config{URL: "http://invalid.url.local"})
-
-		c.httpClient.Timeout = 10 * time.Millisecond
+		c := NewClient(Config{URL: "http://127.0.0.1:0"})
 
 		_, err := c.GetSessions(context.Background())
 

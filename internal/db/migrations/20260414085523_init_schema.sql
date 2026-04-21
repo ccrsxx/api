@@ -2,12 +2,12 @@
 CREATE TABLE users (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     name text NOT NULL,
-    role text NOT NULL DEFAULT 'guest',
+    role text NOT NULL DEFAULT 'user',
     image text,
     email text UNIQUE,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz,
-    CONSTRAINT check_users_role CHECK (role IN ('guest', 'author'))
+    CONSTRAINT check_users_role CHECK (role IN ('admin', 'user'))
 );
 
 CREATE TABLE account (

@@ -59,16 +59,6 @@ type UpsertContentInput struct {
 }
 
 func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (sqlc.Content, error) {
-	if err := utils.Validate.Struct(input); err != nil {
-		_, details := utils.FormatValidationError(err)
-
-		return sqlc.Content{}, &api.HTTPError{
-			Message:    "Invalid body",
-			Details:    details,
-			StatusCode: http.StatusBadRequest,
-		}
-	}
-
 	content, err := s.db.UpsertContent(ctx, sqlc.UpsertContentParams{
 		Slug: input.Slug,
 		Type: input.Type,
