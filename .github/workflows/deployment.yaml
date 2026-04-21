@@ -106,9 +106,18 @@ jobs:
         run: |
           echo "OG_URL=${{ secrets.OG_URL }}" >> .env
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
-          
+
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "PRIVATE_SECRET_KEY=${{ secrets.PRIVATE_SECRET_KEY }}" >> .env
+
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
+          echo "FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }}" >> .env
+          echo "FRONTEND_PUBLIC_URL=${{ secrets.FRONTEND_PUBLIC_URL }}" >> .env
+
+          echo "OAUTH_GITHUB_CLIENT_ID=${{ secrets.OAUTH_GITHUB_CLIENT_ID }}" >> .env
+          echo "OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}" >> .env
+
 
           echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
 
