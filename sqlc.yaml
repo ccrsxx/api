@@ -8,6 +8,8 @@ sql:
     queries: 'internal/db/queries'
     database:
       managed: true
+    rules:
+      - sqlc/db-prepare
     gen:
       go:
         package: 'sqlc'
