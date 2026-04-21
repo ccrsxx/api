@@ -165,6 +165,7 @@ func (s *Service) updateExistingGithubUser(ctx context.Context, userID pgtype.UU
 		if err != nil {
 			return sqlc.User{}, fmt.Errorf("update github user update db error: %w", err)
 		}
+
 		return updatedUser, nil
 	}
 
