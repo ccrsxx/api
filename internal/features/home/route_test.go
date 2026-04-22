@@ -55,4 +55,3 @@ func TestLoadRoutes(t *testing.T) {
 
 	test.AssertRoutes(t, mux, tests)
 }
-

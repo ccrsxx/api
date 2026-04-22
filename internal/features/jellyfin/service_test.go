@@ -38,7 +38,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		svc := NewService(ServiceConfig{
-			Client:          mock,
+			Client:           mock,
 			JellyfinUsername: validUser,
 		})
 
@@ -71,7 +71,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		svc := NewService(ServiceConfig{
-			Client:          mock,
+			Client:           mock,
 			JellyfinUsername: validUser,
 		})
 
@@ -121,7 +121,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		svc := NewService(ServiceConfig{
-			Client:          playingMock,
+			Client:           playingMock,
 			JellyfinUsername: validUser,
 		})
 
