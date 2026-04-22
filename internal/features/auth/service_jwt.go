@@ -39,6 +39,8 @@ func (s *Service) GenerateOauthToken(userID string) (string, error) {
 func (s *Service) ValidateOauthToken(ctx context.Context, r *http.Request) (sqlc.GetUserWithAccountByIDRow, error) {
 	oauthToken, err := r.Cookie("oauth-token")
 
+	// TODO: add check for http.ErrNoCookie
+
 	if err != nil {
 		slog.Warn("jwt validate cookie token error", "error", err)
 
