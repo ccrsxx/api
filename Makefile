@@ -1,6 +1,6 @@
 PKG ?= ./...
 
-AIR_VERSION = v1.64.5
+AIR_VERSION = v1.65.1
 SQLC_VERSION = v1.30.0
 GOOSE_VERSION = v3.27.0
 NILAWAY_VERSION = v0.0.0-20260213150243-937701de96c7
@@ -78,8 +78,8 @@ setup-scripts:
 
 setup: setup-tools setup-hooks setup-scripts
 
-generate-openapi:
+openapi-generate:
 	npm run start:no-commit --prefix ./scripts
 
-generate-openapi-commit:
+openapi-generate-commit:
 	npm run start --prefix ./scripts
