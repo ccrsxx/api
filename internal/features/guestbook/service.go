@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/clients/gmail"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/google/uuid"
@@ -22,17 +24,30 @@ type querier interface {
 	DeleteGuestbook(ctx context.Context, id pgtype.UUID) error
 }
 
+type emailClient interface {
+	Send(msg gmail.Message) error
+}
+
 type Service struct {
-	db querier
+	db           querier
+	emailClient  emailClient
+	emailTarget  string
+	emailAddress string
 }
 
 type ServiceConfig struct {
-	Database querier
+	Database     querier
+	EmailClient  emailClient
+	EmailTarget  string
+	EmailAddress string
 }
 
 func NewService(cfg ServiceConfig) *Service {
 	return &Service{
-		db: cfg.Database,
+		db:           cfg.Database,
+		emailClient:  cfg.EmailClient,
+		emailTarget:  cfg.EmailTarget,
+		emailAddress: cfg.EmailAddress,
 	}
 }
 
@@ -56,7 +71,24 @@ func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInpu
 		return sqlc.CreateGuestbookRow{}, fmt.Errorf("create guestbook error: %w", err)
 	}
 
+	go s.sendNewGuestbookEmail(user, guestbook)
+
 	return guestbook, nil
+}
+
+func (s *Service) sendNewGuestbookEmail(user sqlc.GetUserWithAccountByIDRow, guestbook sqlc.CreateGuestbookRow) {
+	subject := fmt.Sprintf("New guestbook from %s (%s)", user.Name, user.Email.String)
+
+	err := s.emailClient.Send(gmail.Message{
+		From:    s.emailAddress,
+		To:      s.emailTarget,
+		Subject: subject,
+		Text:    guestbook.Text,
+	})
+
+	if err != nil {
+		slog.Warn("send new guestbook email error", "error", err)
+	}
 }
 
 func (s *Service) ListGuestbook(ctx context.Context) ([]sqlc.ListGuestbookRow, error) {

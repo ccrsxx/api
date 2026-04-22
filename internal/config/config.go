@@ -35,6 +35,11 @@ type AppConfig struct {
 	AllowedOrigins   []string       `env:"ALLOWED_ORIGINS,required"`
 	PrivateSecretKey string         `env:"PRIVATE_SECRET_KEY,required"`
 
+	EmailTarget string `env:"EMAIL_TARGET,required"`
+
+	EmailAddress  string `env:"EMAIL_ADDRESS,required"`
+	EmailPassword string `env:"EMAIL_PASSWORD,required"`
+
 	FrontendBaseURL   string `env:"FRONTEND_BASE_URL,required"`
 	FrontendPublicURL string `env:"FRONTEND_PUBLIC_URL,required"`
 

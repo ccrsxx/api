@@ -110,6 +110,10 @@ jobs:
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "PRIVATE_SECRET_KEY=${{ secrets.PRIVATE_SECRET_KEY }}" >> .env
 
+          echo "EMAIL_TARGET=${{ secrets.EMAIL_TARGET }}" >> .env
+          echo "EMAIL_ADDRESS=${{ secrets.EMAIL_ADDRESS }}" >> .env
+          echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" >> .env
+
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
           echo "FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }}" >> .env

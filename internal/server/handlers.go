@@ -7,6 +7,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/cache"
 	githubClient "github.com/ccrsxx/api/internal/clients/github"
+	gmailClient "github.com/ccrsxx/api/internal/clients/gmail"
 	ipInfoClient "github.com/ccrsxx/api/internal/clients/ipinfo"
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
@@ -36,6 +37,11 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 	router := http.NewServeMux()
 
 	memoryCache := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
+
+	gmailClient := gmailClient.NewClient(gmailClient.Config{
+		Username: cfg.EmailAddress,
+		Password: cfg.EmailPassword,
+	})
 
 	ipInfoClient := ipInfoClient.NewClient(cfg.IPInfoToken)
 
@@ -221,7 +227,10 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 			Router:         router,
 			AuthMiddleware: publicAuthMiddleware,
 			Service: guestbook.NewService(guestbook.ServiceConfig{
-				Database: db,
+				Database:     db,
+				EmailClient:  gmailClient,
+				EmailTarget:  cfg.EmailTarget,
+				EmailAddress: cfg.EmailAddress,
 			}),
 		},
 	)
