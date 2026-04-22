@@ -20,7 +20,6 @@ WITH new_guestbook AS (
 SELECT g.id,
     g.text,
     u.name,
-    u.role,
     u.image,
     a.username,
     g.created_at
@@ -38,7 +37,6 @@ type CreateGuestbookRow struct {
 	ID        pgtype.UUID        `json:"id"`
 	Text      string             `json:"text"`
 	Name      string             `json:"name"`
-	Role      string             `json:"role"`
 	Image     pgtype.Text        `json:"image"`
 	Username  pgtype.Text        `json:"username"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
@@ -51,7 +49,6 @@ func (q *Queries) CreateGuestbook(ctx context.Context, arg CreateGuestbookParams
 		&i.ID,
 		&i.Text,
 		&i.Name,
-		&i.Role,
 		&i.Image,
 		&i.Username,
 		&i.CreatedAt,
@@ -93,7 +90,6 @@ const listGuestbook = `-- name: ListGuestbook :many
 SELECT g.id,
     g.text,
     u.name,
-    u.role,
     u.image,
     a.username,
     g.created_at
@@ -107,7 +103,6 @@ type ListGuestbookRow struct {
 	ID        pgtype.UUID        `json:"id"`
 	Text      string             `json:"text"`
 	Name      string             `json:"name"`
-	Role      string             `json:"role"`
 	Image     pgtype.Text        `json:"image"`
 	Username  pgtype.Text        `json:"username"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
@@ -126,7 +121,6 @@ func (q *Queries) ListGuestbook(ctx context.Context) ([]ListGuestbookRow, error)
 			&i.ID,
 			&i.Text,
 			&i.Name,
-			&i.Role,
 			&i.Image,
 			&i.Username,
 			&i.CreatedAt,

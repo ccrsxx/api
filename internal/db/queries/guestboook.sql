@@ -7,7 +7,6 @@ WITH new_guestbook AS (
 SELECT g.id,
     g.text,
     u.name,
-    u.role,
     u.image,
     a.username,
     g.created_at
@@ -29,7 +28,6 @@ WHERE id = $1;
 SELECT g.id,
     g.text,
     u.name,
-    u.role,
     u.image,
     a.username,
     g.created_at
