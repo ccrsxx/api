@@ -1,4 +1,3 @@
-// gmail.go
 package gmail
 
 import (

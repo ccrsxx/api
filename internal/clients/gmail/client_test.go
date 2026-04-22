@@ -1,4 +1,3 @@
-// gmail_test.go
 package gmail
 
 import (

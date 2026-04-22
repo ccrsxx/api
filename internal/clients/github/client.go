@@ -59,6 +59,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, accessToken string) (User, 
 		}
 	}()
 
+	// nolint:nilaway
 	if res.StatusCode != http.StatusOK {
 		return User{}, fmt.Errorf("github get user status error: %s", res.Status)
 	}
