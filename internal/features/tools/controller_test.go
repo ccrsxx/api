@@ -14,7 +14,7 @@ import (
 
 func TestController_GetIPAddress(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		svc := NewService(ServiceConfig{Fetcher: nil})
+		svc := NewService(ServiceConfig{IPInfoClient: nil})
 		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
@@ -35,7 +35,7 @@ func TestController_GetIPAddress(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{Fetcher: nil})
+		svc := NewService(ServiceConfig{IPInfoClient: nil})
 		ctrl := NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/ip", nil)
@@ -52,16 +52,18 @@ func TestController_GetIPAddress(t *testing.T) {
 }
 
 func TestController_GetIPInfo(t *testing.T) {
-	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
-		if ip.String() == "8.8.8.8" {
-			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8")}, nil
-		}
+	mock := &mockIPInfoClient{
+		result: func(ip net.IP) (*ipinfoLib.Core, error) {
+			if ip.String() == "8.8.8.8" {
+				return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8")}, nil
+			}
 
-		return nil, errors.New("mock error")
+			return nil, errors.New("mock error")
+		},
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		ctrl := NewController(NewService(ServiceConfig{Fetcher: mockFetcher}))
+		ctrl := NewController(NewService(ServiceConfig{IPInfoClient: mock}))
 
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=8.8.8.8", nil)
 		w := httptest.NewRecorder()
@@ -90,7 +92,7 @@ func TestController_GetIPInfo(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{Fetcher: mockFetcher})
+		svc := NewService(ServiceConfig{IPInfoClient: mock})
 		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
@@ -104,7 +106,7 @@ func TestController_GetIPInfo(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{Fetcher: mockFetcher})
+		svc := NewService(ServiceConfig{IPInfoClient: mock})
 		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
@@ -123,7 +125,7 @@ func TestController_GetIPInfo(t *testing.T) {
 
 func TestController_GetHTTPHeaders(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		svc := NewService(ServiceConfig{Fetcher: nil})
+		svc := NewService(ServiceConfig{IPInfoClient: nil})
 		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()
@@ -148,7 +150,7 @@ func TestController_GetHTTPHeaders(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{Fetcher: nil})
+		svc := NewService(ServiceConfig{IPInfoClient: nil})
 		ctrl := NewController(svc)
 
 		w := httptest.NewRecorder()

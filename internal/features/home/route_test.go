@@ -10,13 +10,17 @@ import (
 	"github.com/ipinfo/go/v2/ipinfo"
 )
 
+type mockIPInfoClient struct{}
+
+func (m *mockIPInfoClient) GetIPInfo(ip net.IP) (*ipinfo.Core, error) {
+	return &ipinfo.Core{IP: ip}, nil
+}
+
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
 	svc := tools.NewService(tools.ServiceConfig{
-		Fetcher: func(ip net.IP) (*ipinfo.Core, error) {
-			return &ipinfo.Core{IP: ip}, nil
-		},
+		IPInfoClient: &mockIPInfoClient{},
 	})
 
 	ctrl := tools.NewController(svc)
@@ -51,3 +55,4 @@ func TestLoadRoutes(t *testing.T) {
 
 	test.AssertRoutes(t, mux, tests)
 }
+

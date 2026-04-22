@@ -1,7 +1,6 @@
 package spotify
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -15,15 +14,15 @@ import (
 
 func TestController_getCurrentlyPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{
+		mock := &mockSpotifyClient{
+			result: spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
-			}, nil
+			},
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		ctrl := NewController(svc)
@@ -51,12 +50,12 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{}, errors.New("fail")
+		mock := &mockSpotifyClient{
+			err: errors.New("fail"),
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		ctrl := NewController(svc)
@@ -74,15 +73,15 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{
+		mock := &mockSpotifyClient{
+			result: spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
-			}, nil
+			},
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		ctrl := NewController(svc)

@@ -16,7 +16,7 @@ import (
 )
 
 func (s *Service) CreateOauthTokenForGithubUser(ctx context.Context, accessToken string) (string, error) {
-	githubUser, err := s.getGithubUser(ctx, accessToken)
+	githubUser, err := s.githubClient.GetCurrentUser(ctx, accessToken)
 
 	if err != nil {
 		return "", fmt.Errorf("create session get github user error: %w", err)

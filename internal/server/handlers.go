@@ -56,11 +56,11 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 	})
 
 	spotifyService := spotify.NewService(spotify.ServiceConfig{
-		Fetcher: spotifyClient.GetCurrentlyPlaying,
+		Client: spotifyClient,
 	})
 
 	jellyfinService := jellyfin.NewService(jellyfin.ServiceConfig{
-		Fetcher:          jellyfinClient.GetSessions,
+		Client:           jellyfinClient,
 		JellyfinUsername: cfg.JellyfinUsername,
 		JellyfinImageURL: cfg.JellyfinImageURL,
 	})
@@ -70,7 +70,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		Database:          &auth.AuthDatabaseWrapper{Queries: db},
 		SecretKey:         cfg.SecretKey,
 		JwtSecret:         cfg.JWTSecret,
-		GetGithubUser:     githubClient.GetCurrentUser,
+		GithubClient:      githubClient,
 		FrontendBaseURL:   cfg.FrontendBaseURL,
 		FrontendPublicURL: cfg.FrontendPublicURL,
 		GithubOauthConfig: &oauth2.Config{
@@ -90,7 +90,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 	toolsController := tools.NewController(
 		tools.NewService(
 			tools.ServiceConfig{
-				Fetcher: ipInfoClient.GetIPInfo,
+				IPInfoClient: ipInfoClient,
 			},
 		),
 	)
@@ -124,8 +124,8 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		sse.Config{
 			Router: router,
 			Service: sse.NewService(sse.ServiceConfig{
-				SpotifyFetcher:  spotifyService.GetCurrentlyPlaying,
-				JellyfinFetcher: jellyfinService.GetCurrentlyPlaying,
+				SpotifyService:  spotifyService,
+				JellyfinService: jellyfinService,
 			}),
 			AppContext:     ctx,
 			AuthMiddleware: publicAuthMiddleware,

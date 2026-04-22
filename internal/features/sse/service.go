@@ -27,22 +27,24 @@ type clientMetadata struct {
 	ConnectedAt time.Time
 }
 
-type DataFetcher func(context.Context) (model.CurrentlyPlaying, error)
+type dataFetcher interface {
+	GetCurrentlyPlaying(context.Context) (model.CurrentlyPlaying, error)
+}
 
 type Service struct {
 	mu              sync.RWMutex
 	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
 	pollInterval    time.Duration
-	spotifyFetcher  DataFetcher
+	spotifyService  dataFetcher
 	ipAddressCounts map[string]int
-	jellyfinFetcher DataFetcher
+	jellyfinService dataFetcher
 }
 
 type ServiceConfig struct {
 	PollInterval    time.Duration
-	SpotifyFetcher  DataFetcher
-	JellyfinFetcher DataFetcher
+	SpotifyService  dataFetcher
+	JellyfinService dataFetcher
 }
 
 func NewService(cfg ServiceConfig) *Service {
@@ -55,8 +57,8 @@ func NewService(cfg ServiceConfig) *Service {
 		ipAddressCounts: map[string]int{},
 
 		pollInterval:    cfg.PollInterval,
-		spotifyFetcher:  cfg.SpotifyFetcher,
-		jellyfinFetcher: cfg.JellyfinFetcher,
+		spotifyService:  cfg.SpotifyService,
+		jellyfinService: cfg.JellyfinService,
 	}
 }
 
@@ -236,9 +238,6 @@ type sseData struct {
 }
 
 func (s *Service) getSSEData(ctx context.Context) sseData {
-	spotifyFetcher := s.spotifyFetcher
-	jellyfinFetcher := s.jellyfinFetcher
-
 	var wg sync.WaitGroup
 	var spotifyData, jellyfinData model.CurrentlyPlaying
 
@@ -247,7 +246,7 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 	go func() {
 		defer wg.Done()
 
-		data, err := spotifyFetcher(ctx)
+		data, err := s.spotifyService.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
 			slog.Warn("sse spotify fetch error", "error", err)
@@ -263,7 +262,7 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 	go func() {
 		defer wg.Done()
 
-		data, err := jellyfinFetcher(ctx)
+		data, err := s.jellyfinService.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
 			slog.Warn("sse jellyfin fetch error", "error", err)

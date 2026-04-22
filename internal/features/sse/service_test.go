@@ -10,6 +10,15 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
+type mockDataFetcher struct {
+	result model.CurrentlyPlaying
+	err    error
+}
+
+func (m *mockDataFetcher) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
+	return m.result, m.err
+}
+
 func TestService_IsConnectionAllowed(t *testing.T) {
 	t.Run("Allowed", func(t *testing.T) {
 		svc := NewService(ServiceConfig{})
@@ -52,18 +61,18 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 
 func TestService_AddRemoveClient(t *testing.T) {
 	setupService := func() *Service {
-		dummySpotify := func(ctx context.Context) (model.CurrentlyPlaying, error) {
-			return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
+		dummySpotify := &mockDataFetcher{
+			result: model.NewDefaultCurrentlyPlaying(model.PlatformSpotify),
 		}
 
-		dummyJellyfin := func(ctx context.Context) (model.CurrentlyPlaying, error) {
-			return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
+		dummyJellyfin := &mockDataFetcher{
+			result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
 		}
 
 		return NewService(ServiceConfig{
 			PollInterval:    10 * time.Millisecond,
-			SpotifyFetcher:  dummySpotify,
-			JellyfinFetcher: dummyJellyfin,
+			SpotifyService:  dummySpotify,
+			JellyfinService: dummyJellyfin,
 		})
 	}
 
@@ -144,17 +153,17 @@ func TestService_AddRemoveClient(t *testing.T) {
 }
 
 func TestService_getSSEData_Errors(t *testing.T) {
-	failSpotify := func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.CurrentlyPlaying{}, errors.New("spotify fail")
+	failSpotify := &mockDataFetcher{
+		err: errors.New("spotify fail"),
 	}
 
-	failJellyfin := func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.CurrentlyPlaying{}, errors.New("jellyfin fail")
+	failJellyfin := &mockDataFetcher{
+		err: errors.New("jellyfin fail"),
 	}
 
 	svc := NewService(ServiceConfig{
-		SpotifyFetcher:  failSpotify,
-		JellyfinFetcher: failJellyfin,
+		SpotifyService:  failSpotify,
+		JellyfinService: failJellyfin,
 	})
 
 	// Should not panic, should return default empty structs

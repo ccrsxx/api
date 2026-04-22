@@ -8,10 +8,19 @@ import (
 	"github.com/ccrsxx/api/internal/clients/spotify"
 )
 
+type mockSpotifyClient struct {
+	result spotify.SpotifyCurrentlyPlaying
+	err    error
+}
+
+func (m *mockSpotifyClient) GetCurrentlyPlaying(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+	return m.result, m.err
+}
+
 func TestService_GetCurrentlyPlaying(t *testing.T) {
 	t.Run("Success Playing", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{
+		mock := &mockSpotifyClient{
+			result: spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item: &spotify.SpotifyItem{
 					Name: "Test Song",
@@ -19,11 +28,11 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 						Name: "Test Album",
 					},
 				},
-			}, nil
+			},
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		got, err := svc.GetCurrentlyPlaying(context.Background())
@@ -42,12 +51,12 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Success No Content", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{}, spotify.ErrNoContent
+		mock := &mockSpotifyClient{
+			err: spotify.ErrNoContent,
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		got, err := svc.GetCurrentlyPlaying(context.Background())
@@ -66,12 +75,12 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Client Error", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{}, errors.New("network fail")
+		mock := &mockSpotifyClient{
+			err: errors.New("network fail"),
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		got, err := svc.GetCurrentlyPlaying(context.Background())

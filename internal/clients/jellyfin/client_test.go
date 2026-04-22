@@ -47,7 +47,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		c := NewClient(Config{URL: "http://invalid.url.local"})
+		c := NewClient(Config{URL: "http://bad\x7f"})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -57,7 +57,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Network Error", func(t *testing.T) {
-		c := NewClient(Config{URL: "http://127.0.0.1:0"})
+		c := NewClient(Config{URL: "http://invalid.url.local"})
 
 		_, err := c.GetSessions(context.Background())
 

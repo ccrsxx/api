@@ -10,13 +10,22 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
+type mockJellyfinClient struct {
+	result []jellyfin.SessionInfo
+	err    error
+}
+
+func (m *mockJellyfinClient) GetSessions(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+	return m.result, m.err
+}
+
 func TestService_GetCurrentlyPlaying(t *testing.T) {
 	validUser := "testuser"
 	otherUser := "other"
 
 	t.Run("Success Playing", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{
+		mock := &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{
 				{
 					UserName: &validUser,
 					NowPlayingItem: &jellyfin.BaseItem{
@@ -25,11 +34,11 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 					},
 					PlayState: &jellyfin.PlayerStateInfo{IsPaused: false},
 				},
-			}, nil
+			},
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher:          mockFetcher,
+			Client:          mock,
 			JellyfinUsername: validUser,
 		})
 
@@ -49,8 +58,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Filtering Logic", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{
+		mock := &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{
 				{UserName: &otherUser},                      // Skip: Wrong User
 				{UserName: &validUser, NowPlayingItem: nil}, // Skip: Not Playing
 				{
@@ -58,11 +67,11 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 					NowPlayingItem: &jellyfin.BaseItem{Type: jellyfin.KindMovie}, // Skip: Not Audio
 					PlayState:      &jellyfin.PlayerStateInfo{},
 				},
-			}, nil
+			},
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher:          mockFetcher,
+			Client:          mock,
 			JellyfinUsername: validUser,
 		})
 
@@ -78,12 +87,12 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Fetcher Error", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, errors.New("network fail")
+		mock := &mockJellyfinClient{
+			err: errors.New("network fail"),
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		_, err := svc.GetCurrentlyPlaying(context.Background())
@@ -94,8 +103,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 	t.Run("Caching and Extrapolation", func(t *testing.T) {
 		// Prime the cache with a playing state
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{
+		playingMock := &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{
 				{
 					UserName: &validUser,
 					NowPlayingItem: &jellyfin.BaseItem{
@@ -108,11 +117,11 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 						PositionTicks: new(int64(10000000)), // 1000ms progress
 					},
 				},
-			}, nil
+			},
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher:          mockFetcher,
+			Client:          playingMock,
 			JellyfinUsername: validUser,
 		})
 
@@ -124,8 +133,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 		// Simulate "No Content" from API (user momentarily between songs or network blip)
 		// But within grace period
-		svc.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{}, nil
+		svc.client = &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{},
 		}
 
 		// Force time to advance slightly for extrapolation

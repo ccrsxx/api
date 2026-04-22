@@ -1,7 +1,6 @@
 package jellyfin
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -9,19 +8,16 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/clients/jellyfin"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestController_getCurrentlyPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// We return nil sessions, which results in "Not Playing" (200 OK)
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, nil
-		}
+		mock := &mockJellyfinClient{}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		ctrl := NewController(svc)
@@ -49,12 +45,12 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, errors.New("fail")
+		mock := &mockJellyfinClient{
+			err: errors.New("fail"),
 		}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		ctrl := NewController(svc)
@@ -70,12 +66,10 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		mockFetcher := func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, nil
-		}
+		mock := &mockJellyfinClient{}
 
 		svc := NewService(ServiceConfig{
-			Fetcher: mockFetcher,
+			Client: mock,
 		})
 
 		ctrl := NewController(svc)

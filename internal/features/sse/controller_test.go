@@ -13,18 +13,18 @@ import (
 
 func TestController_getCurrentPlayingSSE(t *testing.T) {
 	setupTest := func(ctx context.Context) (*Controller, *Service) {
-		dummySpotify := func(ctx context.Context) (model.CurrentlyPlaying, error) {
-			return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
+		dummySpotify := &mockDataFetcher{
+			result: model.NewDefaultCurrentlyPlaying(model.PlatformSpotify),
 		}
 
-		dummyJellyfin := func(ctx context.Context) (model.CurrentlyPlaying, error) {
-			return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
+		dummyJellyfin := &mockDataFetcher{
+			result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
 		}
 
 		svc := NewService(ServiceConfig{
 			PollInterval:    10 * time.Millisecond,
-			SpotifyFetcher:  dummySpotify,
-			JellyfinFetcher: dummyJellyfin,
+			SpotifyService:  dummySpotify,
+			JellyfinService: dummyJellyfin,
 		})
 
 		ctrl := NewController(ctx, svc)

@@ -37,12 +37,16 @@ func (w *AuthDatabaseWrapper) WithTx(tx pgx.Tx) querier {
 	return &AuthDatabaseWrapper{w.Queries.WithTx(tx)}
 }
 
+type githubClient interface {
+	GetCurrentUser(ctx context.Context, accessToken string) (github.User, error)
+}
+
 type Service struct {
 	db                querier
 	pool              beginner
 	secretKey         string
 	jwtSecret         string
-	getGithubUser     func(ctx context.Context, accessToken string) (github.User, error)
+	githubClient      githubClient
 	frontendBaseURL   string
 	frontendPublicURL string
 	githubOauthConfig *oauth2.Config
@@ -53,7 +57,7 @@ type ServiceConfig struct {
 	Database          querier
 	SecretKey         string
 	JwtSecret         string
-	GetGithubUser     func(ctx context.Context, accessToken string) (github.User, error)
+	GithubClient      githubClient
 	FrontendBaseURL   string
 	FrontendPublicURL string
 	GithubOauthConfig *oauth2.Config
@@ -70,7 +74,7 @@ func NewService(cfg ServiceConfig) *Service {
 		pool:              cfg.Pool,
 		secretKey:         cfg.SecretKey,
 		jwtSecret:         cfg.JwtSecret,
-		getGithubUser:     cfg.GetGithubUser,
+		githubClient:      cfg.GithubClient,
 		frontendBaseURL:   cfg.FrontendBaseURL,
 		frontendPublicURL: cfg.FrontendPublicURL,
 		githubOauthConfig: cfg.GithubOauthConfig,

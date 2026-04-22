@@ -13,8 +13,10 @@ func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
 	svc := NewService(ServiceConfig{
-		Fetcher: func(ip net.IP) (*ipinfo.Core, error) {
-			return &ipinfo.Core{IP: ip}, nil
+		IPInfoClient: &mockIPInfoClient{
+			result: func(ip net.IP) (*ipinfo.Core, error) {
+				return &ipinfo.Core{IP: ip}, nil
+			},
 		},
 	})
 

@@ -10,17 +10,27 @@ import (
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
+type mockIPInfoClient struct {
+	result func(net.IP) (*ipinfoLib.Core, error)
+}
+
+func (m *mockIPInfoClient) GetIPInfo(ip net.IP) (*ipinfoLib.Core, error) {
+	return m.result(ip)
+}
+
 func TestService_getIPInfo(t *testing.T) {
-	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
-		if ip.String() == "8.8.8.8" {
-			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8"), City: "Mountain View"}, nil
-		}
+	mock := &mockIPInfoClient{
+		result: func(ip net.IP) (*ipinfoLib.Core, error) {
+			if ip.String() == "8.8.8.8" {
+				return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8"), City: "Mountain View"}, nil
+			}
 
-		if ip.String() == "1.1.1.1" {
-			return nil, errors.New("mock network error")
-		}
+			if ip.String() == "1.1.1.1" {
+				return nil, errors.New("mock network error")
+			}
 
-		return nil, errors.New("unknown ip")
+			return nil, errors.New("unknown ip")
+		},
 	}
 
 	tests := []struct {
@@ -67,7 +77,7 @@ func TestService_getIPInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := NewService(ServiceConfig{Fetcher: mockFetcher})
+			svc := NewService(ServiceConfig{IPInfoClient: mock})
 
 			info, err := svc.getIPInfo(tt.queryIP, tt.requestIP)
 
