@@ -1,4 +1,4 @@
-package likes
+package likes_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/features/likes"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -17,8 +18,8 @@ func TestController_GetLikeStatus(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+		ctrl := likes.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/test-slug", nil)
 
@@ -48,12 +49,12 @@ func TestController_GetLikeStatus(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
+		db.GetContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
 			return sqlc.GetContentLikeStatusRow{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+		ctrl := likes.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/test-slug", nil)
 
@@ -69,8 +70,8 @@ func TestController_GetLikeStatus(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+		ctrl := likes.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/test-slug", nil)
 
@@ -90,8 +91,8 @@ func TestController_IncrementLike(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+		ctrl := likes.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, "/test-slug", nil)
 
@@ -121,12 +122,12 @@ func TestController_IncrementLike(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
+		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
 			return sqlc.Content{}, errors.New("not found")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+		ctrl := likes.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, "/test-slug", nil)
 
@@ -142,8 +143,8 @@ func TestController_IncrementLike(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+		ctrl := likes.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, "/test-slug", nil)
 

@@ -1,4 +1,4 @@
-package api
+package api_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -14,23 +15,23 @@ func TestHandleHTTPError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/test", nil)
 
 	t.Run("PanicError - Standard (Production)", func(t *testing.T) {
-		Load(false)
+		api.Load(false)
 
 		w := httptest.NewRecorder()
 
-		panicErr := &PanicError{
+		panicErr := &api.PanicError{
 			Message: "Something crashed",
 			Stack:   "trace...",
 			Value:   "nil pointer",
 		}
 
-		HandleHTTPError(w, r, panicErr)
+		api.HandleHTTPError(w, r, panicErr)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want %d", w.Code, http.StatusInternalServerError)
 		}
 
-		var res ErrorResponse
+		var res api.ErrorResponse
 		err := json.Unmarshal(w.Body.Bytes(), &res)
 
 		if err != nil {
@@ -43,18 +44,18 @@ func TestHandleHTTPError(t *testing.T) {
 	})
 
 	t.Run("PanicError - Development Mode (Stack Trace)", func(t *testing.T) {
-		Load(true)
+		api.Load(true)
 
-		defer Load(false)
+		defer api.Load(false)
 
 		w := httptest.NewRecorder()
 
-		panicErr := &PanicError{
+		panicErr := &api.PanicError{
 			Message: "Dev Error",
 			Stack:   "goroutine stack trace...",
 		}
 
-		HandleHTTPError(w, r, panicErr)
+		api.HandleHTTPError(w, r, panicErr)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)
@@ -63,19 +64,19 @@ func TestHandleHTTPError(t *testing.T) {
 
 	t.Run("HttpError - Custom Status", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		httpErr := &HTTPError{
+		httpErr := &api.HTTPError{
 			StatusCode: http.StatusBadRequest,
 			Message:    "Invalid ID",
 			Details:    []string{"id must be uuid"},
 		}
 
-		HandleHTTPError(w, r, httpErr)
+		api.HandleHTTPError(w, r, httpErr)
 
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("got %d, want 400", w.Code)
 		}
 
-		var res ErrorResponse
+		var res api.ErrorResponse
 
 		err := json.Unmarshal(w.Body.Bytes(), &res)
 
@@ -92,7 +93,7 @@ func TestHandleHTTPError(t *testing.T) {
 		w := httptest.NewRecorder()
 		genericErr := errors.New("database connection failed")
 
-		HandleHTTPError(w, r, genericErr)
+		api.HandleHTTPError(w, r, genericErr)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got status %d, want 500", w.Code)
@@ -102,7 +103,7 @@ func TestHandleHTTPError(t *testing.T) {
 	t.Run("Write Failures (Triggers logErrorResponse)", func(t *testing.T) {
 		w1 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHTTPError(w1, r, &HTTPError{StatusCode: 400, Message: "bad"})
+		api.HandleHTTPError(w1, r, &api.HTTPError{StatusCode: 400, Message: "bad"})
 
 		if w1.Code != 400 {
 			t.Errorf("got %d, want 400", w1.Code)
@@ -113,7 +114,7 @@ func TestHandleHTTPError(t *testing.T) {
 
 		w2 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHTTPError(w2, r, &PanicError{Message: "crash"})
+		api.HandleHTTPError(w2, r, &api.PanicError{Message: "crash"})
 
 		if w2.Code != 500 {
 			t.Errorf("got %d, want 500", w2.Code)
@@ -121,7 +122,7 @@ func TestHandleHTTPError(t *testing.T) {
 
 		w3 := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		HandleHTTPError(w3, r, errors.New("generic"))
+		api.HandleHTTPError(w3, r, errors.New("generic"))
 
 		if w3.Code != 500 {
 			t.Errorf("got %d, want 500", w3.Code)
@@ -131,7 +132,7 @@ func TestHandleHTTPError(t *testing.T) {
 
 func TestErrorTypes(t *testing.T) {
 	t.Run("PanicError.Error()", func(t *testing.T) {
-		pe := &PanicError{Message: "panic msg"}
+		pe := &api.PanicError{Message: "panic msg"}
 
 		if pe.Error() != "panic msg" {
 			t.Errorf("got %q, want %q", pe.Error(), "panic msg")
@@ -139,7 +140,7 @@ func TestErrorTypes(t *testing.T) {
 	})
 
 	t.Run("HttpError.Error()", func(t *testing.T) {
-		he := &HTTPError{Message: "http msg"}
+		he := &api.HTTPError{Message: "http msg"}
 
 		if he.Error() != "http msg" {
 			t.Errorf("got %q, want %q", he.Error(), "http msg")

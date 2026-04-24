@@ -1,4 +1,4 @@
-package statistics
+package statistics_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/features/statistics"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -19,8 +20,8 @@ func TestController_GetContentsStatistics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
+		ctrl := statistics.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
@@ -32,7 +33,7 @@ func TestController_GetContentsStatistics(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[ContentsStatistics]
+		var res api.SuccessResponse[statistics.ContentsStatistics]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -58,12 +59,12 @@ func TestController_GetContentsStatistics(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+		db.GetContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
 			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
+		ctrl := statistics.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
@@ -79,8 +80,8 @@ func TestController_GetContentsStatistics(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
+		ctrl := statistics.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 

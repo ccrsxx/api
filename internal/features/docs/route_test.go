@@ -1,16 +1,17 @@
-package docs
+package docs_test
 
 import (
 	"net/http"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	LoadRoutes(Config{Router: mux})
+	docs.LoadRoutes(docs.Config{Router: mux})
 
 	tests := []test.RouteTestCase{
 		{

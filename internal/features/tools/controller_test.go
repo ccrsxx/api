@@ -1,4 +1,4 @@
-package tools
+package tools_test
 
 import (
 	"encoding/json"
@@ -8,14 +8,23 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/tools"
 	"github.com/ccrsxx/api/internal/test"
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
+type mockIPInfoClient struct {
+	result func(net.IP) (*ipinfoLib.Core, error)
+}
+
+func (m *mockIPInfoClient) GetIPInfo(ip net.IP) (*ipinfoLib.Core, error) {
+	return m.result(ip)
+}
+
 func TestController_GetIPAddress(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		svc := NewService(ServiceConfig{IPInfoClient: nil})
-		ctrl := NewController(svc)
+		svc := tools.NewService(tools.ServiceConfig{IPInfoClient: nil})
+		ctrl := tools.NewController(svc)
 
 		w := httptest.NewRecorder()
 
@@ -35,8 +44,8 @@ func TestController_GetIPAddress(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{IPInfoClient: nil})
-		ctrl := NewController(svc)
+		svc := tools.NewService(tools.ServiceConfig{IPInfoClient: nil})
+		ctrl := tools.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/ip", nil)
 		w := httptest.NewRecorder()
@@ -63,7 +72,7 @@ func TestController_GetIPInfo(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		ctrl := NewController(NewService(ServiceConfig{IPInfoClient: mock}))
+		ctrl := tools.NewController(tools.NewService(tools.ServiceConfig{IPInfoClient: mock}))
 
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=8.8.8.8", nil)
 		w := httptest.NewRecorder()
@@ -92,8 +101,8 @@ func TestController_GetIPInfo(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{IPInfoClient: mock})
-		ctrl := NewController(svc)
+		svc := tools.NewService(tools.ServiceConfig{IPInfoClient: mock})
+		ctrl := tools.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=1.1.1.1", nil)
@@ -106,8 +115,8 @@ func TestController_GetIPInfo(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{IPInfoClient: mock})
-		ctrl := NewController(svc)
+		svc := tools.NewService(tools.ServiceConfig{IPInfoClient: mock})
+		ctrl := tools.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/ipinfo?ip=8.8.8.8", nil)
@@ -125,8 +134,8 @@ func TestController_GetIPInfo(t *testing.T) {
 
 func TestController_GetHTTPHeaders(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		svc := NewService(ServiceConfig{IPInfoClient: nil})
-		ctrl := NewController(svc)
+		svc := tools.NewService(tools.ServiceConfig{IPInfoClient: nil})
+		ctrl := tools.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/headers", nil)
@@ -150,8 +159,8 @@ func TestController_GetHTTPHeaders(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{IPInfoClient: nil})
-		ctrl := NewController(svc)
+		svc := tools.NewService(tools.ServiceConfig{IPInfoClient: nil})
+		ctrl := tools.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/headers", nil)

@@ -32,7 +32,7 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) getOg(ctx context.Context, query string) (io.ReadCloser, error) {
+func (s *Service) GetOg(ctx context.Context, query string) (io.ReadCloser, error) {
 	ogURL := s.ogURL
 
 	targetURL := fmt.Sprintf("%s?%s", ogURL, query)

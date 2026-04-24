@@ -1,17 +1,18 @@
-package sse
+package sse_test
 
 import (
 	"net/http"
 	"testing"
 
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/features/sse"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	service := NewService(ServiceConfig{})
+	service := sse.NewService(sse.ServiceConfig{})
 
 	authService := auth.NewService(auth.ServiceConfig{})
 
@@ -19,8 +20,8 @@ func TestLoadRoutes(t *testing.T) {
 
 	ctx := t.Context()
 
-	LoadRoutes(
-		Config{
+	sse.LoadRoutes(
+		sse.Config{
 			Router:         mux,
 			Service:        service,
 			AppContext:     ctx,

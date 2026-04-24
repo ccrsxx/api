@@ -1,4 +1,4 @@
-package og
+package og_test
 
 import (
 	"context"
@@ -9,10 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ccrsxx/api/internal/features/og"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestService_getOg(t *testing.T) {
+func TestService_GetOg(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodGet {
@@ -35,12 +36,12 @@ func TestService_getOg(t *testing.T) {
 		defer mockServer.Close()
 
 		// Inject the mock server directly
-		svc := NewService(ServiceConfig{
+		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,
 			HTTPClient: mockServer.Client(),
 		})
 
-		stream, err := svc.getOg(context.Background(), "title=hello")
+		stream, err := svc.GetOg(context.Background(), "title=hello")
 
 		if err != nil {
 			t.Fatalf("got error: %v, want success", err)
@@ -70,12 +71,12 @@ func TestService_getOg(t *testing.T) {
 
 		defer mockServer.Close()
 
-		svc := NewService(ServiceConfig{
+		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,
 			HTTPClient: mockServer.Client(),
 		})
 
-		_, err := svc.getOg(context.Background(), "")
+		_, err := svc.GetOg(context.Background(), "")
 
 		if err == nil {
 			t.Error("want error for status 500")
@@ -87,12 +88,12 @@ func TestService_getOg(t *testing.T) {
 	})
 
 	t.Run("Network Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{
+		svc := og.NewService(og.ServiceConfig{
 			OgURL:      "http://127.0.0.1:0", // Invalid port
 			HTTPClient: &http.Client{Timeout: 1 * time.Millisecond},
 		})
 
-		_, err := svc.getOg(context.Background(), "")
+		_, err := svc.GetOg(context.Background(), "")
 
 		if err == nil {
 			t.Error("want network error")
@@ -104,11 +105,11 @@ func TestService_getOg(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		svc := NewService(ServiceConfig{
+		svc := og.NewService(og.ServiceConfig{
 			OgURL: "http://\x7f",
 		})
 
-		_, err := svc.getOg(context.Background(), "")
+		_, err := svc.GetOg(context.Background(), "")
 
 		if err == nil {
 			t.Error("want error from request creation")
@@ -116,7 +117,7 @@ func TestService_getOg(t *testing.T) {
 	})
 
 	t.Run("Status Error Body Close Failure", func(t *testing.T) {
-		svc := NewService(ServiceConfig{
+		svc := og.NewService(og.ServiceConfig{
 			OgURL: "http://example.com",
 			HTTPClient: &http.Client{
 				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
@@ -128,7 +129,7 @@ func TestService_getOg(t *testing.T) {
 			},
 		})
 
-		_, err := svc.getOg(context.Background(), "")
+		_, err := svc.GetOg(context.Background(), "")
 
 		if err == nil {
 			t.Error("want error from body close failure")

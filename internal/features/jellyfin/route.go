@@ -19,7 +19,7 @@ func LoadRoutes(cfg Config) {
 
 	mux.Handle("GET /currently-playing",
 		cfg.AuthMiddleware.IsAuthorized(
-			http.HandlerFunc(ctrl.getCurrentlyPlaying),
+			http.HandlerFunc(ctrl.GetCurrentlyPlaying),
 		),
 	)
 

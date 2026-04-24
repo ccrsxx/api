@@ -1,10 +1,12 @@
-package utils
+package utils_test
 
 import (
 	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/ccrsxx/api/internal/utils"
 )
 
 func TestGetIPAddressFromRequest(t *testing.T) {
@@ -60,7 +62,7 @@ func TestGetIPAddressFromRequest(t *testing.T) {
 
 			r.RemoteAddr = tt.remoteAddr
 
-			got := GetIPAddressFromRequest(r)
+			got := utils.GetIPAddressFromRequest(r)
 
 			if got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)
@@ -93,7 +95,7 @@ func TestGetHttpHeadersFromRequest(t *testing.T) {
 
 			setHTTPHeaders(r, tt.headers)
 
-			got := GetHTTPHeadersFromRequest(r)
+			got := utils.GetHTTPHeadersFromRequest(r)
 
 			for k, v := range tt.want {
 				if got[k] != v {
@@ -147,7 +149,7 @@ func TestGetPublicUrlFromRequest(t *testing.T) {
 				r.TLS = &tls.ConnectionState{}
 			}
 
-			got := GetPublicURLFromRequest(r)
+			got := utils.GetPublicURLFromRequest(r)
 
 			if got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)

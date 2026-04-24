@@ -1,9 +1,11 @@
-package middleware
+package middleware_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/ccrsxx/api/internal/middleware"
 )
 
 func TestCors(t *testing.T) {
@@ -13,7 +15,7 @@ func TestCors(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	mw := Cors(allowedOrigins)(nextHandler)
+	mw := middleware.Cors(allowedOrigins)(nextHandler)
 
 	t.Run("Allowed Origin", func(t *testing.T) {
 		tests := []struct {

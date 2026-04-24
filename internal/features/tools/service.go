@@ -27,7 +27,7 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) getIPInfo(queryIP string, requestIP string) (*ipinfoLib.Core, error) {
+func (s *Service) GetIPInfo(queryIP string, requestIP string) (*ipinfoLib.Core, error) {
 	if queryIP != "" && net.ParseIP(queryIP) == nil {
 		return nil, &api.HTTPError{
 			Message:    "Invalid IP address",

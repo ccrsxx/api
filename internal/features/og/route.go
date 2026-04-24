@@ -13,5 +13,5 @@ type Config struct {
 func LoadRoutes(cfg Config) {
 	ctrl := NewController(cfg.Service, cfg.ControllerConfig)
 
-	cfg.Router.HandleFunc("/og", ctrl.getOg)
+	cfg.Router.HandleFunc("/og", ctrl.GetOg)
 }

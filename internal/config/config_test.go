@@ -1,7 +1,9 @@
-package config
+package config_test
 
 import (
 	"testing"
+
+	"github.com/ccrsxx/api/internal/config"
 )
 
 // Helper to quickly set all required env vars for a successful parse
@@ -33,9 +35,9 @@ func setValidEnv(t *testing.T, appEnv string) {
 
 func TestLoad_Success(t *testing.T) {
 	t.Run("Development Mode", func(t *testing.T) {
-		setValidEnv(t, string(EnvironmentDevelopment))
+		setValidEnv(t, string(config.EnvironmentDevelopment))
 
-		cfg := Load()
+		cfg := config.Load()
 
 		if cfg.Port != 8080 {
 			t.Errorf("got port %d, want 8080", cfg.Port)
@@ -55,9 +57,9 @@ func TestLoad_Success(t *testing.T) {
 	})
 
 	t.Run("Production Mode", func(t *testing.T) {
-		setValidEnv(t, string(EnvironmentProduction))
+		setValidEnv(t, string(config.EnvironmentProduction))
 
-		cfg := Load()
+		cfg := config.Load()
 
 		if !cfg.IsProduction {
 			t.Error("want IsProduction to be true")
@@ -79,18 +81,18 @@ func TestLoad_PanicOnMissingEnv(t *testing.T) {
 		}
 	}()
 
-	Load()
+	config.Load()
 }
 
 func TestEnvironmentApp_UnmarshalText(t *testing.T) {
 	t.Run("Valid Environments", func(t *testing.T) {
-		var env EnvironmentApp
+		var env config.EnvironmentApp
 
 		if err := env.UnmarshalText([]byte("development")); err != nil {
 			t.Errorf("unwanted error: %v", err)
 		}
 
-		if env != EnvironmentDevelopment {
+		if env != config.EnvironmentDevelopment {
 			t.Errorf("got %v, want development", env)
 		}
 
@@ -98,13 +100,13 @@ func TestEnvironmentApp_UnmarshalText(t *testing.T) {
 			t.Errorf("unwanted error: %v", err)
 		}
 
-		if env != EnvironmentProduction {
+		if env != config.EnvironmentProduction {
 			t.Errorf("got %v, want production", env)
 		}
 	})
 
 	t.Run("Invalid Environment", func(t *testing.T) {
-		var env EnvironmentApp
+		var env config.EnvironmentApp
 
 		err := env.UnmarshalText([]byte("staging"))
 
@@ -127,5 +129,5 @@ func TestLoad_PanicOnInvalidAppEnv(t *testing.T) {
 		}
 	}()
 
-	Load()
+	config.Load()
 }

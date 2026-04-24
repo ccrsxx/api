@@ -1,4 +1,4 @@
-package spotify
+package spotify_test
 
 import (
 	"encoding/json"
@@ -9,10 +9,11 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/clients/spotify"
+	spotifyFeature "github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_getCurrentlyPlaying(t *testing.T) {
+func TestController_GetCurrentlyPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mock := &mockSpotifyClient{
 			result: spotify.SpotifyCurrentlyPlaying{
@@ -21,16 +22,16 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			},
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
 			Client: mock,
 		})
 
-		ctrl := NewController(svc)
+		ctrl := spotifyFeature.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
-		ctrl.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -54,19 +55,17 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			err: errors.New("fail"),
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
 			Client: mock,
 		})
 
-		ctrl := NewController(svc)
+		ctrl := spotifyFeature.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
-		ctrl.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
-		// Service error returns the error to the controller, which calls HandleHTTPError
-		// Since it's a generic error, it usually results in 500
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)
 		}
@@ -80,18 +79,18 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			},
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
 			Client: mock,
 		})
 
-		ctrl := NewController(svc)
+		ctrl := spotifyFeature.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.getCurrentlyPlaying(errWriter, r)
+		ctrl.GetCurrentlyPlaying(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

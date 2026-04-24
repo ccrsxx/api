@@ -15,5 +15,5 @@ type Config struct {
 func LoadRoutes(cfg Config) {
 	ctrl := NewController(mockIcon)
 
-	cfg.Router.HandleFunc("GET /favicon.ico", ctrl.getFavicon)
+	cfg.Router.HandleFunc("GET /favicon.ico", ctrl.GetFavicon)
 }

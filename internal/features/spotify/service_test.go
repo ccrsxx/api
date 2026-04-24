@@ -1,4 +1,4 @@
-package spotify
+package spotify_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/clients/spotify"
+	spotifyFeature "github.com/ccrsxx/api/internal/features/spotify"
 )
 
 type mockSpotifyClient struct {
@@ -31,7 +32,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			},
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
 			Client: mock,
 		})
 
@@ -55,7 +56,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			err: spotify.ErrNoContent,
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
 			Client: mock,
 		})
 
@@ -79,7 +80,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			err: errors.New("network fail"),
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
 			Client: mock,
 		})
 

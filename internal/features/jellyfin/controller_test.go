@@ -1,6 +1,7 @@
-package jellyfin
+package jellyfin_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -8,24 +9,35 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/clients/jellyfin"
+	jellyfinFeature "github.com/ccrsxx/api/internal/features/jellyfin"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_getCurrentlyPlaying(t *testing.T) {
+type mockJellyfinClient struct {
+	result []jellyfin.SessionInfo
+	err    error
+}
+
+func (m *mockJellyfinClient) GetSessions(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+	return m.result, m.err
+}
+
+func TestController_GetCurrentlyPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// We return nil sessions, which results in "Not Playing" (200 OK)
 		mock := &mockJellyfinClient{}
 
-		svc := NewService(ServiceConfig{
+		svc := jellyfinFeature.NewService(jellyfinFeature.ServiceConfig{
 			Client: mock,
 		})
 
-		ctrl := NewController(svc)
+		ctrl := jellyfinFeature.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		ctrl.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("want 200, got %d", w.Code)
@@ -49,16 +61,16 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 			err: errors.New("fail"),
 		}
 
-		svc := NewService(ServiceConfig{
+		svc := jellyfinFeature.NewService(jellyfinFeature.ServiceConfig{
 			Client: mock,
 		})
 
-		ctrl := NewController(svc)
+		ctrl := jellyfinFeature.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		ctrl.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("want 500, got %d", w.Code)
@@ -68,18 +80,18 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		mock := &mockJellyfinClient{}
 
-		svc := NewService(ServiceConfig{
+		svc := jellyfinFeature.NewService(jellyfinFeature.ServiceConfig{
 			Client: mock,
 		})
 
-		ctrl := NewController(svc)
+		ctrl := jellyfinFeature.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.getCurrentlyPlaying(errWriter, r)
+		ctrl.GetCurrentlyPlaying(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

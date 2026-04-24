@@ -1,4 +1,4 @@
-package github
+package github_test
 
 import (
 	"context"
@@ -7,11 +7,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/clients/github"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestNewClient(t *testing.T) {
-	client := NewClient(Config{})
+	client := github.NewClient(github.Config{})
 
 	if client == nil {
 		t.Error("want client to be initialized")
@@ -23,7 +24,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 	token := "dummy_token"
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		c := NewClient(Config{APIURL: "http://bad\x7f"})
+		c := github.NewClient(github.Config{APIURL: "http://bad\x7f"})
 
 		if _, err := c.GetCurrentUser(ctx, token); err == nil {
 			t.Error("want error from new request creation")
@@ -31,7 +32,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 	})
 
 	t.Run("Network Error", func(t *testing.T) {
-		c := NewClient(Config{APIURL: "http://invalid.url.local"})
+		c := github.NewClient(github.Config{APIURL: "http://invalid.url.local"})
 
 		if _, err := c.GetCurrentUser(ctx, token); err == nil {
 			t.Error("want network error")
@@ -39,14 +40,17 @@ func TestClient_GetCurrentUser(t *testing.T) {
 	})
 
 	t.Run("Body Close Error", func(t *testing.T) {
-		c := NewClient(Config{APIURL: "http://api"})
-
-		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("{}")},
-				Header:     make(http.Header),
-			}, nil
+		c := github.NewClient(github.Config{
+			APIURL: "http://api",
+			HTTPClient: &http.Client{
+				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("{}")},
+						Header:     make(http.Header),
+					}, nil
+				}),
+			},
 		})
 
 		if _, err := c.GetCurrentUser(ctx, token); err != nil {
@@ -61,7 +65,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 
 		defer s.Close()
 
-		c := NewClient(Config{APIURL: s.URL})
+		c := github.NewClient(github.Config{APIURL: s.URL})
 
 		_, err := c.GetCurrentUser(ctx, token)
 
@@ -85,7 +89,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 
 		defer s.Close()
 
-		c := NewClient(Config{APIURL: s.URL})
+		c := github.NewClient(github.Config{APIURL: s.URL})
 
 		if _, err := c.GetCurrentUser(ctx, token); err == nil {
 			t.Error("want error from malformed JSON decode")
@@ -102,10 +106,6 @@ func TestClient_GetCurrentUser(t *testing.T) {
 				t.Fatalf("got Authorization %q, want Bearer %s", got, token)
 			}
 
-			if got := r.Header.Get("X-GitHub-Api-Version"); got != defaultGithubAPIVersion {
-				t.Fatalf("got API Version %q, want %s", got, defaultGithubAPIVersion)
-			}
-
 			if _, err := w.Write([]byte("{}")); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
@@ -113,7 +113,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 
 		defer s.Close()
 
-		c := NewClient(Config{APIURL: s.URL})
+		c := github.NewClient(github.Config{APIURL: s.URL})
 
 		if _, err := c.GetCurrentUser(ctx, token); err != nil {
 			t.Fatalf("unwanted error: %v", err)

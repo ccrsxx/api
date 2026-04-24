@@ -33,7 +33,7 @@ func (c *Controller) GetIPInfo(w http.ResponseWriter, r *http.Request) {
 	queryIP := r.URL.Query().Get("ip")
 	requestIP := utils.GetIPAddressFromRequest(r)
 
-	ipInfo, err := c.service.getIPInfo(queryIP, requestIP)
+	ipInfo, err := c.service.GetIPInfo(queryIP, requestIP)
 
 	if err != nil {
 		api.HandleHTTPError(w, r, err)

@@ -1,34 +1,23 @@
-package contents
+package contents_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/features/contents"
+	"github.com/ccrsxx/api/internal/test"
 )
 
-type mockQuerier struct {
-	listContentByTypeFn func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
-	upsertContentFn     func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
-}
-
-func (m *mockQuerier) ListContentByType(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
-	return m.listContentByTypeFn(ctx, type_)
-}
-
-func (m *mockQuerier) UpsertContent(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
-	return m.upsertContentFn(ctx, arg)
-}
-
-func newMockQuerier() *mockQuerier {
-	return &mockQuerier{
-		listContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+func newMockQuerier() *test.MockQuerier {
+	return &test.MockQuerier{
+		ListContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return []sqlc.ListContentByTypeRow{
 				{Slug: "test-post", Type: "blog", Views: 10, Likes: 5},
 				{Slug: "another-post", Type: "blog", Views: 20, Likes: 8},
 			}, nil
 		},
-		upsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+		UpsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
 			return sqlc.Content{Slug: arg.Slug, Type: arg.Type}, nil
 		},
 	}
@@ -38,7 +27,7 @@ func TestService_GetContentsData(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		data, err := svc.GetContentsData(context.Background(), "blog")
 
 		if err != nil {
@@ -57,11 +46,11 @@ func TestService_GetContentsData(t *testing.T) {
 	t.Run("Valid Empty Data", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		db.ListContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, nil
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		data, err := svc.GetContentsData(context.Background(), "blog")
 
 		if err != nil {
@@ -80,7 +69,7 @@ func TestService_GetContentsData(t *testing.T) {
 	t.Run("Invalid Content Type", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		_, err := svc.GetContentsData(context.Background(), "invalid")
 
 		if err == nil {
@@ -91,11 +80,11 @@ func TestService_GetContentsData(t *testing.T) {
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		db.ListContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, context.DeadlineExceeded
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		_, err := svc.GetContentsData(context.Background(), "blog")
 
 		if err == nil {
@@ -108,9 +97,9 @@ func TestService_UpsertContent(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
 
-		input := UpsertContentInput{
+		input := contents.UpsertContentInput{
 			Slug: "new-post",
 			Type: "blog",
 		}
@@ -133,13 +122,13 @@ func TestService_UpsertContent(t *testing.T) {
 	t.Run("Database Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.upsertContentFn = func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+		db.UpsertContentFn = func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
 			return sqlc.Content{}, context.DeadlineExceeded
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
 
-		input := UpsertContentInput{
+		input := contents.UpsertContentInput{
 			Slug: "new-post",
 			Type: "blog",
 		}

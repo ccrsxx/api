@@ -20,7 +20,7 @@ func NewController(openapiSpec []byte) *Controller {
 	}
 }
 
-func (c *Controller) getDocs(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetDocs(w http.ResponseWriter, r *http.Request) {
 	serverOverride := scalargo.ServerOverride{
 		URL:         utils.GetPublicURLFromRequest(r),
 		Description: "Production server",

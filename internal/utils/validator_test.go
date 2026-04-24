@@ -1,9 +1,11 @@
-package utils
+package utils_test
 
 import (
 	"errors"
 	"slices"
 	"testing"
+
+	"github.com/ccrsxx/api/internal/utils"
 )
 
 // Each struct is minimal and named for what it tests.
@@ -51,7 +53,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "required field missing",
 			errSetup: func() error {
-				return Validate.Struct(requiredOnlyStruct{Title: ""})
+				return utils.Validate.Struct(requiredOnlyStruct{Title: ""})
 			},
 			expectedSummary: "invalid input: field 'Title' failed on 'required' validation",
 			expectedDetails: []string{
@@ -61,7 +63,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "min constraint violated",
 			errSetup: func() error {
-				return Validate.Struct(minStruct{Age: 15})
+				return utils.Validate.Struct(minStruct{Age: 15})
 			},
 			expectedSummary: "invalid input: field 'Age' failed on 'min' validation (minimum: 18)",
 			expectedDetails: []string{
@@ -71,7 +73,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "max constraint violated",
 			errSetup: func() error {
-				return Validate.Struct(maxStruct{Score: 105})
+				return utils.Validate.Struct(maxStruct{Score: 105})
 			},
 			expectedSummary: "invalid input: field 'Score' failed on 'max' validation (maximum: 100)",
 			expectedDetails: []string{
@@ -81,7 +83,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "oneof constraint violated",
 			errSetup: func() error {
-				return Validate.Struct(oneofStruct{Type: "video"})
+				return utils.Validate.Struct(oneofStruct{Type: "video"})
 			},
 			expectedSummary: "invalid input: field 'Type' failed on 'oneof' validation (must be one of: blog, project)",
 			expectedDetails: []string{
@@ -91,7 +93,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "unknown param falls back to rule label",
 			errSetup: func() error {
-				return Validate.Struct(defaultParamStruct{Code: "12"})
+				return utils.Validate.Struct(defaultParamStruct{Code: "12"})
 			},
 			expectedSummary: "invalid input: field 'Code' failed on 'len' validation (rule: 5)",
 			expectedDetails: []string{
@@ -101,7 +103,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "custom content_type constraint violated",
 			errSetup: func() error {
-				return Validate.Struct(contentTypeStruct{ContentType: "video"})
+				return utils.Validate.Struct(contentTypeStruct{ContentType: "video"})
 			},
 			expectedSummary: "invalid input: field 'ContentType' failed on 'content_type' validation (must be one of: blog, project)",
 			expectedDetails: []string{
@@ -111,7 +113,7 @@ func TestFormatValidationError(t *testing.T) {
 		{
 			name: "multiple errors are joined in field-definition order",
 			errSetup: func() error {
-				return Validate.Struct(multiErrorStruct{
+				return utils.Validate.Struct(multiErrorStruct{
 					Age:         15,      // fails min=18
 					Type:        "video", // fails oneof=blog project
 					ContentType: "video", // fails content_type
@@ -148,7 +150,7 @@ func TestFormatValidationError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.errSetup()
-			summary, details := FormatValidationError(err)
+			summary, details := utils.FormatValidationError(err)
 
 			if summary != tt.expectedSummary {
 				t.Errorf("summary\ngot:  %s\nwant: %s", summary, tt.expectedSummary)

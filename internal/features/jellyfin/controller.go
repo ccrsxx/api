@@ -17,7 +17,7 @@ func NewController(svc *Service) *Controller {
 	}
 }
 
-func (c *Controller) getCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetCurrentlyPlaying(w http.ResponseWriter, r *http.Request) {
 	data, err := c.service.GetCurrentlyPlaying(r.Context())
 
 	if err != nil {

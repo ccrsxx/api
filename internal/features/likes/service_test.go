@@ -1,4 +1,4 @@
-package likes
+package likes_test
 
 import (
 	"context"
@@ -9,174 +9,46 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/features/likes"
+	"github.com/ccrsxx/api/internal/test"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type mockQuerier struct {
-	getContentBySlugFn     func(ctx context.Context, slug string) (sqlc.Content, error)
-	getContentLikeStatusFn func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error)
-	incrementContentLikeFn func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error)
-	upsertIPAddressFn      func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error)
-}
-
-func (m *mockQuerier) GetContentBySlug(ctx context.Context, slug string) (sqlc.Content, error) {
-	return m.getContentBySlugFn(ctx, slug)
-}
-
-func (m *mockQuerier) GetContentLikeStatus(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
-	return m.getContentLikeStatusFn(ctx, arg)
-}
-
-func (m *mockQuerier) IncrementContentLike(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
-	return m.incrementContentLikeFn(ctx, arg)
-}
-
-func (m *mockQuerier) UpsertIPAddress(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
-	return m.upsertIPAddressFn(ctx, ipAddress)
-}
-
 var (
-	likes     = 10
-	userLikes = 1
+	likesCount = 10
+	userLikes  = 1
 
 	mockContentID   = pgtype.UUID{Bytes: [16]byte{1}, Valid: true}
 	mockIPAddressID = pgtype.UUID{Bytes: [16]byte{2}, Valid: true}
 
-	mockContentLikeStatus = sqlc.GetContentLikeStatusRow{Likes: int64(likes), UserLikes: int64(userLikes)}
+	mockContentLikeStatus = sqlc.GetContentLikeStatusRow{Likes: int64(likesCount), UserLikes: int64(userLikes)}
 
-	mockIncrementContentLike = sqlc.IncrementContentLikeRow{Likes: int32(likes)}
+	mockIncrementContentLike = sqlc.IncrementContentLikeRow{Likes: int32(likesCount)}
 )
 
-func newMockQuerier() *mockQuerier {
-	return &mockQuerier{
-		getContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
+func newMockQuerier() *test.MockQuerier {
+	return &test.MockQuerier{
+		GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
 			return sqlc.Content{ID: mockContentID, Slug: slug}, nil
 		},
-		getContentLikeStatusFn: func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
+		GetContentLikeStatusFn: func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
 			return mockContentLikeStatus, nil
 		},
-		incrementContentLikeFn: func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
+		IncrementContentLikeFn: func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
 			return mockIncrementContentLike, nil
 		},
-		upsertIPAddressFn: func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
+		UpsertIPAddressFn: func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
 			return sqlc.IpAddress{ID: mockIPAddressID, IpAddress: ipAddress}, nil
 		},
 	}
-}
-
-func TestService_getContentBySlug(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
-
-		svc := NewService(ServiceConfig{Database: db})
-
-		content, err := svc.getContentBySlug(context.Background(), "test-slug")
-
-		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
-		}
-
-		if content.Slug != "test-slug" {
-			t.Errorf("got %s, want test-slug", content.Slug)
-		}
-	})
-
-	t.Run("Not Found", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.getContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{}, pgx.ErrNoRows
-		}
-
-		svc := NewService(ServiceConfig{Database: db})
-
-		_, err := svc.getContentBySlug(context.Background(), "test-slug")
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-
-		httpErr, ok := errors.AsType[*api.HTTPError](err)
-
-		if !ok {
-			t.Fatalf("expected HTTPError, got %v", err)
-		}
-
-		if httpErr.StatusCode != http.StatusNotFound {
-			t.Errorf("expected 404 HTTPError, got %v", err)
-		}
-
-	})
-
-	t.Run("Database Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.getContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{}, errors.New("db error")
-		}
-
-		svc := NewService(ServiceConfig{Database: db})
-
-		_, err := svc.getContentBySlug(context.Background(), "test-slug")
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-
-		if !strings.Contains(err.Error(), "get content by slug error") {
-			t.Errorf("got %v, want get content by slug error", err)
-		}
-	})
-}
-
-func TestService_getLikeStatus(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
-
-		svc := NewService(ServiceConfig{Database: db})
-
-		status, err := svc.getLikeStatus(context.Background(), mockContentID, mockIPAddressID)
-
-		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
-		}
-
-		if status.Likes != mockContentLikeStatus.Likes {
-			t.Fatalf("got %d, want %d", status.Likes, mockContentLikeStatus.Likes)
-		}
-
-		if status.UserLikes != mockContentLikeStatus.UserLikes {
-			t.Errorf("got %d, want %d", status.UserLikes, mockContentLikeStatus.UserLikes)
-		}
-	})
-
-	t.Run("Database Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.getContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
-			return sqlc.GetContentLikeStatusRow{}, errors.New("db error")
-		}
-
-		svc := NewService(ServiceConfig{Database: db})
-
-		_, err := svc.getLikeStatus(context.Background(), mockContentID, mockIPAddressID)
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-
-		if !strings.Contains(err.Error(), "get content like status error") {
-			t.Errorf("got %v, want get content like status error", err)
-		}
-	})
 }
 
 func TestService_GetLikeStatus(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		status, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
 
@@ -196,11 +68,11 @@ func TestService_GetLikeStatus(t *testing.T) {
 	t.Run("Get Content Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
+		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
 			return sqlc.Content{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
 
@@ -209,14 +81,40 @@ func TestService_GetLikeStatus(t *testing.T) {
 		}
 	})
 
+	t.Run("Content Not Found (coverage)", func(t *testing.T) {
+		db := newMockQuerier()
+
+		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
+			return sqlc.Content{}, pgx.ErrNoRows
+		}
+
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
+
+		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
+
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+
+		httpErr, ok := errors.AsType[*api.HTTPError](err)
+
+		if !ok {
+			t.Fatalf("got %T, want *api.HTTPError", err)
+		}
+
+		if httpErr.StatusCode != http.StatusNotFound {
+			t.Errorf("got %d, want 404", httpErr.StatusCode)
+		}
+	})
+
 	t.Run("Upsert IP Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.upsertIPAddressFn = func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
+		db.UpsertIPAddressFn = func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
 			return sqlc.IpAddress{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
 
@@ -234,7 +132,7 @@ func TestService_IncrementLike(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		status, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
 
@@ -254,11 +152,11 @@ func TestService_IncrementLike(t *testing.T) {
 	t.Run("Get Content Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
+		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
 			return sqlc.Content{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
 
@@ -270,11 +168,11 @@ func TestService_IncrementLike(t *testing.T) {
 	t.Run("Upsert IP Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.upsertIPAddressFn = func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
+		db.UpsertIPAddressFn = func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
 			return sqlc.IpAddress{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
 
@@ -290,11 +188,11 @@ func TestService_IncrementLike(t *testing.T) {
 	t.Run("Get Initial Like Status Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
+		db.GetContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
 			return sqlc.GetContentLikeStatusRow{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
 
@@ -306,11 +204,11 @@ func TestService_IncrementLike(t *testing.T) {
 	t.Run("Likes Limit Reached", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
+		db.GetContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
 			return sqlc.GetContentLikeStatusRow{Likes: 10, UserLikes: 5}, nil
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
 
@@ -332,11 +230,11 @@ func TestService_IncrementLike(t *testing.T) {
 	t.Run("Create Content Like Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.incrementContentLikeFn = func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
+		db.IncrementContentLikeFn = func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error) {
 			return sqlc.IncrementContentLikeRow{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
+		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
 

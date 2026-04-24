@@ -1,4 +1,4 @@
-package views
+package views_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/features/views"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -14,13 +15,13 @@ func TestLoadRoutes(t *testing.T) {
 
 	db := newMockQuerier()
 
-	svc := NewService(ServiceConfig{Database: db})
+	svc := views.NewService(views.ServiceConfig{Database: db})
 
 	ctx := context.Background()
 
 	authMw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{}))
 
-	LoadRoutes(Config{
+	views.LoadRoutes(views.Config{
 		Router:         mux,
 		Service:        svc,
 		AppContext:     ctx,

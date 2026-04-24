@@ -19,7 +19,7 @@ type PingResponse struct {
 	DocumentationURL string `json:"documentationUrl"`
 }
 
-func (c *Controller) ping(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) Ping(w http.ResponseWriter, r *http.Request) {
 	err := api.NewSuccessResponse(w, http.StatusOK, PingResponse{
 		Message:          "Welcome to the API! The server is up and running.",
 		DocumentationURL: utils.GetPublicURLFromRequest(r) + "/docs",

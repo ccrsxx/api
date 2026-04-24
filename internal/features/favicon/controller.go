@@ -15,7 +15,7 @@ func NewController(icon []byte) *Controller {
 	}
 }
 
-func (c *Controller) getFavicon(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetFavicon(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/x-icon")
 	w.WriteHeader(http.StatusOK)
 

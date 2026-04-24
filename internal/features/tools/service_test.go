@@ -1,4 +1,4 @@
-package tools
+package tools_test
 
 import (
 	"errors"
@@ -7,18 +7,11 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/features/tools"
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
-type mockIPInfoClient struct {
-	result func(net.IP) (*ipinfoLib.Core, error)
-}
-
-func (m *mockIPInfoClient) GetIPInfo(ip net.IP) (*ipinfoLib.Core, error) {
-	return m.result(ip)
-}
-
-func TestService_getIPInfo(t *testing.T) {
+func TestService_GetIPInfo(t *testing.T) {
 	mock := &mockIPInfoClient{
 		result: func(ip net.IP) (*ipinfoLib.Core, error) {
 			if ip.String() == "8.8.8.8" {
@@ -77,9 +70,9 @@ func TestService_getIPInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := NewService(ServiceConfig{IPInfoClient: mock})
+			svc := tools.NewService(tools.ServiceConfig{IPInfoClient: mock})
 
-			info, err := svc.getIPInfo(tt.queryIP, tt.requestIP)
+			info, err := svc.GetIPInfo(tt.queryIP, tt.requestIP)
 
 			if tt.wantError {
 				if err == nil {

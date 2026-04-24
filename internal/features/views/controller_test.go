@@ -1,4 +1,4 @@
-package views
+package views_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/features/views"
 	"github.com/ccrsxx/api/internal/test"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -18,8 +19,8 @@ func TestController_GetViewCount(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := views.NewService(views.ServiceConfig{Database: db})
+		ctrl := views.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/test-slug", nil)
 
@@ -31,7 +32,7 @@ func TestController_GetViewCount(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[ViewCount]
+		var res api.SuccessResponse[views.ViewCount]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -45,12 +46,12 @@ func TestController_GetViewCount(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getTotalContentMeta = func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
+		db.GetTotalContentMetaFn = func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
 			return sqlc.GetTotalContentMetaRow{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := views.NewService(views.ServiceConfig{Database: db})
+		ctrl := views.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/test-slug", nil)
 
@@ -66,8 +67,8 @@ func TestController_GetViewCount(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := views.NewService(views.ServiceConfig{Database: db})
+		ctrl := views.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/test-slug", nil)
 
@@ -87,8 +88,8 @@ func TestController_IncrementView(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := views.NewService(views.ServiceConfig{Database: db})
+		ctrl := views.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, "/test-slug", nil)
 
@@ -100,7 +101,7 @@ func TestController_IncrementView(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[ViewCount]
+		var res api.SuccessResponse[views.ViewCount]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -114,12 +115,12 @@ func TestController_IncrementView(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.getContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
+		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
 			return sqlc.Content{}, errors.New("not found")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := views.NewService(views.ServiceConfig{Database: db})
+		ctrl := views.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, "/test-slug", nil)
 
@@ -135,8 +136,8 @@ func TestController_IncrementView(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := views.NewService(views.ServiceConfig{Database: db})
+		ctrl := views.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, "/test-slug", nil)
 

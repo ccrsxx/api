@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	URL      string
-	APIKey   string
-	ImageURL string
-	Username string
+	URL        string
+	APIKey     string
+	ImageURL   string
+	Username   string
+	HTTPClient *http.Client
 }
 
 type Client struct {
@@ -25,12 +26,18 @@ type Client struct {
 }
 
 func NewClient(cfg Config) *Client {
+	httpClient := cfg.HTTPClient
+
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 8 * time.Second}
+	}
+
 	return &Client{
 		url:        cfg.URL,
 		apiKey:     cfg.APIKey,
 		imageURL:   cfg.ImageURL,
 		username:   cfg.Username,
-		httpClient: &http.Client{Timeout: 8 * time.Second},
+		httpClient: httpClient,
 	}
 }
 

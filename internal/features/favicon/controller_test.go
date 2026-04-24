@@ -1,23 +1,24 @@
-package favicon
+package favicon_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/favicon"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_getFavicon(t *testing.T) {
-	mockIcon = []byte("mock-icon-data")
+func TestController_GetFavicon(t *testing.T) {
+	iconData := []byte("mock-icon-data")
 
 	t.Run("Success", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/favicon.ico", nil)
 		w := httptest.NewRecorder()
 
-		ctrl := NewController(mockIcon)
+		ctrl := favicon.NewController(iconData)
 
-		ctrl.getFavicon(w, r)
+		ctrl.GetFavicon(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -36,9 +37,9 @@ func TestController_getFavicon(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/favicon.ico", nil)
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		ctrl := NewController(mockIcon)
+		ctrl := favicon.NewController(iconData)
 
-		ctrl.getFavicon(w, r)
+		ctrl.GetFavicon(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

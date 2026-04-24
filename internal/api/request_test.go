@@ -1,4 +1,4 @@
-package api
+package api_test
 
 import (
 	"errors"
@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/ccrsxx/api/internal/api"
 )
 
 func TestDecodeJSON(t *testing.T) {
@@ -20,7 +22,7 @@ func TestDecodeJSON(t *testing.T) {
 
 		var p payload
 
-		if err := DecodeJSON(r, &p); err != nil {
+		if err := api.DecodeJSON(r, &p); err != nil {
 
 			t.Fatalf("unwanted error: %v", err)
 		}
@@ -37,16 +39,16 @@ func TestDecodeJSON(t *testing.T) {
 
 		var p payload
 
-		err := DecodeJSON(r, &p)
+		err := api.DecodeJSON(r, &p)
 
 		if err == nil {
 			t.Fatal("got nil, want error")
 		}
 
-		httpErr, ok := errors.AsType[*HTTPError](err)
+		httpErr, ok := errors.AsType[*api.HTTPError](err)
 
 		if !ok {
-			t.Fatalf("got %T, want *HTTPError", err)
+			t.Fatalf("got %T, want *api.HTTPError", err)
 		}
 
 		if httpErr.StatusCode != http.StatusBadRequest {
@@ -59,16 +61,16 @@ func TestDecodeJSON(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "/", body)
 		var p payload
 
-		err := DecodeJSON(r, &p)
+		err := api.DecodeJSON(r, &p)
 
 		if err == nil {
 			t.Fatal("got nil, want error")
 		}
 
-		httpErr, ok := errors.AsType[*HTTPError](err)
+		httpErr, ok := errors.AsType[*api.HTTPError](err)
 
 		if !ok {
-			t.Fatalf("got %T, want *HTTPError", err)
+			t.Fatalf("got %T, want *api.HTTPError", err)
 		}
 
 		if httpErr.StatusCode != http.StatusBadRequest {

@@ -15,5 +15,5 @@ type Config struct {
 func LoadRoutes(cfg Config) {
 	ctrl := NewController(openapiSpec)
 
-	cfg.Router.HandleFunc("GET /docs", ctrl.getDocs)
+	cfg.Router.HandleFunc("GET /docs", ctrl.GetDocs)
 }

@@ -1,4 +1,4 @@
-package home
+package home_test
 
 import (
 	"encoding/json"
@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/features/home"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_ping(t *testing.T) {
+func TestController_Ping(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
@@ -18,15 +19,15 @@ func TestController_ping(t *testing.T) {
 
 		r.Host = "api.example.com"
 
-		ctrl := NewController()
+		ctrl := home.NewController()
 
-		ctrl.ping(w, r)
+		ctrl.Ping(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
 		}
 
-		var res api.SuccessResponse[PingResponse]
+		var res api.SuccessResponse[home.PingResponse]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -49,9 +50,9 @@ func TestController_ping(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		ctrl := NewController()
+		ctrl := home.NewController()
 
-		ctrl.ping(w, r)
+		ctrl.Ping(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

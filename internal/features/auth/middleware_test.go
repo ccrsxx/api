@@ -1,9 +1,11 @@
-package auth
+package auth_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/ccrsxx/api/internal/features/auth"
 )
 
 func TestMiddleware_IsAuthorized(t *testing.T) {
@@ -12,7 +14,7 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 	})
 
 	t.Run("Success (200 OK)", func(t *testing.T) {
-		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "middleware-secret"}))
+		mw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{SecretKey: "middleware-secret"}))
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -26,7 +28,7 @@ func TestMiddleware_IsAuthorized(t *testing.T) {
 	})
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
-		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "middleware-secret"}))
+		mw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{SecretKey: "middleware-secret"}))
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -46,7 +48,7 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 	})
 
 	t.Run("Success (200 OK)", func(t *testing.T) {
-		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "query-secret"}))
+		mw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{SecretKey: "query-secret"}))
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/?token=query-secret", nil)
@@ -59,7 +61,7 @@ func TestMiddleware_IsAuthorizedFromQuery(t *testing.T) {
 	})
 
 	t.Run("Fail (401 Unauthorized)", func(t *testing.T) {
-		mw := NewMiddleware(NewService(ServiceConfig{SecretKey: "query-secret"}))
+		mw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{SecretKey: "query-secret"}))
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/?token=wrong-secret", nil)

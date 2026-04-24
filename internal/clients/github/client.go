@@ -15,7 +15,8 @@ type Client struct {
 }
 
 type Config struct {
-	APIURL string
+	APIURL     string
+	HTTPClient *http.Client
 }
 
 const (
@@ -28,9 +29,15 @@ func NewClient(cfg Config) *Client {
 		cfg.APIURL = defaultGithubUserURL
 	}
 
+	httpClient := cfg.HTTPClient
+
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 8 * time.Second}
+	}
+
 	return &Client{
 		apiURL:     cfg.APIURL,
-		httpClient: &http.Client{Timeout: 8 * time.Second},
+		httpClient: httpClient,
 	}
 }
 

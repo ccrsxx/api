@@ -24,10 +24,10 @@ func NewController(service *Service, cfg ControllerConfig) *Controller {
 	}
 }
 
-func (c *Controller) getOg(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetOg(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
-	imageStream, err := c.service.getOg(r.Context(), q.Encode())
+	imageStream, err := c.service.GetOg(r.Context(), q.Encode())
 
 	if err != nil {
 		api.HandleHTTPError(w, r, err)

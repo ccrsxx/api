@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/features/auth"
 )
 
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
@@ -55,7 +56,7 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := NewService(ServiceConfig{SecretKey: "test-secret"})
+			svc := auth.NewService(auth.ServiceConfig{SecretKey: "test-secret"})
 
 			_, err := svc.GetAuthorizationFromBearerToken(ctx, tt.headerToken)
 
@@ -100,7 +101,7 @@ func TestService_getAuthorizationFromQuery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := NewService(ServiceConfig{SecretKey: "test-secret"})
+			svc := auth.NewService(auth.ServiceConfig{SecretKey: "test-secret"})
 
 			_, err := svc.GetAuthorizationFromQuery(ctx, tt.queryToken)
 

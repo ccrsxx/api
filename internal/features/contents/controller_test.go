@@ -1,4 +1,4 @@
-package contents
+package contents_test
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/features/contents"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -20,8 +21,8 @@ func TestController_GetContentsData(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
@@ -54,12 +55,12 @@ func TestController_GetContentsData(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.listContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		db.ListContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
 			return nil, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
@@ -75,8 +76,8 @@ func TestController_GetContentsData(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, validPath, nil)
 
@@ -96,10 +97,10 @@ func TestController_UpsertContent(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
-		input := UpsertContentInput{Slug: "new-post", Type: "blog"}
+		input := contents.UpsertContentInput{Slug: "new-post", Type: "blog"}
 
 		jsonBytes, err := json.Marshal(input)
 
@@ -135,8 +136,8 @@ func TestController_UpsertContent(t *testing.T) {
 	t.Run("Decode Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodPost, validPath, nil)
 
@@ -152,14 +153,14 @@ func TestController_UpsertContent(t *testing.T) {
 	t.Run("Service Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		db.upsertContentFn = func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+		db.UpsertContentFn = func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
 			return sqlc.Content{}, errors.New("db error")
 		}
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
-		input := UpsertContentInput{Slug: "new-post", Type: "blog"}
+		input := contents.UpsertContentInput{Slug: "new-post", Type: "blog"}
 
 		jsonBytes, err := json.Marshal(input)
 
@@ -181,10 +182,10 @@ func TestController_UpsertContent(t *testing.T) {
 	t.Run("Write Error", func(t *testing.T) {
 		db := newMockQuerier()
 
-		svc := NewService(ServiceConfig{Database: db})
-		ctrl := NewController(svc)
+		svc := contents.NewService(contents.ServiceConfig{Database: db})
+		ctrl := contents.NewController(svc)
 
-		input := UpsertContentInput{Slug: "new-post", Type: "blog"}
+		input := contents.UpsertContentInput{Slug: "new-post", Type: "blog"}
 
 		jsonBytes, err := json.Marshal(input)
 

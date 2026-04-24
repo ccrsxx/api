@@ -1,10 +1,12 @@
-package cache
+package cache_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/ccrsxx/api/internal/cache"
 )
 
 func TestGetOrFetch(t *testing.T) {
@@ -13,7 +15,7 @@ func TestGetOrFetch(t *testing.T) {
 	t.Run("Cache Miss -> Fetch -> Set", func(t *testing.T) {
 		ctx := t.Context()
 
-		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		key := "miss-key"
 		want := "fetched-want"
@@ -22,7 +24,7 @@ func TestGetOrFetch(t *testing.T) {
 			return want, nil
 		}
 
-		got, err := GetOrFetch(ctx, c, key, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, key, fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -47,7 +49,7 @@ func TestGetOrFetch(t *testing.T) {
 	t.Run("Cache Hit -> Return Immediate", func(t *testing.T) {
 		ctx := t.Context()
 
-		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		key := "hit-key"
 		want := "cached-want"
@@ -63,7 +65,7 @@ func TestGetOrFetch(t *testing.T) {
 			return "", nil
 		}
 
-		got, err := GetOrFetch(ctx, c, key, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, key, fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -77,7 +79,7 @@ func TestGetOrFetch(t *testing.T) {
 	t.Run("Fetcher Error -> Return Error", func(t *testing.T) {
 		ctx := t.Context()
 
-		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		wantErr := errors.New("db dead")
 
@@ -85,7 +87,7 @@ func TestGetOrFetch(t *testing.T) {
 			return "", wantErr
 		}
 
-		_, err := GetOrFetch(ctx, c, "err-key", fetcher, StaticTTL[string](time.Minute))
+		_, err := cache.GetOrFetch(ctx, c, "err-key", fetcher, cache.StaticTTL[string](time.Minute))
 
 		if !errors.Is(err, wantErr) {
 			t.Errorf("got error %v, want %v", err, wantErr)
@@ -96,7 +98,7 @@ func TestGetOrFetch(t *testing.T) {
 		want := "data"
 		fetcher := func() (string, error) { return want, nil }
 
-		got, err := GetOrFetch(ctx, nil, "fallback", fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, nil, "fallback", fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -111,14 +113,16 @@ func TestGetOrFetch(t *testing.T) {
 func TestStaticTTL(t *testing.T) {
 	ttl := 10 * time.Minute
 
-	if got := StaticTTL[string](ttl)("any"); got != ttl {
+	if got := cache.StaticTTL[string](ttl)("any"); got != ttl {
 		t.Errorf("got %v, want %v", got, ttl)
 	}
 }
 
 type faultyCache struct{}
 
-func (f *faultyCache) Get(ctx context.Context, key string) (any, error) { return nil, ErrCacheMiss }
+func (f *faultyCache) Get(ctx context.Context, key string) (any, error) {
+	return nil, cache.ErrCacheMiss
+}
 func (f *faultyCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	return errors.New("forced storage error")
 }
@@ -132,7 +136,7 @@ func TestGetOrFetchCoverage(t *testing.T) {
 		want := "log-want"
 		fetcher := func() (string, error) { return want, nil }
 
-		got, err := GetOrFetch(ctx, c, "log-key", fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, "log-key", fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -149,7 +153,7 @@ func TestGetOrFetchCoverage(t *testing.T) {
 	t.Run("Type Assertion Failure (Wrong Type in Cache)", func(t *testing.T) {
 		ctx := t.Context()
 
-		c := NewMemoryCache(ctx, DefaultCleanupInterval)
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		key := "wrong-type-key"
 		err := c.Set(ctx, key, 999, time.Minute)
@@ -161,7 +165,7 @@ func TestGetOrFetchCoverage(t *testing.T) {
 		want := "correct-string"
 		fetcher := func() (string, error) { return want, nil }
 
-		got, err := GetOrFetch(ctx, c, key, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, key, fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)

@@ -1,10 +1,11 @@
-package home
+package home_test
 
 import (
 	"net"
 	"net/http"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/home"
 	"github.com/ccrsxx/api/internal/features/tools"
 	"github.com/ccrsxx/api/internal/test"
 	"github.com/ipinfo/go/v2/ipinfo"
@@ -25,7 +26,7 @@ func TestLoadRoutes(t *testing.T) {
 
 	ctrl := tools.NewController(svc)
 
-	LoadRoutes(Config{
+	home.LoadRoutes(home.Config{
 		Router:                    mux,
 		ToolsController:           ctrl,
 		SharedGetIPInfoController: http.HandlerFunc(ctrl.GetIPInfo),

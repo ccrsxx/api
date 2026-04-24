@@ -1,9 +1,10 @@
-package statistics
+package statistics_test
 
 import (
 	"net/http"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/statistics"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -12,9 +13,9 @@ func TestLoadRoutes(t *testing.T) {
 
 	db := newMockQuerier()
 
-	svc := NewService(ServiceConfig{Database: db})
+	svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 
-	LoadRoutes(Config{Router: mux, Service: svc})
+	statistics.LoadRoutes(statistics.Config{Router: mux, Service: svc})
 
 	tests := []test.RouteTestCase{
 		{

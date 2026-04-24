@@ -31,7 +31,7 @@ func LoadRoutes(cfg Config) {
 			return
 		}
 
-		ctrl.ping(w, r)
+		ctrl.Ping(w, r)
 	}
 
 	cfg.Router.HandleFunc("GET /{$}", handleHomeRequest)
