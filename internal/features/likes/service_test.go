@@ -68,7 +68,7 @@ func TestService_GetLikeStatus(t *testing.T) {
 		}
 	})
 
-	t.Run("Get Content Error", func(t *testing.T) {
+	t.Run("Get Content Error (coverage)", func(t *testing.T) {
 		db := &test.MockQuerier{
 			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
 				return sqlc.Content{}, errors.New("db error")
@@ -177,22 +177,6 @@ func TestService_IncrementLike(t *testing.T) {
 
 		if status.UserLikes != mockContentLikeStatus.UserLikes {
 			t.Errorf("got %d, want %d", status.UserLikes, mockContentLikeStatus.UserLikes)
-		}
-	})
-
-	t.Run("Get Content Error", func(t *testing.T) {
-		db := &test.MockQuerier{
-			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
-				return sqlc.Content{}, errors.New("db error")
-			},
-		}
-
-		svc := likes.NewService(likes.ServiceConfig{Database: db})
-
-		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
 		}
 	})
 

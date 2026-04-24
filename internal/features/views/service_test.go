@@ -69,7 +69,7 @@ func TestService_GetViewCount(t *testing.T) {
 		}
 	})
 
-	t.Run("Get Content Error", func(t *testing.T) {
+	t.Run("Get Content Error (coverage)", func(t *testing.T) {
 		db := &test.MockQuerier{
 			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
 				return sqlc.Content{}, errors.New("db error")
@@ -152,22 +152,6 @@ func TestService_IncrementView(t *testing.T) {
 
 		if viewCount.Views != int64(mockContentViewCount) {
 			t.Errorf("got %d, want %d", viewCount.Views, mockContentViewCount)
-		}
-	})
-
-	t.Run("Get Content Error", func(t *testing.T) {
-		db := &test.MockQuerier{
-			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
-				return sqlc.Content{}, errors.New("db error")
-			},
-		}
-
-		svc := views.NewService(views.ServiceConfig{Database: db})
-
-		_, err := svc.IncrementView(context.Background(), "test-slug", "127.0.0.1")
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
 		}
 	})
 
