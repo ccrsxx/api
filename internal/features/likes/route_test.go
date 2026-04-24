@@ -12,7 +12,13 @@ import (
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	svc := likes.NewService(likes.ServiceConfig{Database: newMockQuerier()})
+	db := &test.MockQuerier{
+		GetContentBySlugFn:     mockGetContentBySlugFn,
+		GetContentLikeStatusFn: mockGetContentLikeStatusFn,
+		UpsertIPAddressFn:      mockUpsertIPAddressFn,
+	}
+
+	svc := likes.NewService(likes.ServiceConfig{Database: db})
 
 	authMw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{}))
 

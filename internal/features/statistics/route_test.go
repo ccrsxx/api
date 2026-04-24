@@ -1,9 +1,11 @@
 package statistics_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/statistics"
 	"github.com/ccrsxx/api/internal/test"
 )
@@ -11,7 +13,11 @@ import (
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	db := newMockQuerier()
+	db := &test.MockQuerier{
+		GetContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+			return sqlc.GetContentStatsByTypeRow{}, nil
+		},
+	}
 
 	svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 

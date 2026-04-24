@@ -13,7 +13,10 @@ import (
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	db := newMockQuerier()
+	db := &test.MockQuerier{
+		GetContentBySlugFn:    mockGetContentBySlugFn,
+		GetTotalContentMetaFn: mockGetTotalContentMetaFn,
+	}
 
 	svc := views.NewService(views.ServiceConfig{Database: db})
 

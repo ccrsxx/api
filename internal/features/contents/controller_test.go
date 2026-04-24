@@ -18,8 +18,15 @@ import (
 var validPath = "/?type=blog"
 
 func TestController_GetContentsData(t *testing.T) {
+	mockListFn := func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+		return []sqlc.ListContentByTypeRow{
+			{Slug: "test-post", Type: "blog", Views: 10, Likes: 5},
+			{Slug: "another-post", Type: "blog", Views: 20, Likes: 8},
+		}, nil
+	}
+
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{ListContentByTypeFn: mockListFn}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		ctrl := contents.NewController(svc)
@@ -53,10 +60,10 @@ func TestController_GetContentsData(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.ListContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
-			return nil, errors.New("db error")
+		db := &test.MockQuerier{
+			ListContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+				return nil, errors.New("db error")
+			},
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
@@ -74,7 +81,7 @@ func TestController_GetContentsData(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{ListContentByTypeFn: mockListFn}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		ctrl := contents.NewController(svc)
@@ -94,8 +101,12 @@ func TestController_GetContentsData(t *testing.T) {
 }
 
 func TestController_UpsertContent(t *testing.T) {
+	mockUpsertFn := func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+		return sqlc.Content{Slug: arg.Slug, Type: arg.Type}, nil
+	}
+
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{UpsertContentFn: mockUpsertFn}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		ctrl := contents.NewController(svc)
@@ -134,7 +145,7 @@ func TestController_UpsertContent(t *testing.T) {
 	})
 
 	t.Run("Decode Error", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		ctrl := contents.NewController(svc)
@@ -151,10 +162,10 @@ func TestController_UpsertContent(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.UpsertContentFn = func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
-			return sqlc.Content{}, errors.New("db error")
+		db := &test.MockQuerier{
+			UpsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+				return sqlc.Content{}, errors.New("db error")
+			},
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
@@ -180,7 +191,7 @@ func TestController_UpsertContent(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{UpsertContentFn: mockUpsertFn}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		ctrl := contents.NewController(svc)

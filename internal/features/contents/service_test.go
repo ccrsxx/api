@@ -9,23 +9,16 @@ import (
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func newMockQuerier() *test.MockQuerier {
-	return &test.MockQuerier{
-		ListContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
-			return []sqlc.ListContentByTypeRow{
-				{Slug: "test-post", Type: "blog", Views: 10, Likes: 5},
-				{Slug: "another-post", Type: "blog", Views: 20, Likes: 8},
-			}, nil
-		},
-		UpsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
-			return sqlc.Content{Slug: arg.Slug, Type: arg.Type}, nil
-		},
-	}
-}
-
 func TestService_GetContentsData(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			ListContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+				return []sqlc.ListContentByTypeRow{
+					{Slug: "test-post", Type: "blog", Views: 10, Likes: 5},
+					{Slug: "another-post", Type: "blog", Views: 20, Likes: 8},
+				}, nil
+			},
+		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		data, err := svc.GetContentsData(context.Background(), "blog")
@@ -44,10 +37,10 @@ func TestService_GetContentsData(t *testing.T) {
 	})
 
 	t.Run("Valid Empty Data", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.ListContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
-			return nil, nil
+		db := &test.MockQuerier{
+			ListContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+				return nil, nil
+			},
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
@@ -67,7 +60,7 @@ func TestService_GetContentsData(t *testing.T) {
 	})
 
 	t.Run("Invalid Content Type", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 		_, err := svc.GetContentsData(context.Background(), "invalid")
@@ -78,10 +71,10 @@ func TestService_GetContentsData(t *testing.T) {
 	})
 
 	t.Run("Database Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.ListContentByTypeFn = func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
-			return nil, context.DeadlineExceeded
+		db := &test.MockQuerier{
+			ListContentByTypeFn: func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error) {
+				return nil, context.DeadlineExceeded
+			},
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
@@ -95,7 +88,11 @@ func TestService_GetContentsData(t *testing.T) {
 
 func TestService_UpsertContent(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			UpsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+				return sqlc.Content{Slug: arg.Slug, Type: arg.Type}, nil
+			},
+		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
 
@@ -120,10 +117,10 @@ func TestService_UpsertContent(t *testing.T) {
 	})
 
 	t.Run("Database Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.UpsertContentFn = func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
-			return sqlc.Content{}, context.DeadlineExceeded
+		db := &test.MockQuerier{
+			UpsertContentFn: func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error) {
+				return sqlc.Content{}, context.DeadlineExceeded
+			},
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})

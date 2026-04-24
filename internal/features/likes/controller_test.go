@@ -16,7 +16,11 @@ import (
 
 func TestController_GetLikeStatus(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentBySlugFn:     mockGetContentBySlugFn,
+			GetContentLikeStatusFn: mockGetContentLikeStatusFn,
+			UpsertIPAddressFn:      mockUpsertIPAddressFn,
+		}
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 		ctrl := likes.NewController(svc)
@@ -47,10 +51,12 @@ func TestController_GetLikeStatus(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentLikeStatusFn = func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
-			return sqlc.GetContentLikeStatusRow{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: mockGetContentBySlugFn,
+			UpsertIPAddressFn:  mockUpsertIPAddressFn,
+			GetContentLikeStatusFn: func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error) {
+				return sqlc.GetContentLikeStatusRow{}, errors.New("db error")
+			},
 		}
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
@@ -68,7 +74,11 @@ func TestController_GetLikeStatus(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentBySlugFn:     mockGetContentBySlugFn,
+			GetContentLikeStatusFn: mockGetContentLikeStatusFn,
+			UpsertIPAddressFn:      mockUpsertIPAddressFn,
+		}
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 		ctrl := likes.NewController(svc)
@@ -89,7 +99,12 @@ func TestController_GetLikeStatus(t *testing.T) {
 
 func TestController_IncrementLike(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentBySlugFn:     mockGetContentBySlugFn,
+			GetContentLikeStatusFn: mockGetContentLikeStatusFn,
+			IncrementContentLikeFn: mockIncrementContentLikeFn,
+			UpsertIPAddressFn:      mockUpsertIPAddressFn,
+		}
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 		ctrl := likes.NewController(svc)
@@ -120,10 +135,10 @@ func TestController_IncrementLike(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{}, errors.New("not found")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
+				return sqlc.Content{}, errors.New("not found")
+			},
 		}
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
@@ -141,7 +156,12 @@ func TestController_IncrementLike(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentBySlugFn:     mockGetContentBySlugFn,
+			GetContentLikeStatusFn: mockGetContentLikeStatusFn,
+			IncrementContentLikeFn: mockIncrementContentLikeFn,
+			UpsertIPAddressFn:      mockUpsertIPAddressFn,
+		}
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 		ctrl := likes.NewController(svc)

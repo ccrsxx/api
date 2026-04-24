@@ -31,28 +31,30 @@ var (
 		TotalViews: int64(mockContentViewCount),
 		TotalLikes: int64(mockContentLikeCount),
 	}
-)
 
-func newMockQuerier() *test.MockQuerier {
-	return &test.MockQuerier{
-		GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{ID: mockContentID, Slug: slug}, nil
-		},
-		GetTotalContentMetaFn: func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
-			return mockTotalContentMeta, nil
-		},
-		IncrementContentViewFn: func(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error) {
-			return mockIncrementContentView, nil
-		},
-		UpsertIPAddressFn: func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
-			return sqlc.IpAddress{ID: mockIPAddressID, IpAddress: ipAddress}, nil
-		},
+	mockGetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
+		return sqlc.Content{ID: mockContentID, Slug: slug}, nil
 	}
-}
+
+	mockGetTotalContentMetaFn = func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
+		return mockTotalContentMeta, nil
+	}
+
+	mockIncrementContentViewFn = func(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error) {
+		return mockIncrementContentView, nil
+	}
+
+	mockUpsertIPAddressFn = func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error) {
+		return sqlc.IpAddress{ID: mockIPAddressID, IpAddress: ipAddress}, nil
+	}
+)
 
 func TestService_GetViewCount(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentBySlugFn:    mockGetContentBySlugFn,
+			GetTotalContentMetaFn: mockGetTotalContentMetaFn,
+		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
@@ -68,10 +70,10 @@ func TestService_GetViewCount(t *testing.T) {
 	})
 
 	t.Run("Get Content Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
+				return sqlc.Content{}, errors.New("db error")
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
@@ -84,10 +86,11 @@ func TestService_GetViewCount(t *testing.T) {
 	})
 
 	t.Run("Get View Count Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetTotalContentMetaFn = func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
-			return sqlc.GetTotalContentMetaRow{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: mockGetContentBySlugFn,
+			GetTotalContentMetaFn: func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
+				return sqlc.GetTotalContentMetaRow{}, errors.New("db error")
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
@@ -104,10 +107,10 @@ func TestService_GetViewCount(t *testing.T) {
 	})
 
 	t.Run("Content Not Found (coverage)", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{}, pgx.ErrNoRows
+		db := &test.MockQuerier{
+			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
+				return sqlc.Content{}, pgx.ErrNoRows
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
@@ -132,7 +135,12 @@ func TestService_GetViewCount(t *testing.T) {
 
 func TestService_IncrementView(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentBySlugFn:     mockGetContentBySlugFn,
+			GetTotalContentMetaFn:  mockGetTotalContentMetaFn,
+			IncrementContentViewFn: mockIncrementContentViewFn,
+			UpsertIPAddressFn:      mockUpsertIPAddressFn,
+		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
@@ -148,10 +156,10 @@ func TestService_IncrementView(t *testing.T) {
 	})
 
 	t.Run("Get Content Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentBySlugFn = func(ctx context.Context, slug string) (sqlc.Content, error) {
-			return sqlc.Content{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: func(ctx context.Context, slug string) (sqlc.Content, error) {
+				return sqlc.Content{}, errors.New("db error")
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
@@ -164,10 +172,11 @@ func TestService_IncrementView(t *testing.T) {
 	})
 
 	t.Run("Upsert IP Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.UpsertIPAddressFn = func(ctx context.Context, ip string) (sqlc.IpAddress, error) {
-			return sqlc.IpAddress{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: mockGetContentBySlugFn,
+			UpsertIPAddressFn: func(ctx context.Context, ip string) (sqlc.IpAddress, error) {
+				return sqlc.IpAddress{}, errors.New("db error")
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
@@ -184,10 +193,12 @@ func TestService_IncrementView(t *testing.T) {
 	})
 
 	t.Run("Create Content View Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.IncrementContentViewFn = func(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error) {
-			return sqlc.IncrementContentViewRow{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn: mockGetContentBySlugFn,
+			UpsertIPAddressFn:  mockUpsertIPAddressFn,
+			IncrementContentViewFn: func(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error) {
+				return sqlc.IncrementContentViewRow{}, errors.New("db error")
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
@@ -204,10 +215,13 @@ func TestService_IncrementView(t *testing.T) {
 	})
 
 	t.Run("Get View Count Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetTotalContentMetaFn = func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
-			return sqlc.GetTotalContentMetaRow{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentBySlugFn:     mockGetContentBySlugFn,
+			UpsertIPAddressFn:      mockUpsertIPAddressFn,
+			IncrementContentViewFn: mockIncrementContentViewFn,
+			GetTotalContentMetaFn: func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error) {
+				return sqlc.GetTotalContentMetaRow{}, errors.New("db error")
+			},
 		}
 
 		svc := views.NewService(views.ServiceConfig{Database: db})

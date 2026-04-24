@@ -16,17 +16,13 @@ var mockContentStatsByType = sqlc.GetContentStatsByTypeRow{
 	TotalLikes: 15,
 }
 
-func newMockQuerier() *test.MockQuerier {
-	return &test.MockQuerier{
-		GetContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
-			return mockContentStatsByType, nil
-		},
-	}
-}
-
 func TestService_GetContentsStatistics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+				return mockContentStatsByType, nil
+			},
+		}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 		stats, err := svc.GetContentsStatistics(context.Background(), "blog")
@@ -49,7 +45,11 @@ func TestService_GetContentsStatistics(t *testing.T) {
 	})
 
 	t.Run("Success Empty Type", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{
+			GetContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+				return mockContentStatsByType, nil
+			},
+		}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 		stats, err := svc.GetContentsStatistics(context.Background(), "")
@@ -64,7 +64,7 @@ func TestService_GetContentsStatistics(t *testing.T) {
 	})
 
 	t.Run("Invalid Content Type", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 		_, err := svc.GetContentsStatistics(context.Background(), "invalid")
@@ -75,10 +75,10 @@ func TestService_GetContentsStatistics(t *testing.T) {
 	})
 
 	t.Run("Database Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
-			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+				return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
+			},
 		}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})

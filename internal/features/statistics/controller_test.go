@@ -17,8 +17,12 @@ import (
 var validPath = "/?type=blog"
 
 func TestController_GetContentsStatistics(t *testing.T) {
+	mockStatsFn := func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+		return mockContentStatsByType, nil
+	}
+
 	t.Run("Success", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{GetContentStatsByTypeFn: mockStatsFn}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 		ctrl := statistics.NewController(svc)
@@ -57,10 +61,10 @@ func TestController_GetContentsStatistics(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		db := newMockQuerier()
-
-		db.GetContentStatsByTypeFn = func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
-			return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
+		db := &test.MockQuerier{
+			GetContentStatsByTypeFn: func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error) {
+				return sqlc.GetContentStatsByTypeRow{}, errors.New("db error")
+			},
 		}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
@@ -78,7 +82,7 @@ func TestController_GetContentsStatistics(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		db := newMockQuerier()
+		db := &test.MockQuerier{GetContentStatsByTypeFn: mockStatsFn}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 		ctrl := statistics.NewController(svc)
