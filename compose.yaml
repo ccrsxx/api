@@ -27,6 +27,7 @@ services:
     container_name: db
     restart: unless-stopped
     environment:
+      - TZ=Asia/Jakarta
       - PGDATA=/data/postgres
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     ports:
