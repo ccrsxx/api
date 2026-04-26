@@ -18,7 +18,7 @@ on:
 
 jobs:
   extract:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       go-version: ${{ steps.extract.outputs.go-version }}
       sqlc-version: ${{ steps.extract.outputs.sqlc-version }}
