@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 # check=skip=InvalidDefaultArgInFrom
 
+# ---
+
 ARG GO_VERSION
 
 FROM golang:${GO_VERSION}-alpine AS build
@@ -17,6 +19,8 @@ COPY . .
 
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./cmd/api/main.go
 
+# ---
+
 FROM scratch AS final
 
 COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
@@ -27,7 +31,9 @@ COPY --from=build /app/main /main
 
 USER 10001:10001
 
-CMD [ "/main" ]
+ENTRYPOINT [ "/main" ]
+
+EXPOSE 4000
 
 LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
     org.opencontainers.image.source="https://github.com/ccrsxx/api" \
