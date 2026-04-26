@@ -9,8 +9,10 @@ node_modules/
 
 # Files
 .*
+*.out
 compose.yaml
 Dockerfile
 LICENSE
 Makefile
 README.md
+sqlc.yaml
