@@ -139,6 +139,3 @@ jobs:
         run: |
           docker compose pull
           docker compose up -d
-
-      - name: Remove env
-        run: rm .env
