@@ -87,7 +87,7 @@ func (s *Service) sendNewGuestbookEmail(user sqlc.GetUserWithAccountByIDRow, gue
 	})
 
 	if err != nil {
-		slog.Warn("send new guestbook email error", "error", err)
+		slog.Error("send new guestbook email error", "error", err)
 	}
 }
 

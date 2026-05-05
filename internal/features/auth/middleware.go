@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
@@ -58,7 +57,7 @@ func (m *Middleware) IsAuthorizedFromOauth(next http.Handler) http.Handler {
 			return
 		}
 
-		ctxWithUser := context.WithValue(ctx, userContextKey, user)
+		ctxWithUser := SetUserContext(ctx, user)
 
 		next.ServeHTTP(w, r.WithContext(ctxWithUser))
 	})

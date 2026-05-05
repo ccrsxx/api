@@ -20,3 +20,7 @@ func GetUserFromContext(ctx context.Context) (sqlc.GetUserWithAccountByIDRow, er
 
 	return user, nil
 }
+
+func SetUserContext(ctx context.Context, user sqlc.GetUserWithAccountByIDRow) context.Context {
+	return context.WithValue(ctx, userContextKey, user)
+}
