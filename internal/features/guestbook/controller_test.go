@@ -214,7 +214,7 @@ func TestController_DeleteGuestbook(t *testing.T) {
 		ctrl := guestbook.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodDelete, "/", nil)
-		// Set PathValue
+
 		r.SetPathValue("id", uuid.New().String())
 
 		w := httptest.NewRecorder()
