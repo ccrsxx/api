@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# check=skip=InvalidDefaultArgInFrom
+# check=skip=InvalidDefaultArgInFrom,CopyIgnoredFile
 
 # ---
 
