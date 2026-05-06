@@ -49,6 +49,7 @@ func parseArtworkToBookmark(artwork pClient.Artwork, pixivImageURL string) (Book
 		Height:      height,
 		Tags:        artwork.Tags,
 		AiGenerated: aiGenerated,
+		CreatedAt:   artwork.CreatedAt,
 	}, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/ccrsxx/api/internal/clients/pixiv"
 	"github.com/ccrsxx/api/internal/utils"
@@ -31,16 +32,17 @@ func NewService(cfg ServiceConfig) *Service {
 }
 
 type Bookmark struct {
-	ID          string   `json:"id"`
-	Title       string   `json:"title"`
-	ArtistID    string   `json:"artistId"`
-	ArtistName  string   `json:"artistName"`
-	ImageURL    string   `json:"imageUrl"`
-	PixivURL    string   `json:"pixivUrl"`
-	Width       int      `json:"width"`
-	Height      int      `json:"height"`
-	Tags        []string `json:"tags"`
-	AiGenerated bool     `json:"aiGenerated"`
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	ArtistID    string    `json:"artistId"`
+	ArtistName  string    `json:"artistName"`
+	ImageURL    string    `json:"imageUrl"`
+	PixivURL    string    `json:"pixivUrl"`
+	Width       int       `json:"width"`
+	Height      int       `json:"height"`
+	Tags        []string  `json:"tags"`
+	AiGenerated bool      `json:"aiGenerated"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 func (s *Service) GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility, page int) ([]Bookmark, utils.OffsetPaginationMeta, error) {

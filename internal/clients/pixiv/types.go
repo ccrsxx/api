@@ -48,7 +48,6 @@ type Artwork struct {
 	Pages          int           `json:"pageCount"`
 	XRestrict      XRestrict     `json:"xRestrict"`
 	SanityLevel    SanityLevel   `json:"sl"`
-	CreateDate     time.Time     `json:"createDate"` // used for user atom feeds
 	AIType         AIType        `json:"aiType"`
 	BookmarkData   *BookmarkData `json:"bookmarkData"`
 	IsBookmarkable bool          `json:"isBookmarkable"`
@@ -58,6 +57,8 @@ type Artwork struct {
 	SeriesTitle    string        `json:"seriesTitle"`
 	Width          int           `json:"width"`
 	Height         int           `json:"height"`
+	CreatedAt      time.Time     `json:"createDate"` // used for user atom feeds
+	UpdatedAt      time.Time     `json:"updateDate"` // used for user atom feeds
 }
 
 type BookmarkVisibility string
