@@ -10,6 +10,7 @@ Currently available features/endpoints:
 - Content management for blog and project entries.
 - Content statistics, views, and likes tracking.
 - Guestbook with email notifications on new posts.
+- Pixiv user bookmarks retrieval.
 - Spotify and Jellyfin currently playing endpoints.
 - Real-time updates for Spotify and Jellyfin via Server-Sent Events (SSE).
 - Tools endpoints (IP address, IP info, HTTP headers).
