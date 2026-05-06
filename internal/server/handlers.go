@@ -10,6 +10,7 @@ import (
 	gmailClient "github.com/ccrsxx/api/internal/clients/gmail"
 	ipInfoClient "github.com/ccrsxx/api/internal/clients/ipinfo"
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
+	pixivClient "github.com/ccrsxx/api/internal/clients/pixiv"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
 	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/db/sqlc"
@@ -22,6 +23,7 @@ import (
 	"github.com/ccrsxx/api/internal/features/jellyfin"
 	"github.com/ccrsxx/api/internal/features/likes"
 	"github.com/ccrsxx/api/internal/features/og"
+	"github.com/ccrsxx/api/internal/features/pixiv"
 	"github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/features/sse"
 	"github.com/ccrsxx/api/internal/features/statistics"
@@ -41,6 +43,10 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 	gmailClient := gmailClient.NewClient(gmailClient.Config{
 		Username: cfg.EmailAddress,
 		Password: cfg.EmailPassword,
+	})
+
+	pixivClient := pixivClient.NewClient(pixivClient.Config{
+		Token: cfg.PixivToken,
 	})
 
 	ipInfoClient := ipInfoClient.NewClient(cfg.IPInfoToken)
@@ -184,6 +190,17 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 	favicon.LoadRoutes(
 		favicon.Config{
 			Router: router,
+		},
+	)
+
+	pixiv.LoadRoutes(
+		pixiv.Config{
+			Router:         router,
+			AuthMiddleware: privateAuthMiddleware,
+			Service: pixiv.NewService(pixiv.ServiceConfig{
+				Client:        pixivClient,
+				PixivImageURL: cfg.PixivImageURL,
+			}),
 		},
 	)
 

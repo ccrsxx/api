@@ -1,0 +1,81 @@
+package pixiv
+
+import (
+	"errors"
+	"strings"
+
+	"math"
+
+	pClient "github.com/ccrsxx/api/internal/clients/pixiv"
+)
+
+func parseArtworkToBookmark(artwork pClient.Artwork, pixivImageURL string) (Bookmark, error) {
+	if !artwork.IsBookmarkable {
+		return Bookmark{}, errors.New("artwork is not bookmarkable")
+	}
+
+	imageURL := artwork.URL
+
+	// Remove size variant segment like /c/250x250_80_a2
+	if start := strings.Index(imageURL, "/c/"); start != -1 {
+		if end := strings.Index(imageURL[start+3:], "/"); end != -1 {
+			imageURL = imageURL[:start] + imageURL[start+3+end:]
+		}
+	}
+
+	// Normalize path and thumbnail suffix
+	imageURL = strings.Replace(imageURL, "/custom-thumb/", "/img-master/", 1)
+	imageURL = strings.Replace(imageURL, "_custom1200", "_master1200", 1)
+	imageURL = strings.Replace(imageURL, "_square1200", "_master1200", 1)
+
+	// Rewrite to proxy
+	imageURL = strings.Replace(imageURL, "https://", pixivImageURL+"/", 1)
+
+	// Image dimensions
+	width, height := calculateMaster1200Dimensions(artwork.Width, artwork.Height)
+
+	// Others
+	pixivURL := "https://pixiv.net/artworks/" + string(artwork.ID)
+	aiGenerated := artwork.AIType == pClient.AIGenerated
+
+	return Bookmark{
+		ID:          string(artwork.ID),
+		Title:       artwork.Title,
+		ImageURL:    imageURL,
+		PixivURL:    pixivURL,
+		ArtistID:    string(artwork.UserID),
+		ArtistName:  artwork.UserName,
+		Width:       width,
+		Height:      height,
+		Tags:        artwork.Tags,
+		AiGenerated: aiGenerated,
+	}, nil
+}
+
+// calculateMaster1200Dimensions scales dimensions down so the longest side is 1200.
+// If both sides are already 1200 or smaller, it returns the original dimensions.
+func calculateMaster1200Dimensions(originalWidth, originalHeight int) (int, int) {
+	const maxDimension = 1200.0
+
+	// If the image is already smaller than or equal to 1200x1200, no downscaling is needed.
+	if originalWidth <= 1200 && originalHeight <= 1200 {
+		return originalWidth, originalHeight
+	}
+
+	w := float64(originalWidth)
+	h := float64(originalHeight)
+
+	var ratio float64
+
+	if w > h {
+		ratio = maxDimension / w // Width is the longest side
+	} else {
+		ratio = maxDimension / h // Height is the longest side
+	}
+
+	// Apply the ratio and round to the nearest whole pixel
+	newWidth := int(math.Round(w * ratio))
+	newHeight := int(math.Round(h * ratio))
+
+	return newWidth, newHeight
+}

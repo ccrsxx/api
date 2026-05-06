@@ -52,6 +52,9 @@ type AppConfig struct {
 
 	IPInfoToken string `env:"IPINFO_TOKEN,required"`
 
+	PixivToken    string `env:"PIXIV_TOKEN,required"`
+	PixivImageURL string `env:"PIXIV_IMAGE_URL,required"`
+
 	JellyfinURL      string `env:"JELLYFIN_URL,required"`
 	JellyfinAPIKey   string `env:"JELLYFIN_API_KEY,required"`
 	JellyfinUsername string `env:"JELLYFIN_USERNAME,required"`

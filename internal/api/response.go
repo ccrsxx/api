@@ -13,6 +13,11 @@ type SuccessResponse[T any] struct {
 	Data T `json:"data"`
 }
 
+type SuccessPaginatedResponse[T any, M any] struct {
+	Meta M `json:"meta"`
+	Data T `json:"data"`
+}
+
 type ErrorResponse struct {
 	Error ErrorObject `json:"error"`
 }
@@ -65,6 +70,14 @@ func newResponse(w http.ResponseWriter, status int, v any) error {
 // NewSuccessResponse unconditionally wraps the data in a {"data": ...} struct.
 func NewSuccessResponse[T any](w http.ResponseWriter, statusCode int, data T) error {
 	return newResponse(w, statusCode, SuccessResponse[T]{
+		Data: data,
+	})
+}
+
+// NewSuccessPaginatedResponse wraps data and meta in a struct.
+func NewSuccessPaginatedResponse[T any, M any](w http.ResponseWriter, statusCode int, meta M, data T) error {
+	return newResponse(w, statusCode, SuccessPaginatedResponse[T, M]{
+		Meta: meta,
 		Data: data,
 	})
 }

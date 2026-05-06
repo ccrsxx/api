@@ -31,6 +31,8 @@ func setValidEnv(t *testing.T, appEnv string) {
 	t.Setenv("SPOTIFY_CLIENT_ID", "id")
 	t.Setenv("SPOTIFY_CLIENT_SECRET", "secret")
 	t.Setenv("SPOTIFY_REFRESH_TOKEN", "refresh")
+	t.Setenv("PIXIV_TOKEN", "123456_abc123")
+	t.Setenv("PIXIV_IMAGE_URL", "https://example.com")
 }
 
 func TestLoad_Success(t *testing.T) {
