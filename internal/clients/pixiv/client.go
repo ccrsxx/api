@@ -89,10 +89,10 @@ func (c *Client) GetBookmarks(ctx context.Context, visibility BookmarkVisibility
 
 	artworks := make([]Artwork, 0, len(response.Body.Works))
 
-	for _, rawWork := range response.Body.Works {
+	for _, rawArtwork := range response.Body.Works {
 		var artwork Artwork
 
-		if err := json.Unmarshal(rawWork, &artwork); err != nil {
+		if err := json.Unmarshal(rawArtwork, &artwork); err != nil {
 			slog.Warn("pixiv bookmarks skip invalid artwork parse", "error", err)
 			continue
 		}
