@@ -56,8 +56,7 @@ func parseArtworkToBookmark(artwork pClient.Artwork, pixivImageURL string) (Book
 	}, nil
 }
 
-// calculateMaster1200Dimensions scales dimensions down so the longest side is 1200.
-// If both sides are already 1200 or smaller, it returns the original dimensions.
+// Scales dimensions down so the longest side is 1200.
 func calculateMaster1200Dimensions(originalWidth, originalHeight int) (int, int) {
 	const maxDimension = 1200
 
