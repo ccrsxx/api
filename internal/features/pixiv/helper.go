@@ -16,17 +16,20 @@ func parseArtworkToBookmark(artwork pClient.Artwork, pixivImageURL string) (Book
 
 	imageURL := artwork.URL
 
-	// Remove size variant segment like /c/250x250_80_a2
+	// Remove existing size variant segment (e.g., /c/250x250_80_a2)
 	if start := strings.Index(imageURL, "/c/"); start != -1 {
 		if end := strings.Index(imageURL[start+3:], "/"); end != -1 {
 			imageURL = imageURL[:start] + imageURL[start+3+end:]
 		}
 	}
 
-	// Normalize path and thumbnail suffix
+	// Normalize path and thumbnail suffix to base img-master
 	imageURL = strings.Replace(imageURL, "/custom-thumb/", "/img-master/", 1)
 	imageURL = strings.Replace(imageURL, "_custom1200", "_master1200", 1)
 	imageURL = strings.Replace(imageURL, "_square1200", "_master1200", 1)
+
+	// Inject WebP transformation block
+	imageURL = strings.Replace(imageURL, "/img-master/", "/c/1200x1200_90_webp/img-master/", 1)
 
 	// Rewrite to proxy
 	imageURL = strings.Replace(imageURL, "https://", pixivImageURL+"/", 1)
