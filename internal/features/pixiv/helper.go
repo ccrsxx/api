@@ -59,27 +59,24 @@ func parseArtworkToBookmark(artwork pClient.Artwork, pixivImageURL string) (Book
 // calculateMaster1200Dimensions scales dimensions down so the longest side is 1200.
 // If both sides are already 1200 or smaller, it returns the original dimensions.
 func calculateMaster1200Dimensions(originalWidth, originalHeight int) (int, int) {
-	const maxDimension = 1200.0
+	const maxDimension = 1200
 
-	// If the image is already smaller than or equal to 1200x1200, no downscaling is needed.
-	if originalWidth <= 1200 && originalHeight <= 1200 {
+	// If neither side exceeds 1200, no downscaling is needed.
+	if originalWidth <= maxDimension && originalHeight <= maxDimension {
 		return originalWidth, originalHeight
 	}
 
-	w := float64(originalWidth)
-	h := float64(originalHeight)
+	if originalWidth > originalHeight {
+		// Width is the longest side, clamp to 1200 and scale height
+		ratio := maxDimension / float64(originalWidth)
+		newHeight := int(math.Ceil(float64(originalHeight) * ratio))
 
-	var ratio float64
-
-	if w > h {
-		ratio = maxDimension / w // Width is the longest side
-	} else {
-		ratio = maxDimension / h // Height is the longest side
+		return maxDimension, newHeight
 	}
 
-	// Apply the ratio and round to the nearest whole pixel
-	newWidth := int(math.Round(w * ratio))
-	newHeight := int(math.Round(h * ratio))
+	// Height is the longest side (or a perfect square), clamp to 1200 and scale width
+	ratio := maxDimension / float64(originalHeight)
+	newWidth := int(math.Ceil(float64(originalWidth) * ratio))
 
-	return newWidth, newHeight
+	return newWidth, maxDimension
 }
