@@ -11,7 +11,7 @@ import (
 
 type Service struct {
 	ogURL      string
-	HTTPClient *http.Client
+	httpClient *http.Client
 }
 
 type ServiceConfig struct {
@@ -28,7 +28,7 @@ func NewService(cfg ServiceConfig) *Service {
 
 	return &Service{
 		ogURL:      cfg.OgURL,
-		HTTPClient: cfg.HTTPClient,
+		httpClient: cfg.HTTPClient,
 	}
 }
 
@@ -43,7 +43,7 @@ func (s *Service) GetOg(ctx context.Context, query string) (io.ReadCloser, error
 		return nil, fmt.Errorf("og request creation error: %w", err)
 	}
 
-	res, err := s.HTTPClient.Do(req)
+	res, err := s.httpClient.Do(req)
 
 	if err != nil {
 		return nil, fmt.Errorf("og request call error: %w", err)
