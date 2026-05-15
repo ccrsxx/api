@@ -19,8 +19,6 @@ func NewController(svc *Service) *Controller {
 	}
 }
 
-
-
 func (c *Controller) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	user, err := GetUserFromContext(r.Context())
 

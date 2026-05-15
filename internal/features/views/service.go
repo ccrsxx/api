@@ -34,8 +34,6 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-
-
 func (s *Service) getContentBySlug(ctx context.Context, slug string) (sqlc.Content, error) {
 	content, err := s.db.GetContentBySlug(ctx, slug)
 

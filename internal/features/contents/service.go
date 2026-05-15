@@ -52,6 +52,7 @@ func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]mo
 	}
 
 	contents := make([]model.Content, len(dbRows))
+
 	for i, row := range dbRows {
 		contents[i] = model.Content{
 			Slug:  row.Slug,

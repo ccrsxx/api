@@ -111,6 +111,7 @@ func (s *Service) ListGuestbook(ctx context.Context) ([]model.Guestbook, error) 
 	}
 
 	guestbooks := make([]model.Guestbook, len(dbRows))
+
 	for i, row := range dbRows {
 		guestbooks[i] = model.Guestbook{
 			ID:        row.ID.String(),

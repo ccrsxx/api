@@ -15,8 +15,6 @@ func NewController() *Controller {
 	return &Controller{}
 }
 
-
-
 func (c *Controller) Ping(w http.ResponseWriter, r *http.Request) {
 	err := api.NewSuccessResponse(w, http.StatusOK, model.Ping{
 		Message:          "Welcome to the API! The server is up and running.",

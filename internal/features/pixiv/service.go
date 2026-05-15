@@ -31,8 +31,6 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-
-
 func (s *Service) GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility, page int) ([]model.Bookmark, utils.OffsetPaginationMeta, error) {
 	artworks, total, err := s.client.GetBookmarks(ctx, visibility, page)
 
