@@ -29,17 +29,17 @@ FROM new_guestbook AS g
 `
 
 type CreateGuestbookParams struct {
-	Text   string      `json:"text"`
-	UserID pgtype.UUID `json:"userId"`
+	Text   string
+	UserID pgtype.UUID
 }
 
 type CreateGuestbookRow struct {
-	ID        pgtype.UUID        `json:"id"`
-	Text      string             `json:"text"`
-	Name      string             `json:"name"`
-	Image     pgtype.Text        `json:"image"`
-	Username  pgtype.Text        `json:"username"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	ID        pgtype.UUID
+	Text      string
+	Name      string
+	Image     pgtype.Text
+	Username  pgtype.Text
+	CreatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) CreateGuestbook(ctx context.Context, arg CreateGuestbookParams) (CreateGuestbookRow, error) {
@@ -100,12 +100,12 @@ ORDER BY g.created_at DESC
 `
 
 type ListGuestbookRow struct {
-	ID        pgtype.UUID        `json:"id"`
-	Text      string             `json:"text"`
-	Name      string             `json:"name"`
-	Image     pgtype.Text        `json:"image"`
-	Username  pgtype.Text        `json:"username"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	ID        pgtype.UUID
+	Text      string
+	Name      string
+	Image     pgtype.Text
+	Username  pgtype.Text
+	CreatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) ListGuestbook(ctx context.Context) ([]ListGuestbookRow, error) {

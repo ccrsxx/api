@@ -12,6 +12,7 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/contents"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -41,7 +42,7 @@ func TestController_GetContentsData(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[[]sqlc.ListContentByTypeRow]
+		var res api.SuccessResponse[[]model.Content]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -129,7 +130,7 @@ func TestController_UpsertContent(t *testing.T) {
 			t.Fatalf("got %d, want 201", w.Code)
 		}
 
-		var res api.SuccessResponse[sqlc.Content]
+		var res api.SuccessResponse[model.Content]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)

@@ -13,6 +13,7 @@ import (
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/ccrsxx/api/internal/features/guestbook"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -38,13 +39,13 @@ func TestController_GetGuestbook(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[[]sqlc.ListGuestbookRow]
+		var res api.SuccessResponse[[]model.Guestbook]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if len(res.Data) != 1 || res.Data[0].ID != mockGuestbookID {
+		if len(res.Data) != 1 || res.Data[0].ID != uuid.UUID(mockGuestbookID.Bytes).String() {
 			t.Errorf("got invalid response data: %+v", res.Data)
 		}
 	})
@@ -122,13 +123,13 @@ func TestController_CreateGuestbook(t *testing.T) {
 			t.Fatalf("got %d, want 201", w.Code)
 		}
 
-		var res api.SuccessResponse[sqlc.CreateGuestbookRow]
+		var res api.SuccessResponse[model.Guestbook]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if res.Data.ID != mockGuestbookID {
+		if res.Data.ID != uuid.UUID(mockGuestbookID.Bytes).String() {
 			t.Errorf("got invalid response data: %+v", res.Data)
 		}
 	})

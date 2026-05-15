@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/google/uuid"
 )
 
@@ -18,14 +19,7 @@ func NewController(svc *Service) *Controller {
 	}
 }
 
-type UserResponse struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
-	Image    string `json:"image"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-}
+
 
 func (c *Controller) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	user, err := GetUserFromContext(r.Context())
@@ -35,7 +29,7 @@ func (c *Controller) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.NewSuccessResponse(w, http.StatusOK, UserResponse{
+	err = api.NewSuccessResponse(w, http.StatusOK, model.User{
 		ID:       user.ID.String(),
 		Name:     user.Name,
 		Role:     user.Role,

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/utils"
 )
 
@@ -29,7 +30,7 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]sqlc.ListContentByTypeRow, error) {
+func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]model.Content, error) {
 	if contentType != "" {
 		if err := utils.Validate.Var(contentType, "content_type"); err != nil {
 			return nil, &api.HTTPError{
@@ -40,17 +41,27 @@ func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]sq
 		}
 	}
 
-	data, err := s.db.ListContentByType(ctx, contentType)
+	dbRows, err := s.db.ListContentByType(ctx, contentType)
 
 	if err != nil {
 		return nil, fmt.Errorf("list content by type error: %w", err)
 	}
 
-	if data == nil {
-		data = []sqlc.ListContentByTypeRow{}
+	if dbRows == nil {
+		dbRows = []sqlc.ListContentByTypeRow{}
 	}
 
-	return data, nil
+	contents := make([]model.Content, len(dbRows))
+	for i, row := range dbRows {
+		contents[i] = model.Content{
+			Slug:  row.Slug,
+			Type:  row.Type,
+			Views: row.Views,
+			Likes: row.Likes,
+		}
+	}
+
+	return contents, nil
 }
 
 type UpsertContentInput struct {
@@ -58,15 +69,20 @@ type UpsertContentInput struct {
 	Type string `json:"type" validate:"required,content_type"`
 }
 
-func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (sqlc.Content, error) {
+func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (model.Content, error) {
 	content, err := s.db.UpsertContent(ctx, sqlc.UpsertContentParams{
 		Slug: input.Slug,
 		Type: input.Type,
 	})
 
 	if err != nil {
-		return sqlc.Content{}, fmt.Errorf("upsert content error: %w", err)
+		return model.Content{}, fmt.Errorf("upsert content error: %w", err)
 	}
 
-	return content, nil
+	return model.Content{
+		Slug:      content.Slug,
+		Type:      content.Type,
+		CreatedAt: &content.CreatedAt.Time,
+		UpdatedAt: &content.UpdatedAt.Time,
+	}, nil
 }

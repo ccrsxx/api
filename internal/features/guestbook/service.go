@@ -11,6 +11,7 @@ import (
 	"github.com/ccrsxx/api/internal/clients/gmail"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -55,11 +56,11 @@ type CreateGuestbookInput struct {
 	Text string `json:"text" validate:"required"`
 }
 
-func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInput) (sqlc.CreateGuestbookRow, error) {
+func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInput) (model.Guestbook, error) {
 	user, err := auth.GetUserFromContext(ctx)
 
 	if err != nil {
-		return sqlc.CreateGuestbookRow{}, fmt.Errorf("get user by id error: %w", err)
+		return model.Guestbook{}, fmt.Errorf("get user by id error: %w", err)
 	}
 
 	guestbook, err := s.db.CreateGuestbook(ctx, sqlc.CreateGuestbookParams{
@@ -68,12 +69,19 @@ func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInpu
 	})
 
 	if err != nil {
-		return sqlc.CreateGuestbookRow{}, fmt.Errorf("create guestbook error: %w", err)
+		return model.Guestbook{}, fmt.Errorf("create guestbook error: %w", err)
 	}
 
 	go s.sendNewGuestbookEmail(user, guestbook)
 
-	return guestbook, nil
+	return model.Guestbook{
+		ID:        guestbook.ID.String(),
+		Text:      guestbook.Text,
+		Name:      guestbook.Name,
+		Image:     guestbook.Image.String,
+		Username:  guestbook.Username.String,
+		CreatedAt: guestbook.CreatedAt.Time,
+	}, nil
 }
 
 func (s *Service) sendNewGuestbookEmail(user sqlc.GetUserWithAccountByIDRow, guestbook sqlc.CreateGuestbookRow) {
@@ -91,18 +99,30 @@ func (s *Service) sendNewGuestbookEmail(user sqlc.GetUserWithAccountByIDRow, gue
 	}
 }
 
-func (s *Service) ListGuestbook(ctx context.Context) ([]sqlc.ListGuestbookRow, error) {
-	guestbook, err := s.db.ListGuestbook(ctx)
+func (s *Service) ListGuestbook(ctx context.Context) ([]model.Guestbook, error) {
+	dbRows, err := s.db.ListGuestbook(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("list guestbook error: %w", err)
 	}
 
-	if guestbook == nil {
-		guestbook = []sqlc.ListGuestbookRow{}
+	if dbRows == nil {
+		dbRows = []sqlc.ListGuestbookRow{}
 	}
 
-	return guestbook, nil
+	guestbooks := make([]model.Guestbook, len(dbRows))
+	for i, row := range dbRows {
+		guestbooks[i] = model.Guestbook{
+			ID:        row.ID.String(),
+			Text:      row.Text,
+			Name:      row.Name,
+			Image:     row.Image.String,
+			Username:  row.Username.String,
+			CreatedAt: row.CreatedAt.Time,
+		}
+	}
+
+	return guestbooks, nil
 }
 
 func (s *Service) DeleteGuestbook(ctx context.Context, guestbookID string) error {

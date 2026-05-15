@@ -18,10 +18,10 @@ RETURNING id, user_id, provider, provider_account_id, username, created_at, upda
 `
 
 type CreateAccountParams struct {
-	UserID            pgtype.UUID `json:"userId"`
-	Provider          string      `json:"provider"`
-	ProviderAccountID string      `json:"providerAccountId"`
-	Username          pgtype.Text `json:"username"`
+	UserID            pgtype.UUID
+	Provider          string
+	ProviderAccountID string
+	Username          pgtype.Text
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -51,9 +51,9 @@ RETURNING id, name, role, image, email, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Name  string      `json:"name"`
-	Image pgtype.Text `json:"image"`
-	Email pgtype.Text `json:"email"`
+	Name  string
+	Image pgtype.Text
+	Email pgtype.Text
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -80,8 +80,8 @@ LIMIT 1
 `
 
 type GetAccountByProviderParams struct {
-	Provider          string `json:"provider"`
-	ProviderAccountID string `json:"providerAccountId"`
+	Provider          string
+	ProviderAccountID string
 }
 
 func (q *Queries) GetAccountByProvider(ctx context.Context, arg GetAccountByProviderParams) (Account, error) {
@@ -130,20 +130,20 @@ LIMIT 1
 `
 
 type GetUserWithAccountByIDRow struct {
-	ID                pgtype.UUID        `json:"id"`
-	Name              string             `json:"name"`
-	Role              string             `json:"role"`
-	Image             pgtype.Text        `json:"image"`
-	Email             pgtype.Text        `json:"email"`
-	CreatedAt         pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt         pgtype.Timestamptz `json:"updatedAt"`
-	ID_2              pgtype.UUID        `json:"id2"`
-	UserID            pgtype.UUID        `json:"userId"`
-	Provider          string             `json:"provider"`
-	ProviderAccountID string             `json:"providerAccountId"`
-	Username          pgtype.Text        `json:"username"`
-	CreatedAt_2       pgtype.Timestamptz `json:"createdAt2"`
-	UpdatedAt_2       pgtype.Timestamptz `json:"updatedAt2"`
+	ID                pgtype.UUID
+	Name              string
+	Role              string
+	Image             pgtype.Text
+	Email             pgtype.Text
+	CreatedAt         pgtype.Timestamptz
+	UpdatedAt         pgtype.Timestamptz
+	ID_2              pgtype.UUID
+	UserID            pgtype.UUID
+	Provider          string
+	ProviderAccountID string
+	Username          pgtype.Text
+	CreatedAt_2       pgtype.Timestamptz
+	UpdatedAt_2       pgtype.Timestamptz
 }
 
 func (q *Queries) GetUserWithAccountByID(ctx context.Context, id pgtype.UUID) (GetUserWithAccountByIDRow, error) {
@@ -178,9 +178,9 @@ RETURNING id, name, role, image, email, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	Name  string      `json:"name"`
-	Image pgtype.Text `json:"image"`
-	ID    pgtype.UUID `json:"id"`
+	Name  string
+	Image pgtype.Text
+	ID    pgtype.UUID
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/features/home"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -27,7 +28,7 @@ func TestController_Ping(t *testing.T) {
 			t.Errorf("got %d, want status 200", w.Code)
 		}
 
-		var res api.SuccessResponse[home.PingResponse]
+		var res api.SuccessResponse[model.Ping]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)

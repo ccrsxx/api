@@ -9,54 +9,54 @@ import (
 )
 
 type Account struct {
-	ID                pgtype.UUID        `json:"id"`
-	UserID            pgtype.UUID        `json:"userId"`
-	Provider          string             `json:"provider"`
-	ProviderAccountID string             `json:"providerAccountId"`
-	Username          pgtype.Text        `json:"username"`
-	CreatedAt         pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt         pgtype.Timestamptz `json:"updatedAt"`
+	ID                pgtype.UUID
+	UserID            pgtype.UUID
+	Provider          string
+	ProviderAccountID string
+	Username          pgtype.Text
+	CreatedAt         pgtype.Timestamptz
+	UpdatedAt         pgtype.Timestamptz
 }
 
 type Content struct {
-	ID        pgtype.UUID        `json:"id"`
-	Slug      string             `json:"slug"`
-	Type      string             `json:"type"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+	ID        pgtype.UUID
+	Slug      string
+	Type      string
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 type ContentMetum struct {
-	ID          pgtype.UUID        `json:"id"`
-	ContentID   pgtype.UUID        `json:"contentId"`
-	IpAddressID pgtype.UUID        `json:"ipAddressId"`
-	Views       int32              `json:"views"`
-	Likes       int32              `json:"likes"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	ID          pgtype.UUID
+	ContentID   pgtype.UUID
+	IpAddressID pgtype.UUID
+	Views       int32
+	Likes       int32
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 type Guestbook struct {
-	ID        pgtype.UUID        `json:"id"`
-	Text      string             `json:"text"`
-	UserID    pgtype.UUID        `json:"userId"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+	ID        pgtype.UUID
+	Text      string
+	UserID    pgtype.UUID
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 type IpAddress struct {
-	ID        pgtype.UUID        `json:"id"`
-	IpAddress string             `json:"ipAddress"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+	ID        pgtype.UUID
+	IpAddress string
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 type User struct {
-	ID        pgtype.UUID        `json:"id"`
-	Name      string             `json:"name"`
-	Role      string             `json:"role"`
-	Image     pgtype.Text        `json:"image"`
-	Email     pgtype.Text        `json:"email"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+	ID        pgtype.UUID
+	Name      string
+	Role      string
+	Image     pgtype.Text
+	Email     pgtype.Text
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }

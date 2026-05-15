@@ -75,7 +75,7 @@ func TestService_CreateGuestbook(t *testing.T) {
 			t.Fatalf("unwanted error: %v", err)
 		}
 
-		if result.ID != mockCreateGuestbookRow.ID {
+		if result.ID != uuid.UUID(mockCreateGuestbookRow.ID.Bytes).String() {
 			t.Errorf("got %v, want %v", result.ID, mockCreateGuestbookRow.ID)
 		}
 	})

@@ -42,9 +42,9 @@ WHERE (
 `
 
 type GetContentStatsByTypeRow struct {
-	TotalPosts int64 `json:"totalPosts"`
-	TotalViews int64 `json:"totalViews"`
-	TotalLikes int64 `json:"totalLikes"`
+	TotalPosts int64
+	TotalViews int64
+	TotalLikes int64
 }
 
 func (q *Queries) GetContentStatsByType(ctx context.Context, type_ string) (GetContentStatsByTypeRow, error) {
@@ -71,10 +71,10 @@ ORDER BY c.created_at
 `
 
 type ListContentByTypeRow struct {
-	Slug  string `json:"slug"`
-	Type  string `json:"type"`
-	Views int64  `json:"views"`
-	Likes int64  `json:"likes"`
+	Slug  string
+	Type  string
+	Views int64
+	Likes int64
 }
 
 func (q *Queries) ListContentByType(ctx context.Context, type_ string) ([]ListContentByTypeRow, error) {
@@ -111,8 +111,8 @@ RETURNING id, slug, type, created_at, updated_at
 `
 
 type UpsertContentParams struct {
-	Slug string `json:"slug"`
-	Type string `json:"type"`
+	Slug string
+	Type string
 }
 
 func (q *Queries) UpsertContent(ctx context.Context, arg UpsertContentParams) (Content, error) {

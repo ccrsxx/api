@@ -8,6 +8,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -50,56 +51,59 @@ func (s *Service) getContentBySlug(ctx context.Context, slug string) (sqlc.Conte
 	return content, nil
 }
 
-func (s *Service) getLikeStatus(ctx context.Context, contentID pgtype.UUID, ipAddressID pgtype.UUID) (sqlc.GetContentLikeStatusRow, error) {
+func (s *Service) getLikeStatus(ctx context.Context, contentID pgtype.UUID, ipAddressID pgtype.UUID) (model.LikeStatus, error) {
 	status, err := s.db.GetContentLikeStatus(ctx, sqlc.GetContentLikeStatusParams{
 		ContentID:   contentID,
 		IpAddressID: ipAddressID,
 	})
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, fmt.Errorf("get content like status error: %w", err)
+		return model.LikeStatus{}, fmt.Errorf("get content like status error: %w", err)
 	}
 
-	return status, nil
+	return model.LikeStatus{
+		Likes:     status.Likes,
+		UserLikes: status.UserLikes,
+	}, nil
 }
 
-func (s *Service) GetLikeStatus(ctx context.Context, slug string, ipAddress string) (sqlc.GetContentLikeStatusRow, error) {
+func (s *Service) GetLikeStatus(ctx context.Context, slug string, ipAddress string) (model.LikeStatus, error) {
 	content, err := s.getContentBySlug(ctx, slug)
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, err
+		return model.LikeStatus{}, err
 	}
 
 	ip, err := s.db.UpsertIPAddress(ctx, ipAddress)
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, fmt.Errorf("upsert ip address error: %w", err)
+		return model.LikeStatus{}, fmt.Errorf("upsert ip address error: %w", err)
 	}
 
 	return s.getLikeStatus(ctx, content.ID, ip.ID)
 }
 
-func (s *Service) IncrementLike(ctx context.Context, slug string, ipAddress string) (sqlc.GetContentLikeStatusRow, error) {
+func (s *Service) IncrementLike(ctx context.Context, slug string, ipAddress string) (model.LikeStatus, error) {
 	content, err := s.getContentBySlug(ctx, slug)
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, err
+		return model.LikeStatus{}, err
 	}
 
 	ip, err := s.db.UpsertIPAddress(ctx, ipAddress)
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, fmt.Errorf("upsert ip address error: %w", err)
+		return model.LikeStatus{}, fmt.Errorf("upsert ip address error: %w", err)
 	}
 
 	status, err := s.getLikeStatus(ctx, content.ID, ip.ID)
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, err
+		return model.LikeStatus{}, err
 	}
 
 	if status.UserLikes >= 5 {
-		return sqlc.GetContentLikeStatusRow{}, &api.HTTPError{
+		return model.LikeStatus{}, &api.HTTPError{
 			Message:    "Likes limit reached",
 			StatusCode: http.StatusUnprocessableEntity,
 		}
@@ -111,7 +115,7 @@ func (s *Service) IncrementLike(ctx context.Context, slug string, ipAddress stri
 	})
 
 	if err != nil {
-		return sqlc.GetContentLikeStatusRow{}, fmt.Errorf("create content like error: %w", err)
+		return model.LikeStatus{}, fmt.Errorf("create content like error: %w", err)
 	}
 
 	return s.getLikeStatus(ctx, content.ID, ip.ID)

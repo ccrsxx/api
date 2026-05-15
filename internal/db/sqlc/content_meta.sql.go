@@ -24,13 +24,13 @@ WHERE content_id = $2
 `
 
 type GetContentLikeStatusParams struct {
-	IpAddressID pgtype.UUID `json:"ipAddressId"`
-	ContentID   pgtype.UUID `json:"contentId"`
+	IpAddressID pgtype.UUID
+	ContentID   pgtype.UUID
 }
 
 type GetContentLikeStatusRow struct {
-	Likes     int64 `json:"likes"`
-	UserLikes int64 `json:"userLikes"`
+	Likes     int64
+	UserLikes int64
 }
 
 func (q *Queries) GetContentLikeStatus(ctx context.Context, arg GetContentLikeStatusParams) (GetContentLikeStatusRow, error) {
@@ -48,8 +48,8 @@ WHERE content_id = $1
 `
 
 type GetTotalContentMetaRow struct {
-	TotalViews int64 `json:"totalViews"`
-	TotalLikes int64 `json:"totalLikes"`
+	TotalViews int64
+	TotalLikes int64
 }
 
 func (q *Queries) GetTotalContentMeta(ctx context.Context, contentID pgtype.UUID) (GetTotalContentMetaRow, error) {
@@ -70,13 +70,13 @@ RETURNING views,
 `
 
 type IncrementContentLikeParams struct {
-	ContentID   pgtype.UUID `json:"contentId"`
-	IpAddressID pgtype.UUID `json:"ipAddressId"`
+	ContentID   pgtype.UUID
+	IpAddressID pgtype.UUID
 }
 
 type IncrementContentLikeRow struct {
-	Views int32 `json:"views"`
-	Likes int32 `json:"likes"`
+	Views int32
+	Likes int32
 }
 
 func (q *Queries) IncrementContentLike(ctx context.Context, arg IncrementContentLikeParams) (IncrementContentLikeRow, error) {
@@ -97,13 +97,13 @@ RETURNING views,
 `
 
 type IncrementContentViewParams struct {
-	ContentID   pgtype.UUID `json:"contentId"`
-	IpAddressID pgtype.UUID `json:"ipAddressId"`
+	ContentID   pgtype.UUID
+	IpAddressID pgtype.UUID
 }
 
 type IncrementContentViewRow struct {
-	Views int32 `json:"views"`
-	Likes int32 `json:"likes"`
+	Views int32
+	Likes int32
 }
 
 func (q *Queries) IncrementContentView(ctx context.Context, arg IncrementContentViewParams) (IncrementContentViewRow, error) {

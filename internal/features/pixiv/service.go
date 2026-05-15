@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/ccrsxx/api/internal/clients/pixiv"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/utils"
 )
 
@@ -31,28 +31,16 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-type Bookmark struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	ArtistID    string    `json:"artistId"`
-	ArtistName  string    `json:"artistName"`
-	ImageURL    string    `json:"imageUrl"`
-	PixivURL    string    `json:"pixivUrl"`
-	Width       int       `json:"width"`
-	Height      int       `json:"height"`
-	Tags        []string  `json:"tags"`
-	AiGenerated bool      `json:"aiGenerated"`
-	CreatedAt   time.Time `json:"createdAt"`
-}
 
-func (s *Service) GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility, page int) ([]Bookmark, utils.OffsetPaginationMeta, error) {
+
+func (s *Service) GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility, page int) ([]model.Bookmark, utils.OffsetPaginationMeta, error) {
 	artworks, total, err := s.client.GetBookmarks(ctx, visibility, page)
 
 	if err != nil {
 		return nil, utils.OffsetPaginationMeta{}, fmt.Errorf("pixiv bookmarks error: %w", err)
 	}
 
-	bookmarks := make([]Bookmark, 0, len(artworks))
+	bookmarks := make([]model.Bookmark, 0, len(artworks))
 
 	for _, artwork := range artworks {
 		bookmark, err := parseArtworkToBookmark(artwork, s.pixivImageURL)
@@ -74,8 +62,8 @@ func (s *Service) GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVis
 	return bookmarks, paginationMeta.Meta, nil
 }
 
-func (s *Service) GetAllBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility) ([]Bookmark, error) {
-	var allBookmarks []Bookmark
+func (s *Service) GetAllBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility) ([]model.Bookmark, error) {
+	var allBookmarks []model.Bookmark
 
 	for page := 1; ; page++ {
 		bookmarks, meta, err := s.GetBookmarks(ctx, visibility, page)
