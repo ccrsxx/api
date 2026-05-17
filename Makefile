@@ -79,7 +79,7 @@ setup-scripts:
 setup: setup-tools setup-hooks setup-scripts
 
 openapi-generate:
-	npm run start:no-commit --prefix ./scripts
+	 run start --prefix ./scripts
 
 openapi-generate-commit:
-	npm run start --prefix ./scripts
+    npm run start:commit --prefix ./scripts

@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node openapi.ts",
-    "start:no-commit": "node openapi.ts --no-commit"
+    "start": "ts-node index.ts",
+    "start:commit": "ts-node index.ts --commit"
   },
   "keywords": [],
   "author": "",
