@@ -12,6 +12,7 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/model"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -245,14 +246,11 @@ type sseData struct {
 }
 
 func (s *Service) getSSEData(ctx context.Context) sseData {
-	var wg sync.WaitGroup
 	var spotifyData, jellyfinData model.CurrentlyPlaying
 
-	wg.Add(2)
+	g, ctx := errgroup.WithContext(ctx)
 
-	go func() {
-		defer wg.Done()
-
+	g.Go(func() error {
 		data, err := s.spotifyService.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
@@ -260,15 +258,15 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 
 			spotifyData = model.NewDefaultCurrentlyPlaying(model.PlatformSpotify)
 
-			return
+			return nil
 		}
 
 		spotifyData = data
-	}()
 
-	go func() {
-		defer wg.Done()
+		return nil
+	})
 
+	g.Go(func() error {
 		data, err := s.jellyfinService.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
@@ -276,13 +274,16 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 
 			jellyfinData = model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 
-			return
+			return nil
 		}
 
 		jellyfinData = data
-	}()
 
-	wg.Wait()
+		return nil
+	})
+
+	// Ignore error because we handle it inside the goroutines with fallback value
+	_ = g.Wait()
 
 	spotifyJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": spotifyData})
 	jellyfinJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": jellyfinData})

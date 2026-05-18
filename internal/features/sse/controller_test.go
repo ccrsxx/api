@@ -7,31 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestController_getCurrentPlayingSSE(t *testing.T) {
-	setupTest := func(ctx context.Context) (*Controller, *Service) {
-		dummySpotify := &mockDataFetcher{
-			result: model.NewDefaultCurrentlyPlaying(model.PlatformSpotify),
-		}
-
-		dummyJellyfin := &mockDataFetcher{
-			result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
-		}
-
-		svc := NewService(ServiceConfig{
-			PollInterval:    10 * time.Millisecond,
-			SpotifyService:  dummySpotify,
-			JellyfinService: dummyJellyfin,
-		})
-
-		ctrl := NewController(ctx, svc)
-
-		return ctrl, svc
-	}
-
 	t.Run("Client Channel Closed Externally", func(t *testing.T) {
 		ctx := t.Context()
 

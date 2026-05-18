@@ -19,9 +19,32 @@ func (m *mockDataFetcher) GetCurrentlyPlaying(ctx context.Context) (model.Curren
 	return m.result, m.err
 }
 
+func setupTest(ctx context.Context) (*Controller, *Service) {
+	dummySpotify := &mockDataFetcher{
+		result: model.NewDefaultCurrentlyPlaying(model.PlatformSpotify),
+	}
+
+	dummyJellyfin := &mockDataFetcher{
+		result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
+	}
+
+	svc := NewService(ServiceConfig{
+		AppContext:      ctx,
+		PollInterval:    10 * time.Millisecond,
+		SpotifyService:  dummySpotify,
+		JellyfinService: dummyJellyfin,
+	})
+
+	ctrl := NewController(ctx, svc)
+
+	return ctrl, svc
+}
+
 func TestService_IsConnectionAllowed(t *testing.T) {
 	t.Run("Allowed", func(t *testing.T) {
-		svc := NewService(ServiceConfig{})
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
 
 		if err := svc.IsConnectionAllowed("1.1.1.1"); err != nil {
 			t.Errorf("got %v, want allowed", err)
@@ -29,7 +52,10 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 	})
 
 	t.Run("IP Limit Reached", func(t *testing.T) {
-		svc := NewService(ServiceConfig{})
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
+
 		ip := "2.2.2.2"
 
 		// Access private fields safely since we are in the sse package
@@ -43,7 +69,9 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 	})
 
 	t.Run("Global Limit Reached", func(t *testing.T) {
-		svc := NewService(ServiceConfig{})
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
 
 		// Fake filling the map
 		for range maxGlobalClients {
@@ -60,29 +88,13 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 }
 
 func TestService_AddRemoveClient(t *testing.T) {
-	setupService := func() *Service {
-		dummySpotify := &mockDataFetcher{
-			result: model.NewDefaultCurrentlyPlaying(model.PlatformSpotify),
-		}
-
-		dummyJellyfin := &mockDataFetcher{
-			result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
-		}
-
-		return NewService(ServiceConfig{
-			PollInterval:    10 * time.Millisecond,
-			SpotifyService:  dummySpotify,
-			JellyfinService: dummyJellyfin,
-		})
-	}
-
 	t.Run("Add or Remove Client Lifecycle", func(t *testing.T) {
-		svc := setupService()
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
 
 		// Use buffered channel matching production controller
 		clientChan := make(chan string, 4)
-
-		ctx := t.Context()
 
 		// Add Client
 		svc.AddClient(ctx, clientChan, "127.0.0.1", "TestAgent")
@@ -135,7 +147,9 @@ func TestService_AddRemoveClient(t *testing.T) {
 	})
 
 	t.Run("Client Channel Closed Before first message", func(t *testing.T) {
-		svc := setupService()
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
 
 		clientChan := make(chan string, 4)
 
