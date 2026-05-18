@@ -35,6 +35,7 @@ type Service struct {
 	mu              sync.RWMutex
 	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
+	appContext      context.Context
 	pollInterval    time.Duration
 	spotifyService  dataFetcher
 	ipAddressCounts map[string]int
@@ -42,6 +43,7 @@ type Service struct {
 }
 
 type ServiceConfig struct {
+	AppContext      context.Context
 	PollInterval    time.Duration
 	SpotifyService  dataFetcher
 	JellyfinService dataFetcher
@@ -56,6 +58,7 @@ func NewService(cfg ServiceConfig) *Service {
 		clients:         map[chan string]clientMetadata{},
 		ipAddressCounts: map[string]int{},
 
+		appContext:      cfg.AppContext,
 		pollInterval:    cfg.PollInterval,
 		spotifyService:  cfg.SpotifyService,
 		jellyfinService: cfg.JellyfinService,
@@ -197,14 +200,18 @@ func (s *Service) pollLoop(stopChan chan struct{}) {
 
 	defer ticker.Stop()
 
-	ctx := context.Background()
-
 	for {
 		select {
 		case <-stopChan:
-			return // Exit goroutine / cancel polling
+			// Note: intentionally do NOT listen to <-s.appContext.Done() here.
+			// Doing so would cause a hard exit and bypass the graceful teardown.
+			// Instead, let the controller catch the global shutdown, trigger RemoveClient,
+			// and once the last client is removed, stopChan is safely closed here.
+			return
 		case <-ticker.C:
-			s.pollAndBroadcast(ctx)
+			// pass appContext down purely to instantly abort any hanging
+			// network requests to Spotify/Jellyfin during a shutdown.
+			s.pollAndBroadcast(s.appContext)
 		}
 	}
 }

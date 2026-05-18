@@ -136,6 +136,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		sse.Config{
 			Router: router,
 			Service: sse.NewService(sse.ServiceConfig{
+				AppContext:      ctx,
 				SpotifyService:  spotifyService,
 				JellyfinService: jellyfinService,
 			}),
