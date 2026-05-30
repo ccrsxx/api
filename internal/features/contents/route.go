@@ -20,7 +20,7 @@ func LoadRoutes(cfg Config) {
 	mux.HandleFunc("GET /", ctrl.GetContentsData)
 
 	mux.Handle("POST /",
-		cfg.AuthMiddleware.IsAuthorized(
+		cfg.AuthMiddleware.IsAuthorizedFromBearer(
 			http.HandlerFunc(ctrl.UpsertContent),
 		),
 	)

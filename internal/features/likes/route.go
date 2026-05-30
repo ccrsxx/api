@@ -20,7 +20,7 @@ func LoadRoutes(cfg Config) {
 	mux.HandleFunc("GET /{slug}", ctrl.GetLikeStatus)
 
 	mux.Handle("POST /{slug}",
-		cfg.AuthMiddleware.IsAuthorized(
+		cfg.AuthMiddleware.IsAuthorizedFromBearer(
 			http.HandlerFunc(ctrl.IncrementLike),
 		),
 	)

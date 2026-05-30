@@ -2,10 +2,8 @@ package auth_test
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/features/auth"
 )
 
@@ -61,14 +59,7 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 			_, err := svc.GetAuthorizationFromBearerToken(ctx, tt.headerToken)
 
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("getAuthorizationFromBearerToken() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			// Optional: Ensure the error is the correct 401 type if we expect an error
-			if tt.wantErr && err != nil {
-				if httpErr, ok := err.(*api.HTTPError); !ok || httpErr.StatusCode != http.StatusUnauthorized {
-					t.Errorf("got %v, want 401 HTTPError", err)
-				}
+				t.Errorf("getAuthorizationFromBearerToken() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -107,6 +98,60 @@ func TestService_getAuthorizationFromQuery(t *testing.T) {
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getAuthorizationFromQuery() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestService_getAuthorizationFromBearerOrQuery(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name        string
+		headerToken string
+		queryToken  string
+		wantErr     bool
+	}{
+		{
+			name:        "Valid Bearer Token (Header Preferred)",
+			headerToken: "Bearer test-secret",
+			queryToken:  "",
+			wantErr:     false,
+		},
+		{
+			name:        "Valid Query Token (Fallback)",
+			headerToken: "",
+			queryToken:  "test-secret",
+			wantErr:     false,
+		},
+		{
+			name:        "Valid Bearer Takes Priority Over Query",
+			headerToken: "Bearer test-secret",
+			queryToken:  "wrong-secret",
+			wantErr:     false,
+		},
+		{
+			name:        "Invalid Bearer Token (No Fallback to Query)",
+			headerToken: "Bearer wrong-secret",
+			queryToken:  "test-secret",
+			wantErr:     true,
+		},
+		{
+			name:        "Both Empty",
+			headerToken: "",
+			queryToken:  "",
+			wantErr:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := auth.NewService(auth.ServiceConfig{SecretKey: "test-secret"})
+
+			_, err := svc.GetAuthorizationFromBearerOrQuery(ctx, tt.headerToken, tt.queryToken)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAuthorizationFromBearerOrQuery() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

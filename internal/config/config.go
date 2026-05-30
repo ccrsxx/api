@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -92,10 +91,7 @@ func Load() AppConfig {
 	// This reads from the actual environment (System + Loaded Files).
 	// If "APP_ENV" is invalid or "PORT" is missing, this crashes the app HERE.
 	if err := env.Parse(&appConfig); err != nil {
-		slog.Error("env parse error", "error", err)
-
-		// Panic instead of os.Exit(1) so we can test the failure state!
-		panic(err)
+		panic(fmt.Errorf("env parse error: %w", err))
 	}
 
 	appConfig.IsProduction = appConfig.AppEnv == EnvironmentProduction

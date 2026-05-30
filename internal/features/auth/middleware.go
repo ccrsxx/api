@@ -16,7 +16,7 @@ func NewMiddleware(svc *Service) *Middleware {
 	}
 }
 
-func (m *Middleware) IsAuthorized(next http.Handler) http.Handler {
+func (m *Middleware) IsAuthorizedFromBearer(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headerToken := r.Header.Get("Authorization")
 
@@ -36,6 +36,22 @@ func (m *Middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
 		queryToken := r.URL.Query().Get("token")
 
 		_, err := m.service.GetAuthorizationFromQuery(r.Context(), queryToken)
+
+		if err != nil {
+			api.HandleHTTPError(w, r, err)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (m *Middleware) IsAuthorizedFromBearerOrQuery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		headerToken := r.Header.Get("Authorization")
+		queryToken := r.URL.Query().Get("token")
+
+		_, err := m.service.GetAuthorizationFromBearerOrQuery(r.Context(), headerToken, queryToken)
 
 		if err != nil {
 			api.HandleHTTPError(w, r, err)

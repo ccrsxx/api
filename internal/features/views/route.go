@@ -24,7 +24,7 @@ func LoadRoutes(cfg Config) {
 	mux.HandleFunc("GET /{slug}", ctrl.GetViewCount)
 
 	mux.Handle("POST /{slug}",
-		cfg.AuthMiddleware.IsAuthorized(
+		cfg.AuthMiddleware.IsAuthorizedFromBearer(
 			middleware.RateLimit(cfg.AppContext, 60, 1*time.Hour)(
 				http.HandlerFunc(ctrl.IncrementView),
 			),

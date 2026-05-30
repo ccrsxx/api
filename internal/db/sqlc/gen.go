@@ -2,7 +2,7 @@ package sqlc
 
 import (
 	"context"
-	"log/slog"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -11,13 +11,11 @@ func NewQueries(ctx context.Context, databaseString string) (*pgxpool.Pool, *Que
 	pool, err := pgxpool.New(ctx, databaseString)
 
 	if err != nil {
-		slog.Error("db creation error", "error", err)
-		panic(err)
+		panic(fmt.Errorf("db create error: %w", err))
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		slog.Error("db ping error", "error", err)
-		panic(err)
+		panic(fmt.Errorf("db ping error : %w", err))
 	}
 
 	queries := New(pool)

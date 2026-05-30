@@ -128,6 +128,14 @@ func (s *Service) GetAuthorizationFromQuery(_ context.Context, queryToken string
 	return queryToken, nil
 }
 
+func (s *Service) GetAuthorizationFromBearerOrQuery(ctx context.Context, headerToken, queryToken string) (string, error) {
+	if headerToken != "" {
+		return s.GetAuthorizationFromBearerToken(ctx, headerToken)
+	}
+
+	return s.GetAuthorizationFromQuery(ctx, queryToken)
+}
+
 func (s *Service) IsAdminFromOauth(ctx context.Context) (bool, error) {
 	user, err := GetUserFromContext(ctx)
 

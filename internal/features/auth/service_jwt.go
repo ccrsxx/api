@@ -39,10 +39,10 @@ func (s *Service) GenerateOauthToken(userID string) (string, error) {
 func (s *Service) ValidateOauthToken(ctx context.Context, r *http.Request) (sqlc.GetUserWithAccountByIDRow, error) {
 	oauthToken, err := r.Cookie("oauth-token")
 
-	// TODO: add check for http.ErrNoCookie
-
+	// r.Cookie returns always return nil or ErrNoCookie
+	// Checking just generic error is enough to assume no cookie found
 	if err != nil {
-		slog.Warn("jwt validate cookie token error", "error", err)
+		slog.Warn("jwt validate missing token error", "error", err)
 
 		return sqlc.GetUserWithAccountByIDRow{}, &api.HTTPError{
 			Message:    "Invalid token",
