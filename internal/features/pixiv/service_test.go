@@ -109,7 +109,7 @@ func TestService_GetBookmarks(t *testing.T) {
 }
 
 func TestService_GetAllBookmarks(t *testing.T) {
-	t.Run("Success Single Page", func(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
 		mock := &mockPixivClient{
 			artworks: []pixiv.Artwork{
 				{
