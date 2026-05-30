@@ -18,13 +18,13 @@ func LoadRoutes(cfg Config) {
 	ctrl := NewController(cfg.Service)
 
 	mux.Handle("GET /bookmarks",
-		cfg.AuthMiddleware.IsAuthorized(
+		cfg.AuthMiddleware.IsAuthorizedFromBearer(
 			http.HandlerFunc(ctrl.GetBookmarks),
 		),
 	)
 
 	mux.Handle("GET /bookmarks/all",
-		cfg.AuthMiddleware.IsAuthorized(
+		cfg.AuthMiddleware.IsAuthorizedFromBearer(
 			http.HandlerFunc(ctrl.GetAllBookmarks),
 		),
 	)
