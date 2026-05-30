@@ -1,3 +1,6 @@
+-include .env.local
+export
+
 PKG ?= ./...
 
 AIR_VERSION = v1.65.1

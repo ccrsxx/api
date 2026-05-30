@@ -45,10 +45,10 @@ Steps to run the project locally:
    ```
 
 1. Set up environment variables
-   Create a copy of the `.env.example` file and name it `.env`. Fill in credentials as needed.
+   Create a copy of the `.env.example` file and name it `.env.local`. Fill in credentials as needed.
 
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
    ```
 
 1. Run the app in development
