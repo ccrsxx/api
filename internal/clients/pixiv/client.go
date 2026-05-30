@@ -11,17 +11,20 @@ import (
 )
 
 const (
+	DefaultBaseURL    = "https://pixiv.net"
 	MaxBookmarksLimit = 100
 )
 
 type Config struct {
 	Token      string
+	BaseURL    string
 	HTTPClient *http.Client
 }
 
 type Client struct {
 	token      string
 	userID     string
+	baseURL    string
 	httpClient *http.Client
 }
 
@@ -30,6 +33,10 @@ func NewClient(cfg Config) *Client {
 
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 8 * time.Second}
+	}
+
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = DefaultBaseURL
 	}
 
 	userID := ""
@@ -41,6 +48,7 @@ func NewClient(cfg Config) *Client {
 	return &Client{
 		token:      cfg.Token,
 		userID:     userID,
+		baseURL:    cfg.BaseURL,
 		httpClient: httpClient,
 	}
 }
@@ -48,7 +56,7 @@ func NewClient(cfg Config) *Client {
 func (c *Client) GetBookmarks(ctx context.Context, visibility BookmarkVisibility, page int) ([]Artwork, int, error) {
 	offset := (page - 1) * MaxBookmarksLimit
 
-	url := fmt.Sprintf("https://pixiv.net/ajax/user/%s/illusts/bookmarks?tag=&offset=%d&limit=%d&rest=%s", c.userID, offset, MaxBookmarksLimit, visibility)
+	url := fmt.Sprintf("%s/ajax/user/%s/illusts/bookmarks?tag=&offset=%d&limit=%d&rest=%s", c.baseURL, c.userID, offset, MaxBookmarksLimit, visibility)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 
