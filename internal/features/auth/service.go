@@ -102,11 +102,7 @@ func (s *Service) GetAuthorizationFromBearerToken(_ context.Context, headerToken
 
 	token := parts[1]
 
-	if err := s.validateSecretKey(token); err != nil {
-		return "", err
-	}
-
-	return token, nil
+	return s.validateSecretKey(token)
 }
 
 func (s *Service) GetAuthorizationFromQuery(_ context.Context, queryToken string) (string, error) {
@@ -117,11 +113,7 @@ func (s *Service) GetAuthorizationFromQuery(_ context.Context, queryToken string
 		}
 	}
 
-	if err := s.validateSecretKey(queryToken); err != nil {
-		return "", err
-	}
-
-	return queryToken, nil
+	return s.validateSecretKey(queryToken)
 }
 
 func (s *Service) GetAuthorizationFromBearerOrQuery(ctx context.Context, headerToken, queryToken string) (string, error) {
@@ -156,16 +148,16 @@ func (s *Service) IsAdminFromOauth(ctx context.Context) (bool, error) {
 //
 // Rate limiting (Cloudflare + API Gateway) is the primary defense against
 // brute-force/timing attacks; this is defense-in-depth in case those fail open.
-func (s *Service) validateSecretKey(token string) error {
+func (s *Service) validateSecretKey(token string) (string, error) {
 	tokenHash := sha256.Sum256([]byte(token))
 	secretKeyHash := sha256.Sum256([]byte(s.secretKey))
 
 	if subtle.ConstantTimeCompare(tokenHash[:], secretKeyHash[:]) != 1 {
-		return &api.HTTPError{
+		return "", &api.HTTPError{
 			Message:    "Invalid token",
 			StatusCode: http.StatusUnauthorized,
 		}
 	}
 
-	return nil
+	return token, nil
 }
