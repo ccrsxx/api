@@ -31,6 +31,16 @@ func GetIPAddressFromRequest(r *http.Request) string {
 	return ip
 }
 
+func IsPrivateIP(ip string) bool {
+	parsed := net.ParseIP(ip)
+
+	if parsed == nil {
+		return false
+	}
+
+	return parsed.IsLoopback() || parsed.IsPrivate()
+}
+
 func GetHTTPHeadersFromRequest(r *http.Request) map[string]string {
 	flatHeaders := map[string]string{}
 

@@ -77,7 +77,7 @@ func TestRateLimit(t *testing.T) {
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		r.RemoteAddr = "127.0.0.1:5000"
+		r.RemoteAddr = "8.8.8.8:5000"
 
 		w := httptest.NewRecorder()
 
@@ -85,6 +85,34 @@ func TestRateLimit(t *testing.T) {
 
 		if w.Header().Get("RateLimit-Limit") != "10" {
 			t.Error("wrong limit header")
+		}
+	})
+
+	t.Run("Skips rate limit for private IP", func(t *testing.T) {
+		ctx := t.Context()
+
+		mw := RateLimit(ctx, 1, time.Minute)
+		server := mw(nextHandler)
+
+		privateAddrs := []string{"127.0.0.1:1234", "[::1]:1234", "192.168.1.100:1234"}
+
+		for _, addr := range privateAddrs {
+			r := httptest.NewRequest(http.MethodGet, "/", nil)
+			r.RemoteAddr = addr
+
+			for range 5 {
+				w := httptest.NewRecorder()
+
+				server.ServeHTTP(w, r)
+
+				if w.Code != http.StatusOK {
+					t.Fatalf("private IP %s should not be rate limited, got status %d", addr, w.Code)
+				}
+
+				if w.Header().Get("RateLimit-Limit") != "" {
+					t.Fatalf("private IP %s should not have rate limit headers", addr)
+				}
+			}
 		}
 	})
 }

@@ -80,6 +80,11 @@ func (rl *rateLimiter) getVisitor(ip string) *rate.Limiter {
 func (rl *rateLimiter) handleRateLimit(w http.ResponseWriter, r *http.Request) error {
 	ip := utils.GetIPAddressFromRequest(r)
 
+	// Don't rate limit private IPs (e.g. localhost, internal services)
+	if utils.IsPrivateIP(ip) {
+		return nil
+	}
+
 	limiter := rl.getVisitor(ip)
 
 	allowed := limiter.Allow()

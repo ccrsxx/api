@@ -71,6 +71,65 @@ func TestGetIPAddressFromRequest(t *testing.T) {
 	}
 }
 
+func TestIsPrivateIP(t *testing.T) {
+	tests := []struct {
+		name string
+		ip   string
+		want bool
+	}{
+		{
+			name: "Loopback IPv4",
+			ip:   "127.0.0.1",
+			want: true,
+		},
+		{
+			name: "Loopback IPv6",
+			ip:   "::1",
+			want: true,
+		},
+		{
+			name: "Private 10.x.x.x",
+			ip:   "10.0.0.1",
+			want: true,
+		},
+		{
+			name: "Private 172.16.x.x",
+			ip:   "172.16.0.1",
+			want: true,
+		},
+		{
+			name: "Private 192.168.x.x",
+			ip:   "192.168.1.100",
+			want: true,
+		},
+		{
+			name: "Public IP",
+			ip:   "8.8.8.8",
+			want: false,
+		},
+		{
+			name: "Public 172.32.x.x (Outside Private Range)",
+			ip:   "172.32.0.1",
+			want: false,
+		},
+		{
+			name: "Invalid IP",
+			ip:   "not-an-ip",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := utils.IsPrivateIP(tt.ip)
+
+			if got != tt.want {
+				t.Errorf("IsPrivateIP(%q) = %v, want %v", tt.ip, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetHttpHeadersFromRequest(t *testing.T) {
 	tests := []struct {
 		name    string
