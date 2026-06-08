@@ -2,9 +2,15 @@ package auth_test
 
 import (
 	"context"
+	"errors"
+	"net/http"
+	"strings"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
@@ -154,5 +160,75 @@ func TestService_getAuthorizationFromBearerOrQuery(t *testing.T) {
 				t.Errorf("GetAuthorizationFromBearerOrQuery() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestService_IsAdminFromOauth(t *testing.T) {
+	t.Run("Success (Admin)", func(t *testing.T) {
+		ctx := auth.SetUserContext(context.Background(), sqlc.GetUserWithAccountByIDRow{
+			Name: "Admin User",
+			Role: "admin",
+		})
+
+		svc := auth.NewService(auth.ServiceConfig{})
+
+		isAdmin, err := svc.IsAdminFromOauth(ctx)
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		if !isAdmin {
+			t.Error("expected true, got false")
+		}
+	})
+
+	t.Run("Non-Admin (403 Forbidden)", func(t *testing.T) {
+		ctx := auth.SetUserContext(context.Background(), sqlc.GetUserWithAccountByIDRow{
+			Name: "Regular User",
+			Role: "user",
+		})
+
+		svc := auth.NewService(auth.ServiceConfig{})
+
+		_, err := svc.IsAdminFromOauth(ctx)
+
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+
+		httpErr, ok := errors.AsType[*api.HTTPError](err)
+
+		if !ok {
+			t.Fatalf("got %T, want *api.HTTPError", err)
+		}
+
+		if httpErr.StatusCode != http.StatusForbidden {
+			t.Errorf("got %d, want 403", httpErr.StatusCode)
+		}
+	})
+
+	t.Run("No User in Context", func(t *testing.T) {
+		svc := auth.NewService(auth.ServiceConfig{})
+
+		_, err := svc.IsAdminFromOauth(context.Background())
+
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+
+		if !strings.Contains(err.Error(), "is admin user from context error") {
+			t.Errorf("got %v, want is admin user from context error", err)
+		}
+	})
+}
+
+func TestAuthDatabaseWrapper_WithTx(t *testing.T) {
+	wrapper := &auth.AuthDatabaseWrapper{Queries: &sqlc.Queries{}}
+
+	result := wrapper.WithTx(&test.MockTx{})
+
+	if result == nil {
+		t.Fatal("expected non-nil querier from WithTx")
 	}
 }

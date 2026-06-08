@@ -15,6 +15,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// signToken is a package-level function that can be overridden in tests
+// to simulate signing errors.
+var signToken = func(token *jwt.Token, key []byte) (string, error) {
+	return token.SignedString(key)
+}
+
+// parseToken is a package-level function that can be overridden in tests
+// to simulate parse errors with unexpected claims types.
+var parseToken = func(tokenString string, claims jwt.Claims, keyFunc jwt.Keyfunc, opts ...jwt.ParserOption) (*jwt.Token, error) {
+	return jwt.ParseWithClaims(tokenString, claims, keyFunc, opts...)
+}
+
 func (s *Service) GenerateOauthToken(userID string) (string, error) {
 	currentTime := time.Now()
 
@@ -27,7 +39,7 @@ func (s *Service) GenerateOauthToken(userID string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	ss, err := token.SignedString([]byte(s.jwtSecret))
+	ss, err := signToken(token, []byte(s.jwtSecret))
 
 	if err != nil {
 		return "", fmt.Errorf("jwt sign token error: %w", err)
@@ -50,7 +62,7 @@ func (s *Service) ValidateOauthToken(ctx context.Context, r *http.Request) (sqlc
 		}
 	}
 
-	token, err := jwt.ParseWithClaims(
+	token, err := parseToken(
 		oauthToken.Value,
 		&jwt.RegisteredClaims{},
 		func(token *jwt.Token) (any, error) { return []byte(s.jwtSecret), nil },

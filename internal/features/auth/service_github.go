@@ -73,6 +73,7 @@ func (s *Service) createGithubUser(ctx context.Context, githubUser github.User) 
 		ProviderAccountID: providerAccountID,
 	})
 
+	// If no error, account is guaranteed to exist, we can update user if needed and return
 	if err == nil {
 		return s.updateExistingGithubUser(ctx, account.UserID, githubUser)
 	}
