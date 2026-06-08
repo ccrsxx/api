@@ -533,7 +533,7 @@ func TestService_ValidateOauthState(t *testing.T) {
 		svc := auth.NewService(auth.ServiceConfig{})
 
 		r := httptest.NewRequest(http.MethodGet, "/?state=wrong-state", nil)
-		
+
 		r.AddCookie(&http.Cookie{Name: "oauth-state", Value: "correct-state"})
 
 		_, err := svc.ValidateOauthState(r.Context(), r)
