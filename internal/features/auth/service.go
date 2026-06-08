@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"strings"
@@ -100,11 +102,8 @@ func (s *Service) GetAuthorizationFromBearerToken(_ context.Context, headerToken
 
 	token := parts[1]
 
-	if token != s.secretKey {
-		return "", &api.HTTPError{
-			Message:    "Invalid token",
-			StatusCode: http.StatusUnauthorized,
-		}
+	if err := s.validateSecretKey(token); err != nil {
+		return "", err
 	}
 
 	return token, nil
@@ -118,11 +117,8 @@ func (s *Service) GetAuthorizationFromQuery(_ context.Context, queryToken string
 		}
 	}
 
-	if queryToken != s.secretKey {
-		return "", &api.HTTPError{
-			Message:    "Invalid token",
-			StatusCode: http.StatusUnauthorized,
-		}
+	if err := s.validateSecretKey(queryToken); err != nil {
+		return "", err
 	}
 
 	return queryToken, nil
@@ -151,4 +147,25 @@ func (s *Service) IsAdminFromOauth(ctx context.Context) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// Compare the token against the secret in constant time to avoid leaking
+// information via timing differences. We hash both values first so the
+// comparison runs over fixed-length (32-byte) inputs; subtle.ConstantTimeCompare
+// would otherwise short-circuit on a length mismatch and leak the secret's length.
+//
+// Rate limiting (Cloudflare + API Gateway) is the primary defense against
+// brute-force/timing attacks; this is defense-in-depth in case those fail open.
+func (s *Service) validateSecretKey(token string) error {
+	tokenHash := sha256.Sum256([]byte(token))
+	secretKeyHash := sha256.Sum256([]byte(s.secretKey))
+
+	if subtle.ConstantTimeCompare(tokenHash[:], secretKeyHash[:]) != 1 {
+		return &api.HTTPError{
+			Message:    "Invalid token",
+			StatusCode: http.StatusUnauthorized,
+		}
+	}
+
+	return nil
 }
