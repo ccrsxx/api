@@ -9,26 +9,11 @@ import (
 
 var ErrCacheMiss = errors.New("cache miss")
 
-type ProviderCache string
-
-const (
-	ProviderMemory     ProviderCache = "memory"
-	ProviderCloudflare ProviderCache = "cloudflare-kv"
-)
-
-type cache interface {
+// Cache defines the standard behavior for all cache providers.
+type Cache interface {
 	Get(ctx context.Context, key string) (any, error)
 	Set(ctx context.Context, key string, value any, ttl time.Duration) error
 	Delete(ctx context.Context, key string) error
-}
-
-var cacheManager = &CacheManager{
-	memory: newMemoryCache(defaultCleanupInterval),
-}
-
-type CacheManager struct {
-	memory cache
-	// TODO: Add Cloudflare KV later
 }
 
 func StaticTTL[T any](d time.Duration) func(T) time.Duration {
@@ -37,31 +22,22 @@ func StaticTTL[T any](d time.Duration) func(T) time.Duration {
 	}
 }
 
-func GetCachedData[T any](
+// GetOrFetch tries to get data from the injected Cache client.
+// If it misses, it runs the fetcher and sets the data in the background.
+func GetOrFetch[T any](
 	ctx context.Context,
+	client Cache,
 	key string,
-	provider ProviderCache,
 	fetcher func() (T, error),
 	ttlFunc func(T) time.Duration,
 ) (T, error) {
 	var empty T
 
-	var client cache
-
-	switch provider {
-	case ProviderCloudflare:
-		// TODO: Add Cloudflare KV later
-		client = nil
-	case ProviderMemory:
-		client = cacheManager.memory
-	}
-
-	// Fallback to memory cache if no client is specified
 	if client == nil {
-		client = cacheManager.memory
+		return fetcher()
 	}
 
-	slog.Debug("get cached data", "key", key, "provider", provider)
+	slog.Debug("get cached data", "key", key)
 
 	val, err := client.Get(ctx, key)
 

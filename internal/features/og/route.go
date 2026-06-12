@@ -4,6 +4,14 @@ import (
 	"net/http"
 )
 
-func LoadRoutes(router *http.ServeMux) {
-	router.HandleFunc("/og", Controller.getOg)
+type Config struct {
+	Router           *http.ServeMux
+	Service          *Service
+	ControllerConfig ControllerConfig
+}
+
+func LoadRoutes(cfg Config) {
+	ctrl := NewController(cfg.Service, cfg.ControllerConfig)
+
+	cfg.Router.HandleFunc("/og", ctrl.GetOg)
 }

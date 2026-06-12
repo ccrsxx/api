@@ -1,43 +1,135 @@
-package config
+package config_test
 
-import "testing"
+import (
+	"testing"
 
-func TestLoadConfig(t *testing.T) {
-	tests := []struct {
-		name     string
-		envVal   EnvironmentApp
-		wantProd bool
-		wantDev  bool
-	}{
-		{
-			name:     "Production Environment",
-			envVal:   EnvironmentProduction,
-			wantProd: true,
-			wantDev:  false,
-		},
-		{
-			name:     "Development Environment",
-			envVal:   EnvironmentDevelopment,
-			wantProd: false,
-			wantDev:  true,
-		},
-	}
+	"github.com/ccrsxx/api/internal/config"
+)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			envInstance = appEnv{AppEnv: tt.envVal}
+// Helper to quickly set all required env vars for a successful parse
+func setValidEnv(t *testing.T, appEnv string) {
+	t.Setenv("PORT", "8080")
+	t.Setenv("OG_URL", "http://localhost")
+	t.Setenv("APP_ENV", appEnv)
+	t.Setenv("FRONTEND_BASE_URL", "localhost")
+	t.Setenv("FRONTEND_PUBLIC_URL", "http://localhost")
+	t.Setenv("SECRET_KEY", "secret")
+	t.Setenv("JWT_SECRET", "jwt-secret")
+	t.Setenv("EMAIL_TARGET", "target@example.com")
+	t.Setenv("EMAIL_ADDRESS", "sender@example.com")
+	t.Setenv("EMAIL_PASSWORD", "password")
+	t.Setenv("OAUTH_GITHUB_CLIENT_ID", "id")
+	t.Setenv("OAUTH_GITHUB_CLIENT_SECRET", "secret")
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/dbname")
+	t.Setenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
+	t.Setenv("PRIVATE_SECRET_KEY", "private-secret")
+	t.Setenv("IPINFO_TOKEN", "token")
+	t.Setenv("JELLYFIN_URL", "url")
+	t.Setenv("JELLYFIN_API_KEY", "key")
+	t.Setenv("JELLYFIN_USERNAME", "user")
+	t.Setenv("JELLYFIN_IMAGE_URL", "img")
+	t.Setenv("SPOTIFY_CLIENT_ID", "id")
+	t.Setenv("SPOTIFY_CLIENT_SECRET", "secret")
+	t.Setenv("SPOTIFY_REFRESH_TOKEN", "refresh")
+	t.Setenv("PIXIV_TOKEN", "123456_abc123")
+	t.Setenv("PIXIV_IMAGE_URL", "https://example.com")
+}
 
-			LoadConfig()
+func TestLoad_Success(t *testing.T) {
+	t.Run("Development Mode", func(t *testing.T) {
+		setValidEnv(t, string(config.EnvironmentDevelopment))
 
-			got := Config()
+		cfg := config.Load()
 
-			if got.IsProduction != tt.wantProd {
-				t.Errorf("IsProduction = %v, want %v", got.IsProduction, tt.wantProd)
-			}
+		if cfg.Port != 8080 {
+			t.Errorf("got port %d, want 8080", cfg.Port)
+		}
 
-			if got.IsDevelopment != tt.wantDev {
-				t.Errorf("IsDevelopment = %v, want %v", got.IsDevelopment, tt.wantDev)
-			}
-		})
-	}
+		if len(cfg.AllowedOrigins) != 2 {
+			t.Errorf("got %d allowed origins, want 2", len(cfg.AllowedOrigins))
+		}
+
+		if !cfg.IsDevelopment {
+			t.Error("want IsDevelopment to be true")
+		}
+
+		if cfg.IsProduction {
+			t.Error("want IsProduction to be false")
+		}
+	})
+
+	t.Run("Production Mode", func(t *testing.T) {
+		setValidEnv(t, string(config.EnvironmentProduction))
+
+		cfg := config.Load()
+
+		if !cfg.IsProduction {
+			t.Error("want IsProduction to be true")
+		}
+
+		if cfg.IsDevelopment {
+			t.Error("want IsDevelopment to be false")
+		}
+	})
+}
+
+func TestLoad_PanicOnMissingEnv(t *testing.T) {
+	// We only set PORT, causing env.Parse to fail on all the other required fields
+	t.Setenv("PORT", "8080")
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Load() did not panic on missing required env vars")
+		}
+	}()
+
+	config.Load()
+}
+
+func TestEnvironmentApp_UnmarshalText(t *testing.T) {
+	t.Run("Valid Environments", func(t *testing.T) {
+		var env config.EnvironmentApp
+
+		if err := env.UnmarshalText([]byte("development")); err != nil {
+			t.Errorf("unwanted error: %v", err)
+		}
+
+		if env != config.EnvironmentDevelopment {
+			t.Errorf("got %v, want development", env)
+		}
+
+		if err := env.UnmarshalText([]byte("production")); err != nil {
+			t.Errorf("unwanted error: %v", err)
+		}
+
+		if env != config.EnvironmentProduction {
+			t.Errorf("got %v, want production", env)
+		}
+	})
+
+	t.Run("Invalid Environment", func(t *testing.T) {
+		var env config.EnvironmentApp
+
+		err := env.UnmarshalText([]byte("staging"))
+
+		if err == nil {
+			t.Error("want error for invalid environment")
+		}
+
+		if env != "" { // Ensure it wasn't set
+			t.Errorf("got %v, want empty", env)
+		}
+	})
+}
+
+func TestLoad_PanicOnInvalidAppEnv(t *testing.T) {
+	setValidEnv(t, "invalid_env_string")
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Load() did not panic on invalid APP_ENV text")
+		}
+	}()
+
+	config.Load()
 }

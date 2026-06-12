@@ -6,21 +6,31 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/config"
 )
 
-type controller struct {
+type Controller struct {
+	service      *Service
+	isProduction bool
 }
 
-var Controller = &controller{}
+type ControllerConfig struct {
+	IsProduction bool
+}
 
-func (c *controller) getOg(w http.ResponseWriter, r *http.Request) {
+func NewController(service *Service, cfg ControllerConfig) *Controller {
+	return &Controller{
+		service:      service,
+		isProduction: cfg.IsProduction,
+	}
+}
+
+func (c *Controller) GetOg(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
-	imageStream, err := Service.getOg(r.Context(), q.Encode())
+	imageStream, err := c.service.GetOg(r.Context(), q.Encode())
 
 	if err != nil {
-		api.HandleHttpError(w, r, err)
+		api.HandleHTTPError(w, r, err)
 		return
 	}
 
@@ -32,7 +42,7 @@ func (c *controller) getOg(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/png")
 
-	if config.Config().IsProduction {
+	if c.isProduction {
 		// Cache Policy: Aggressive (1 Year)
 		// - public:       Allows CDNs and shared proxies to cache this.
 		// - immutable:    Prevents browsers from sending "Is this modified?" (304) checks on refresh.

@@ -7,25 +7,38 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/clients/jellyfin"
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/model"
 )
 
-type service struct {
-	mu            sync.Mutex
-	fetcher       func(context.Context) ([]jellyfin.SessionInfo, error)
-	lastState     *model.CurrentlyPlaying
-	lastStateTime time.Time
+type jellyfinClient interface {
+	GetSessions(context.Context) ([]jellyfin.SessionInfo, error)
 }
 
-var Service = &service{
-	fetcher: func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-		return jellyfin.DefaultClient().GetSessions(ctx)
-	},
+type Service struct {
+	mu               sync.Mutex
+	client           jellyfinClient
+	lastState        *model.CurrentlyPlaying
+	lastStateTime    time.Time
+	jellyfinUsername string
+	jellyfinImageURL string
 }
 
-func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
-	sessions, err := s.fetcher(ctx)
+type ServiceConfig struct {
+	Client           jellyfinClient
+	JellyfinUsername string
+	JellyfinImageURL string
+}
+
+func NewService(cfg ServiceConfig) *Service {
+	return &Service{
+		client:           cfg.Client,
+		jellyfinUsername: cfg.JellyfinUsername,
+		jellyfinImageURL: cfg.JellyfinImageURL,
+	}
+}
+
+func (s *Service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
+	sessions, err := s.client.GetSessions(ctx)
 
 	if err != nil {
 		return model.CurrentlyPlaying{}, fmt.Errorf("jellyfin get sessions error: %w", err)
@@ -34,7 +47,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 	var playingItem *model.CurrentlyPlaying
 
 	for _, session := range sessions {
-		isNotValidUsername := session.UserName == nil || *session.UserName != config.Env().JellyfinUsername
+		isNotValidUsername := session.UserName == nil || *session.UserName != s.jellyfinUsername
 
 		if isNotValidUsername {
 			continue
@@ -52,7 +65,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 			continue
 		}
 
-		playingItem = new(parseJellyfinSessions(session))
+		playingItem = new(parseJellyfinSessions(session, s.jellyfinImageURL))
 
 		break
 	}
@@ -71,7 +84,7 @@ func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlayi
 	return *playingItem, nil
 }
 
-func (s *service) getCachedStateOrEmpty() model.CurrentlyPlaying {
+func (s *Service) getCachedStateOrEmpty() model.CurrentlyPlaying {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -88,7 +101,7 @@ func (s *service) getCachedStateOrEmpty() model.CurrentlyPlaying {
 	return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 }
 
-func (s *service) getExtrapolatedState() model.CurrentlyPlaying {
+func (s *Service) getExtrapolatedState() model.CurrentlyPlaying {
 	if s.lastState == nil || s.lastState.Item == nil {
 		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
 	}

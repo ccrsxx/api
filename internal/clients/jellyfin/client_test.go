@@ -1,4 +1,4 @@
-package jellyfin
+package jellyfin_test
 
 import (
 	"context"
@@ -7,16 +7,16 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
+	"github.com/ccrsxx/api/internal/clients/jellyfin"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestDefaultClient(t *testing.T) {
-	client := DefaultClient()
+func TestNewClient(t *testing.T) {
+	client := jellyfin.NewClient(jellyfin.Config{})
 
 	if client == nil {
-		t.Fatal("want default client, got nil")
+		t.Fatal("want client to be initialized, got nil")
 	}
 }
 
@@ -27,14 +27,14 @@ func TestClient_GetSessions(t *testing.T) {
 
 			id := "1"
 
-			if err := json.NewEncoder(w).Encode([]SessionInfo{{Id: &id}}); err != nil {
+			if err := json.NewEncoder(w).Encode([]jellyfin.SessionInfo{{ID: &id}}); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
 
 		defer mockServer.Close()
 
-		c := New(mockServer.URL, "key", "img", "user")
+		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
 
 		sessions, err := c.GetSessions(context.Background())
 
@@ -48,7 +48,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Request Creation Error", func(t *testing.T) {
-		c := New("http://localhost\x7f", "key", "img", "user")
+		c := jellyfin.NewClient(jellyfin.Config{URL: "http://bad\x7f"})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -58,9 +58,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Network Error", func(t *testing.T) {
-		c := New("http://invalid.url.local", "key", "img", "user")
-
-		c.httpClient.Timeout = 10 * time.Millisecond
+		c := jellyfin.NewClient(jellyfin.Config{URL: "http://invalid.url.local"})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -76,7 +74,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		defer mockServer.Close()
 
-		c := New(mockServer.URL, "key", "img", "user")
+		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -98,7 +96,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		defer mockServer.Close()
 
-		c := New(mockServer.URL, "key", "img", "user")
+		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
 
 		_, err := c.GetSessions(context.Background())
 
@@ -108,14 +106,17 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Body Close Error", func(t *testing.T) {
-		c := New("http://localhost", "key", "img", "user")
-
-		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
-				Header:     make(http.Header),
-			}, nil
+		c := jellyfin.NewClient(jellyfin.Config{
+			URL: "http://example.com",
+			HTTPClient: &http.Client{
+				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
+						Header:     make(http.Header),
+					}, nil
+				}),
+			},
 		})
 
 		_, err := c.GetSessions(context.Background())

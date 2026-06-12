@@ -1,4 +1,4 @@
-package middleware
+package middleware_test
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/middleware"
 )
 
 func TestRecovery(t *testing.T) {
@@ -19,10 +20,10 @@ func TestRecovery(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	Recovery(panicHandler).ServeHTTP(w, r)
+	middleware.Recovery(panicHandler).ServeHTTP(w, r)
 
 	if w.Code != http.StatusInternalServerError {
-		t.Errorf("got status %d, want 500", w.Code)
+		t.Fatalf("got status %d, want 500", w.Code)
 	}
 
 	var res api.ErrorResponse

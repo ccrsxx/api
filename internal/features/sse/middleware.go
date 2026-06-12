@@ -7,16 +7,22 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type middleware struct{}
+type Middleware struct {
+	service *Service
+}
 
-var Middleware = &middleware{}
+func NewMiddleware(svc *Service) *Middleware {
+	return &Middleware{
+		service: svc,
+	}
+}
 
-func (m *middleware) IsConnectionAllowed(next http.Handler) http.Handler {
+func (m *Middleware) IsConnectionAllowed(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ipAddress := utils.GetIpAddressFromRequest(r)
+		ipAddress := utils.GetIPAddressFromRequest(r)
 
-		if err := Service.IsConnectionAllowed(ipAddress); err != nil {
-			api.HandleHttpError(w, r, err)
+		if err := m.service.IsConnectionAllowed(ipAddress); err != nil {
+			api.HandleHTTPError(w, r, err)
 			return
 		}
 

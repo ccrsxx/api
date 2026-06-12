@@ -5,12 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 
 	"github.com/google/uuid"
 )
 
 type SuccessResponse[T any] struct {
+	Data T `json:"data"`
+}
+
+type SuccessPaginatedResponse[T any, M any] struct {
+	Meta M `json:"meta"`
 	Data T `json:"data"`
 }
 
@@ -63,23 +67,24 @@ func newResponse(w http.ResponseWriter, status int, v any) error {
 	return nil
 }
 
+// NewSuccessResponse unconditionally wraps the data in a {"data": ...} struct.
 func NewSuccessResponse[T any](w http.ResponseWriter, statusCode int, data T) error {
-	var response any = data
+	return newResponse(w, statusCode, SuccessResponse[T]{
+		Data: data,
+	})
+}
 
-	val := reflect.ValueOf(data)
-	kind := val.Kind()
+// NewSuccessPaginatedResponse wraps data and meta in a struct.
+func NewSuccessPaginatedResponse[T any, M any](w http.ResponseWriter, statusCode int, meta M, data T) error {
+	return newResponse(w, statusCode, SuccessPaginatedResponse[T, M]{
+		Meta: meta,
+		Data: data,
+	})
+}
 
-	if kind == reflect.Pointer && !val.IsNil() {
-		kind = val.Elem().Kind()
-	}
-
-	if kind == reflect.Struct {
-		response = SuccessResponse[T]{
-			Data: data,
-		}
-	}
-
-	return newResponse(w, statusCode, response)
+// NewSuccessRawResponse writes the data exactly as provided, without wrapping.
+func NewSuccessRawResponse[T any](w http.ResponseWriter, statusCode int, data T) error {
+	return newResponse(w, statusCode, data)
 }
 
 func NewErrorResponse(w http.ResponseWriter, statusCode int, message string, details []string, id string) error {

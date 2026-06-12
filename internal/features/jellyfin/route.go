@@ -6,14 +6,22 @@ import (
 	"github.com/ccrsxx/api/internal/features/auth"
 )
 
-func LoadRoutes(router *http.ServeMux) {
+type Config struct {
+	Router         *http.ServeMux
+	Service        *Service
+	AuthMiddleware *auth.Middleware
+}
+
+func LoadRoutes(cfg Config) {
 	mux := http.NewServeMux()
 
+	ctrl := NewController(cfg.Service)
+
 	mux.Handle("GET /currently-playing",
-		auth.Middleware.IsAuthorized(
-			http.HandlerFunc(Controller.getCurrentlyPlaying),
+		cfg.AuthMiddleware.IsAuthorizedFromBearer(
+			http.HandlerFunc(ctrl.GetCurrentlyPlaying),
 		),
 	)
 
-	router.Handle("/jellyfin/", http.StripPrefix("/jellyfin", mux))
+	cfg.Router.Handle("/jellyfin/", http.StripPrefix("/jellyfin", mux))
 }

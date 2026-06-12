@@ -8,40 +8,49 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/config"
+	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/server"
 )
 
 func main() {
-	server := server.NewServer()
+	cfg := config.Load()
+
+	shutdownCtx, cancelShutdown := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+
+	defer cancelShutdown()
+
+	pool, db := sqlc.NewQueries(shutdownCtx, cfg.DatabaseURL)
+
+	defer pool.Close()
+
+	server := server.New(shutdownCtx, cfg, pool, db)
 
 	go func() {
-		slog.Info("server start listening", "port", server.Addr, "env", config.Env().AppEnv)
+		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)
 
 		if err := server.ListenAndServe(); err != nil {
 			slog.Error("server stop listening", "error", err)
 		}
 	}()
 
-	shutdown, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-
-	defer stop()
-
-	<-shutdown.Done()
+	<-shutdownCtx.Done()
 
 	slog.Info("server stopping gracefully")
 
 	// Allow forced stop signal to exit immediately
 	// Use case: if graceful shutdown is waiting too long, user can send
 	// a second signal (CTRL+C) to force stop the application immediately
-	stop()
+	cancelShutdown()
 
 	// Give the server 60 seconds to shutdown gracefully
 	// Basically a hard timeout to avoid hanging forever
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	// Any open handler will not receive further requests
+	// Ongoing handlers will have 60 seconds to finish before the application is forcefully terminated
+	shutdownTimeoutCtx, cancelShutdownTimeout := context.WithTimeout(context.Background(), 60*time.Second)
 
-	defer cancel()
+	defer cancelShutdownTimeout()
 
-	if err := server.Shutdown(shutdownCtx); err != nil {
+	if err := server.Shutdown(shutdownTimeoutCtx); err != nil {
 		slog.Error("server shutdown failed", "error", err)
 	}
 

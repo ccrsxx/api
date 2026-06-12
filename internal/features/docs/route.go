@@ -1,9 +1,19 @@
 package docs
 
 import (
+	_ "embed"
 	"net/http"
 )
 
-func LoadRoutes(router *http.ServeMux) {
-	router.HandleFunc("GET /docs", Controller.getDocs)
+//go:embed openapi.json
+var openapiSpec []byte
+
+type Config struct {
+	Router *http.ServeMux
+}
+
+func LoadRoutes(cfg Config) {
+	ctrl := NewController(openapiSpec)
+
+	cfg.Router.HandleFunc("GET /docs", ctrl.GetDocs)
 }

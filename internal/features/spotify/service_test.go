@@ -1,24 +1,27 @@
-package spotify
+package spotify_test
 
 import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/ccrsxx/api/internal/clients/spotify"
+	spotifyFeature "github.com/ccrsxx/api/internal/features/spotify"
 )
 
+type mockSpotifyClient struct {
+	result spotify.SpotifyCurrentlyPlaying
+	err    error
+}
+
+func (m *mockSpotifyClient) GetCurrentlyPlaying(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
+	return m.result, m.err
+}
+
 func TestService_GetCurrentlyPlaying(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
-
 	t.Run("Success Playing", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{
+		mock := &mockSpotifyClient{
+			result: spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item: &spotify.SpotifyItem{
 					Name: "Test Song",
@@ -26,10 +29,14 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 						Name: "Test Album",
 					},
 				},
-			}, nil
+			},
 		}
 
-		got, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		got, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -45,11 +52,15 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Success No Content", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{}, spotify.ErrNoContent
+		mock := &mockSpotifyClient{
+			err: spotify.ErrNoContent,
 		}
 
-		got, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		got, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -65,11 +76,15 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Client Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{}, errors.New("network fail")
+		mock := &mockSpotifyClient{
+			err: errors.New("network fail"),
 		}
 
-		got, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		got, err := svc.GetCurrentlyPlaying(context.Background())
 
 		// The service WRAPS the error, so err should NOT be nil
 		if err == nil {
@@ -79,20 +94,6 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		// It should still return a default object even on error
 		if got.IsPlaying {
 			t.Error("want IsPlaying false on error")
-		}
-	})
-
-	t.Run("Default Fetcher Execution for coverage", func(t *testing.T) {
-		f := originalFetcher
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
-
-		defer cancel()
-
-		if _, err := f(ctx); err != nil {
-			// We expect an error here since we likely don't have a Jellyfin server running during tests
-			t.Logf("default fetcher returned want error (no server): %v", err)
-			return
 		}
 	})
 }

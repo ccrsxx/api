@@ -1,29 +1,24 @@
-package docs
+package docs_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_getDocs(t *testing.T) {
-	originalSpec := openapiSpec
-
-	defer func() {
-		openapiSpec = originalSpec
-	}()
-
+func TestController_GetDocs(t *testing.T) {
 	validJSON := []byte(`{"openapi":"3.0.0","info":{"title":"Test","version":"1.0"}}`)
 
 	t.Run("Success", func(t *testing.T) {
-		openapiSpec = validJSON
-
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getDocs(w, r)
+		ctrl := docs.NewController(validJSON)
+
+		ctrl.GetDocs(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
@@ -39,12 +34,12 @@ func TestController_getDocs(t *testing.T) {
 	})
 
 	t.Run("Render Error", func(t *testing.T) {
-		openapiSpec = nil
-
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getDocs(w, r)
+		ctrl := docs.NewController(nil)
+
+		ctrl.GetDocs(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want status 500", w.Code)
@@ -52,12 +47,12 @@ func TestController_getDocs(t *testing.T) {
 	})
 
 	t.Run("Response Write Error", func(t *testing.T) {
-		openapiSpec = validJSON
-
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 		r := httptest.NewRequest(http.MethodGet, "/docs", nil)
 
-		Controller.getDocs(w, r)
+		ctrl := docs.NewController(validJSON)
+
+		ctrl.GetDocs(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

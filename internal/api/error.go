@@ -6,10 +6,15 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/utils"
 	"github.com/google/uuid"
 )
+
+var isDevelopmentMode bool
+
+func Load(isDevelopment bool) {
+	isDevelopmentMode = isDevelopment
+}
 
 type PanicError struct {
 	Value   any
@@ -21,25 +26,25 @@ func (e *PanicError) Error() string {
 	return e.Message
 }
 
-type HttpError struct {
+type HTTPError struct {
 	Message    string
 	Details    []string
 	StatusCode int
 }
 
-func (e *HttpError) Error() string {
+func (e *HTTPError) Error() string {
 	return e.Message
 }
 
-func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
-	errorId := uuid.New().String()
+func HandleHTTPError(w http.ResponseWriter, r *http.Request, err error) {
+	errorID := uuid.New().String()
 
-	ipAddress := utils.GetIpAddressFromRequest(r)
+	ipAddress := utils.GetIPAddressFromRequest(r)
 
 	if panicErr, ok := errors.AsType[*PanicError](err); ok {
 		parsedStack := panicErr.Stack
 
-		if config.Config().IsDevelopment {
+		if isDevelopmentMode {
 			parsedStack = "disabled in development mode"
 
 			fmt.Printf("panic stack trace:\n%s\n", panicErr.Stack)
@@ -50,33 +55,33 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 			"value", panicErr.Value,
 			"stack", parsedStack,
 			"error", err,
-			"error_id", errorId,
+			"error_id", errorID,
 			"path", r.URL.Path,
 			"method", r.Method,
 			"ip_address", ipAddress,
 		)
 
-		if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorId); err != nil {
-			logErrorResponse(err, errorId)
+		if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorID); err != nil {
+			logErrorResponse(err, errorID)
 		}
 
 		return
 	}
 
-	if httpErr, ok := errors.AsType[*HttpError](err); ok {
+	if httpErr, ok := errors.AsType[*HTTPError](err); ok {
 		slog.Error("http handled error",
 			"message", httpErr.Message,
 			"status_code", httpErr.StatusCode,
 			"details", httpErr.Details,
 			"error", err,
-			"error_id", errorId,
+			"error_id", errorID,
 			"path", r.URL.Path,
 			"method", r.Method,
 			"ip_address", ipAddress,
 		)
 
-		if err := NewErrorResponse(w, httpErr.StatusCode, httpErr.Message, httpErr.Details, errorId); err != nil {
-			logErrorResponse(err, errorId)
+		if err := NewErrorResponse(w, httpErr.StatusCode, httpErr.Message, httpErr.Details, errorID); err != nil {
+			logErrorResponse(err, errorID)
 		}
 
 		return
@@ -86,17 +91,17 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 
 	slog.Error("http unhandled error",
 		"error", err,
-		"error_id", errorId,
+		"error_id", errorID,
 		"path", r.URL.Path,
 		"method", r.Method,
 		"ip_address", ipAddress,
 	)
 
-	if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorId); err != nil {
-		logErrorResponse(err, errorId)
+	if err := NewErrorResponse(w, http.StatusInternalServerError, "An internal server error occurred", nil, errorID); err != nil {
+		logErrorResponse(err, errorID)
 	}
 }
 
-func logErrorResponse(err error, errorId string) {
-	slog.Error("send error response failed", "error", err, "error_id", errorId)
+func logErrorResponse(err error, errorID string) {
+	slog.Error("send error response failed", "error", err, "error_id", errorID)
 }

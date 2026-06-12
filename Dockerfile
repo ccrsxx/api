@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-# check=skip=InvalidDefaultArgInFrom
+# check=skip=InvalidDefaultArgInFrom,CopyIgnoredFile
+
+# ---
 
 ARG GO_VERSION
 
@@ -13,11 +15,11 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY cmd cmd
-
-COPY internal internal
+COPY . .
 
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o main ./cmd/api/main.go
+
+# ---
 
 FROM scratch AS final
 
@@ -29,7 +31,9 @@ COPY --from=build /app/main /main
 
 USER 10001:10001
 
-CMD [ "/main" ]
+ENTRYPOINT [ "/main" ]
+
+EXPOSE 4000
 
 LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
     org.opencontainers.image.source="https://github.com/ccrsxx/api" \

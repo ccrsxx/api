@@ -9,18 +9,26 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-type service struct {
-	fetcher func(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
+type spotifyClient interface {
+	GetCurrentlyPlaying(context.Context) (spotify.SpotifyCurrentlyPlaying, error)
 }
 
-var Service = &service{
-	fetcher: func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-		return spotify.DefaultClient().GetCurrentlyPlaying(ctx)
-	},
+type Service struct {
+	client spotifyClient
 }
 
-func (s *service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
-	data, err := s.fetcher(ctx)
+type ServiceConfig struct {
+	Client spotifyClient
+}
+
+func NewService(cfg ServiceConfig) *Service {
+	return &Service{
+		client: cfg.Client,
+	}
+}
+
+func (s *Service) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
+	data, err := s.client.GetCurrentlyPlaying(ctx)
 
 	// Handle 204 No Content case
 	if errors.Is(err, spotify.ErrNoContent) {

@@ -6,11 +6,15 @@ Personal API for my projects and services. Built with Go and a Node.js for the O
 
 Currently available features/endpoints:
 
-- Open Graph image generation (OG images).
-- Spotify endpoints (currently-playing, top tracks, etc.).
-- Jellyfin endpoints (media status).
-- Tools endpoints (headers, IP info, etc.).
+- Auth with GitHub OAuth and JWT session management.
+- Content management for blog and project entries.
+- Content statistics, views, and likes tracking.
+- Guestbook with email notifications on new posts.
+- Pixiv user bookmarks retrieval.
+- Spotify and Jellyfin currently playing endpoints.
 - Real-time updates for Spotify and Jellyfin via Server-Sent Events (SSE).
+- Tools endpoints (IP address, IP info, HTTP headers).
+- Open Graph image generation (OG images).
 
 ## Development
 
@@ -41,10 +45,10 @@ Steps to run the project locally:
    ```
 
 1. Set up environment variables
-   Create a copy of the `.env.example` file and name it `.env`. Fill in credentials as needed.
+   Create a copy of the `.env.example` file and name it `.env.local`. Fill in credentials as needed.
 
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
    ```
 
 1. Run the app in development

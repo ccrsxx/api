@@ -1,4 +1,4 @@
-package jellyfin
+package jellyfin_test
 
 import (
 	"context"
@@ -10,26 +10,34 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/clients/jellyfin"
+	jellyfinFeature "github.com/ccrsxx/api/internal/features/jellyfin"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_getCurrentlyPlaying(t *testing.T) {
-	originalFetcher := Service.fetcher
+type mockJellyfinClient struct {
+	result []jellyfin.SessionInfo
+	err    error
+}
 
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
+func (m *mockJellyfinClient) GetSessions(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+	return m.result, m.err
+}
 
+func TestController_GetCurrentlyPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// We return nil sessions, which results in "Not Playing" (200 OK)
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, nil
-		}
+		mock := &mockJellyfinClient{}
+
+		svc := jellyfinFeature.NewService(jellyfinFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := jellyfinFeature.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("want 200, got %d", w.Code)
@@ -49,14 +57,20 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, errors.New("fail")
+		mock := &mockJellyfinClient{
+			err: errors.New("fail"),
 		}
+
+		svc := jellyfinFeature.NewService(jellyfinFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := jellyfinFeature.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("want 500, got %d", w.Code)
@@ -64,16 +78,20 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, nil
-		}
+		mock := &mockJellyfinClient{}
+
+		svc := jellyfinFeature.NewService(jellyfinFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := jellyfinFeature.NewController(svc)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.getCurrentlyPlaying(errWriter, r)
+		ctrl.GetCurrentlyPlaying(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

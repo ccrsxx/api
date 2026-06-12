@@ -17,7 +17,7 @@ func Recovery(next http.Handler) http.Handler {
 					Message: "Internal server error",
 				}
 
-				api.HandleHttpError(w, r, err)
+				api.HandleHTTPError(w, r, err)
 			}
 		}()
 

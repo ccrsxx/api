@@ -6,18 +6,24 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 )
 
-type middleware struct{}
+type Middleware struct {
+	service *Service
+}
 
-var Middleware = &middleware{}
+func NewMiddleware(svc *Service) *Middleware {
+	return &Middleware{
+		service: svc,
+	}
+}
 
-func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
+func (m *Middleware) IsAuthorizedFromBearer(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headerToken := r.Header.Get("Authorization")
 
-		_, err := Service.getAuthorizationFromBearerToken(r.Context(), headerToken)
+		_, err := m.service.GetAuthorizationFromBearerToken(r.Context(), headerToken)
 
 		if err != nil {
-			api.HandleHttpError(w, r, err)
+			api.HandleHTTPError(w, r, err)
 			return
 		}
 
@@ -25,14 +31,60 @@ func (m *middleware) IsAuthorized(next http.Handler) http.Handler {
 	})
 }
 
-func (m *middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
+func (m *Middleware) IsAuthorizedFromQuery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		queryToken := r.URL.Query().Get("token")
 
-		_, err := Service.getAuthorizationFromQuery(r.Context(), queryToken)
+		_, err := m.service.GetAuthorizationFromQuery(r.Context(), queryToken)
 
 		if err != nil {
-			api.HandleHttpError(w, r, err)
+			api.HandleHTTPError(w, r, err)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (m *Middleware) IsAuthorizedFromBearerOrQuery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		headerToken := r.Header.Get("Authorization")
+		queryToken := r.URL.Query().Get("token")
+
+		_, err := m.service.GetAuthorizationFromBearerOrQuery(r.Context(), headerToken, queryToken)
+
+		if err != nil {
+			api.HandleHTTPError(w, r, err)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (m *Middleware) IsAuthorizedFromOauth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		user, err := m.service.ValidateOauthToken(ctx, r)
+
+		if err != nil {
+			api.HandleHTTPError(w, r, err)
+			return
+		}
+
+		ctxWithUser := SetUserContext(ctx, user)
+
+		next.ServeHTTP(w, r.WithContext(ctxWithUser))
+	})
+}
+
+func (m *Middleware) IsAdminFromOauth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := m.service.IsAdminFromOauth(r.Context())
+
+		if err != nil {
+			api.HandleHTTPError(w, r, err)
 			return
 		}
 

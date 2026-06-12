@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node openapi.ts",
-    "start:no-commit": "node openapi.ts --no-commit"
+    "start:commit": "node openapi.ts --commit"
   },
   "keywords": [],
   "author": "",

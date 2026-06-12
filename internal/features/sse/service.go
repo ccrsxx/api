@@ -10,56 +10,69 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/features/jellyfin"
-	"github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/model"
 	"github.com/google/uuid"
 )
 
 const (
-	maxClientsPerIP  = 10
-	maxGlobalClients = 100
-
+	maxClientsPerIP     = 10
+	maxGlobalClients    = 100
 	defaultPollInterval = 1 * time.Second
 )
 
 type clientMetadata struct {
 	ID          string
-	IpAddress   string
+	IPAddress   string
 	UserAgent   string
 	ConnectedAt time.Time
 }
 
-type DataFetcher func(context.Context) (model.CurrentlyPlaying, error)
+type dataFetcher interface {
+	GetCurrentlyPlaying(context.Context) (model.CurrentlyPlaying, error)
+}
 
-type service struct {
+type Service struct {
 	mu              sync.RWMutex
 	clients         map[chan string]clientMetadata
 	stopChan        chan struct{}
-	ipAddressCounts map[string]int
-
+	appContext      context.Context
 	pollInterval    time.Duration
-	spotifyFetcher  DataFetcher
-	jellyfinFetcher DataFetcher
+	spotifyService  dataFetcher
+	ipAddressCounts map[string]int
+	jellyfinService dataFetcher
 }
 
-var Service = &service{
-	clients:         map[chan string]clientMetadata{},
-	ipAddressCounts: map[string]int{},
-
-	pollInterval:    defaultPollInterval,
-	spotifyFetcher:  spotify.Service.GetCurrentlyPlaying,
-	jellyfinFetcher: jellyfin.Service.GetCurrentlyPlaying,
+type ServiceConfig struct {
+	AppContext      context.Context
+	PollInterval    time.Duration
+	SpotifyService  dataFetcher
+	JellyfinService dataFetcher
 }
 
-func (s *service) IsConnectionAllowed(ip string) error {
+func NewService(cfg ServiceConfig) *Service {
+	if cfg.PollInterval <= 0 {
+		cfg.PollInterval = defaultPollInterval
+	}
+
+	return &Service{
+		clients:         map[chan string]clientMetadata{},
+		ipAddressCounts: map[string]int{},
+
+		appContext:      cfg.AppContext,
+		pollInterval:    cfg.PollInterval,
+		spotifyService:  cfg.SpotifyService,
+		jellyfinService: cfg.JellyfinService,
+	}
+}
+
+func (s *Service) IsConnectionAllowed(ip string) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	isGlobalClientLimitReached := len(s.clients) >= maxGlobalClients
 
 	if isGlobalClientLimitReached {
-		return &api.HttpError{
+		return &api.HTTPError{
 			Message:    "Maximum number of clients reached. Try again later.",
 			StatusCode: http.StatusServiceUnavailable,
 		}
@@ -68,7 +81,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 	isClientIPLimitReached := s.ipAddressCounts[ip] >= maxClientsPerIP
 
 	if isClientIPLimitReached {
-		return &api.HttpError{
+		return &api.HTTPError{
 			Message:    "Maximum number of clients for your IP reached. Try again later.",
 			StatusCode: http.StatusTooManyRequests,
 		}
@@ -77,7 +90,7 @@ func (s *service) IsConnectionAllowed(ip string) error {
 	return nil
 }
 
-func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddress string, userAgent string) {
+func (s *Service) AddClient(ctx context.Context, clientChan chan string, ipAddress string, userAgent string) {
 	sseData := s.getSSEData(ctx)
 
 	if ctx.Err() != nil {
@@ -90,7 +103,7 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 
 	meta := clientMetadata{
 		ID:          uuid.New().String(),
-		IpAddress:   ipAddress,
+		IPAddress:   ipAddress,
 		UserAgent:   userAgent,
 		ConnectedAt: time.Now(),
 	}
@@ -100,7 +113,7 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 
 	slog.Info("sse client connected",
 		"id", meta.ID,
-		"ip_address", meta.IpAddress,
+		"ip_address", meta.IPAddress,
 		"user_agent", meta.UserAgent,
 		"active_clients", len(s.clients),
 	)
@@ -117,7 +130,7 @@ func (s *service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 	}
 }
 
-func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
+func (s *Service) RemoveClient(ctx context.Context, clientChan chan string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -133,15 +146,15 @@ func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
 
 	close(clientChan)
 
-	s.ipAddressCounts[meta.IpAddress]--
+	s.ipAddressCounts[meta.IPAddress]--
 
-	if s.ipAddressCounts[meta.IpAddress] <= 0 {
-		delete(s.ipAddressCounts, meta.IpAddress)
+	if s.ipAddressCounts[meta.IPAddress] <= 0 {
+		delete(s.ipAddressCounts, meta.IPAddress)
 	}
 
 	slog.Info("sse client disconnected",
 		"id", meta.ID,
-		"ip_address", meta.IpAddress,
+		"ip_address", meta.IPAddress,
 		"user_agent", meta.UserAgent,
 		"duration", time.Since(meta.ConnectedAt).String(),
 		"active_clients", len(s.clients),
@@ -154,7 +167,7 @@ func (s *service) RemoveClient(ctx context.Context, clientChan chan string) {
 	}
 }
 
-func (s *service) startWorkerLocked() {
+func (s *Service) startWorkerLocked() {
 	if s.stopChan != nil {
 		slog.Warn("sse poller already running")
 		return
@@ -167,7 +180,7 @@ func (s *service) startWorkerLocked() {
 	slog.Info("sse poller started")
 }
 
-func (s *service) stopWorkerLocked() {
+func (s *Service) stopWorkerLocked() {
 	if s.stopChan == nil {
 		slog.Warn("sse poller not running")
 		return
@@ -180,33 +193,30 @@ func (s *service) stopWorkerLocked() {
 	slog.Info("sse poller stopped")
 }
 
-func (s *service) pollLoop(stopChan chan struct{}) {
-	// Lock required for test stability: The background worker may still be
-	// reading these configuration fields while we restore them.
-
-	s.mu.RLock()
-
+func (s *Service) pollLoop(stopChan chan struct{}) {
 	interval := s.pollInterval
-
-	s.mu.RUnlock()
 
 	ticker := time.NewTicker(interval)
 
 	defer ticker.Stop()
 
-	ctx := context.Background()
-
 	for {
 		select {
 		case <-stopChan:
-			return // Exit goroutine / cancel polling
+			// Note: intentionally do NOT listen to <-s.appContext.Done() here.
+			// Doing so would cause a hard exit and bypass the graceful teardown.
+			// Instead, let the controller catch the global shutdown, trigger RemoveClient,
+			// and once the last client is removed, stopChan is safely closed here.
+			return
 		case <-ticker.C:
-			s.pollAndBroadcast(ctx)
+			// pass appContext down purely to instantly abort any hanging
+			// network requests to Spotify/Jellyfin during a shutdown.
+			s.pollAndBroadcast(s.appContext)
 		}
 	}
 }
 
-func (s *service) pollAndBroadcast(ctx context.Context) {
+func (s *Service) pollAndBroadcast(ctx context.Context) {
 	sseData := s.getSSEData(ctx)
 
 	// Protect map iteration with read lock
@@ -234,26 +244,13 @@ type sseData struct {
 	jellyfin string
 }
 
-func (s *service) getSSEData(ctx context.Context) sseData {
-	// Lock required for test stability: The background worker may still be
-	// reading these configuration fields while we restore them.
-
-	s.mu.RLock()
-
-	spotifyFetcher := s.spotifyFetcher
-	jellyfinFetcher := s.jellyfinFetcher
-
-	s.mu.RUnlock()
-
-	var wg sync.WaitGroup
+func (s *Service) getSSEData(ctx context.Context) sseData {
 	var spotifyData, jellyfinData model.CurrentlyPlaying
 
-	wg.Add(2)
+	var wg sync.WaitGroup
 
-	go func() {
-		defer wg.Done()
-
-		data, err := spotifyFetcher(ctx)
+	wg.Go(func() {
+		data, err := s.spotifyService.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
 			slog.Warn("sse spotify fetch error", "error", err)
@@ -264,12 +261,10 @@ func (s *service) getSSEData(ctx context.Context) sseData {
 		}
 
 		spotifyData = data
-	}()
+	})
 
-	go func() {
-		defer wg.Done()
-
-		data, err := jellyfinFetcher(ctx)
+	wg.Go(func() {
+		data, err := s.jellyfinService.GetCurrentlyPlaying(ctx)
 
 		if err != nil {
 			slog.Warn("sse jellyfin fetch error", "error", err)
@@ -280,7 +275,8 @@ func (s *service) getSSEData(ctx context.Context) sseData {
 		}
 
 		jellyfinData = data
-	}()
+
+	})
 
 	wg.Wait()
 

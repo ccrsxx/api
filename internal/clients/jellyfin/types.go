@@ -299,7 +299,7 @@ type SubtitleProfile struct {
 
 type DeviceProfile struct {
 	Name                             *string              `json:"Name"`
-	Id                               *string              `json:"Id"`
+	ID                               *string              `json:"Id"`
 	MaxStreamingBitrate              *int                 `json:"MaxStreamingBitrate"`
 	MaxStaticBitrate                 *int                 `json:"MaxStaticBitrate"`
 	MusicStreamingTranscodingBitrate *int                 `json:"MusicStreamingTranscodingBitrate"`
@@ -317,8 +317,8 @@ type ClientCapabilities struct {
 	SupportsMediaControl         bool                 `json:"SupportsMediaControl"`
 	SupportsPersistentIdentifier bool                 `json:"SupportsPersistentIdentifier"`
 	DeviceProfile                *DeviceProfile       `json:"DeviceProfile"`
-	AppStoreUrl                  *string              `json:"AppStoreUrl"`
-	IconUrl                      *string              `json:"IconUrl"`
+	AppStoreURL                  *string              `json:"AppStoreUrl"`
+	IconURL                      *string              `json:"IconUrl"`
 }
 
 type MediaStream struct {
@@ -336,7 +336,7 @@ type MediaStream struct {
 	RpuPresentFlag            *int                    `json:"RpuPresentFlag"`
 	ElPresentFlag             *int                    `json:"ElPresentFlag"`
 	BlPresentFlag             *int                    `json:"BlPresentFlag"`
-	DvBlSignalCompatibilityId *int                    `json:"DvBlSignalCompatibilityId"`
+	DvBlSignalCompatibilityID *int                    `json:"DvBlSignalCompatibilityId"`
 	Rotation                  *int                    `json:"Rotation"`
 	Comment                   *string                 `json:"Comment"`
 	TimeBase                  *string                 `json:"TimeBase"`
@@ -378,8 +378,8 @@ type MediaStream struct {
 	Score                     *int                    `json:"Score"`
 	IsExternal                bool                    `json:"IsExternal"`
 	DeliveryMethod            *SubtitleDeliveryMethod `json:"DeliveryMethod"`
-	DeliveryUrl               *string                 `json:"DeliveryUrl"`
-	IsExternalUrl             *bool                   `json:"IsExternalUrl"`
+	DeliveryURL               *string                 `json:"DeliveryUrl"`
+	IsExternalURL             *bool                   `json:"IsExternalUrl"`
 	IsTextSubtitleStream      bool                    `json:"IsTextSubtitleStream"`
 	SupportsExternalStream    bool                    `json:"SupportsExternalStream"`
 	Path                      *string                 `json:"Path"`
@@ -395,12 +395,12 @@ type MediaAttachment struct {
 	Index       int     `json:"Index"`
 	FileName    *string `json:"FileName"`
 	MimeType    *string `json:"MimeType"`
-	DeliveryUrl *string `json:"DeliveryUrl"`
+	DeliveryURL *string `json:"DeliveryUrl"`
 }
 
 type MediaSourceInfo struct {
 	Protocol                            MediaProtocol             `json:"Protocol"`
-	Id                                  *string                   `json:"Id"`
+	ID                                  *string                   `json:"Id"`
 	Path                                *string                   `json:"Path"`
 	EncoderPath                         *string                   `json:"EncoderPath"`
 	EncoderProtocol                     *MediaProtocol            `json:"EncoderProtocol"`
@@ -423,7 +423,7 @@ type MediaSourceInfo struct {
 	RequiresOpening                     bool                      `json:"RequiresOpening"`
 	OpenToken                           *string                   `json:"OpenToken"`
 	RequiresClosing                     bool                      `json:"RequiresClosing"`
-	LiveStreamId                        *string                   `json:"LiveStreamId"`
+	LiveStreamID                        *string                   `json:"LiveStreamId"`
 	BufferMs                            *int                      `json:"BufferMs"`
 	RequiresLooping                     bool                      `json:"RequiresLooping"`
 	SupportsProbing                     bool                      `json:"SupportsProbing"`
@@ -436,8 +436,8 @@ type MediaSourceInfo struct {
 	Bitrate                             *int                      `json:"Bitrate"`
 	FallbackMaxStreamingBitrate         *int                      `json:"FallbackMaxStreamingBitrate"`
 	Timestamp                           *TransportStreamTimestamp `json:"Timestamp"`
-	RequiredHttpHeaders                 map[string]*string        `json:"RequiredHttpHeaders"`
-	TranscodingUrl                      *string                   `json:"TranscodingUrl"`
+	RequiredHTTPHeaders                 map[string]*string        `json:"RequiredHttpHeaders"`
+	TranscodingURL                      *string                   `json:"TranscodingUrl"`
 	TranscodingSubProtocol              MediaStreamProtocol       `json:"TranscodingSubProtocol"`
 	TranscodingContainer                *string                   `json:"TranscodingContainer"`
 	AnalyzeDurationMs                   *int                      `json:"AnalyzeDurationMs"`
@@ -446,13 +446,13 @@ type MediaSourceInfo struct {
 	HasSegments                         bool                      `json:"HasSegments"`
 }
 
-type ExternalUrl struct {
+type ExternalURL struct {
 	Name *string `json:"Name"`
-	Url  *string `json:"Url"`
+	URL  *string `json:"Url"`
 }
 
-type MediaUrl struct {
-	Url  *string `json:"Url"`
+type MediaURL struct {
+	URL  *string `json:"Url"`
 	Name *string `json:"Name"`
 }
 
@@ -467,7 +467,7 @@ type UserItemData struct {
 	LastPlayedDate        *string  `json:"LastPlayedDate"`
 	Played                bool     `json:"Played"`
 	Key                   string   `json:"Key"`
-	ItemId                string   `json:"ItemId"`
+	ItemID                string   `json:"ItemId"`
 }
 
 type ImageBlurHashes struct {
@@ -488,16 +488,16 @@ type ImageBlurHashes struct {
 
 type BaseItemPerson struct {
 	Name            *string          `json:"Name"`
-	Id              string           `json:"Id"`
+	ID              string           `json:"Id"`
 	Role            *string          `json:"Role"`
 	Type            PersonKind       `json:"Type"`
 	PrimaryImageTag *string          `json:"PrimaryImageTag"`
 	ImageBlurHashes *ImageBlurHashes `json:"ImageBlurHashes"`
 }
 
-type NameGuidPair struct {
+type NameGUIDPair struct {
 	Name *string `json:"Name"`
-	Id   string  `json:"Id"`
+	ID   string  `json:"Id"`
 }
 
 type ChapterInfo struct {
@@ -521,11 +521,11 @@ type TrickplayInfo struct {
 type BaseItem struct {
 	Name                         *string                             `json:"Name"`
 	OriginalTitle                *string                             `json:"OriginalTitle"`
-	ServerId                     *string                             `json:"ServerId"`
-	Id                           string                              `json:"Id"`
+	ServerID                     *string                             `json:"ServerId"`
+	ID                           string                              `json:"Id"`
 	Etag                         *string                             `json:"Etag"`
 	SourceType                   *string                             `json:"SourceType"`
-	PlaylistItemId               *string                             `json:"PlaylistItemId"`
+	PlaylistItemID               *string                             `json:"PlaylistItemId"`
 	DateCreated                  *string                             `json:"DateCreated"`
 	DateLastMediaAdded           *string                             `json:"DateLastMediaAdded"`
 	ExtraType                    *ExtraType                          `json:"ExtraType"`
@@ -543,7 +543,7 @@ type BaseItem struct {
 	ForcedSortName               *string                             `json:"ForcedSortName"`
 	Video3DFormat                *Video3DFormat                      `json:"Video3DFormat"`
 	PremiereDate                 *string                             `json:"PremiereDate"`
-	ExternalUrls                 []ExternalUrl                       `json:"ExternalUrls"`
+	ExternalUrls                 []ExternalURL                       `json:"ExternalUrls"`
 	MediaSources                 []MediaSourceInfo                   `json:"MediaSources"`
 	CriticRating                 *float64                            `json:"CriticRating"`
 	ProductionLocations          []string                            `json:"ProductionLocations"`
@@ -551,7 +551,7 @@ type BaseItem struct {
 	EnableMediaSourceDisplay     *bool                               `json:"EnableMediaSourceDisplay"`
 	OfficialRating               *string                             `json:"OfficialRating"`
 	CustomRating                 *string                             `json:"CustomRating"`
-	ChannelId                    *string                             `json:"ChannelId"`
+	ChannelID                    *string                             `json:"ChannelId"`
 	ChannelName                  *string                             `json:"ChannelName"`
 	Overview                     *string                             `json:"Overview"`
 	Taglines                     []string                            `json:"Taglines"`
@@ -568,42 +568,42 @@ type BaseItem struct {
 	IndexNumber                  *int                                `json:"IndexNumber"`
 	IndexNumberEnd               *int                                `json:"IndexNumberEnd"`
 	ParentIndexNumber            *int                                `json:"ParentIndexNumber"`
-	RemoteTrailers               []MediaUrl                          `json:"RemoteTrailers"`
-	ProviderIds                  map[string]*string                  `json:"ProviderIds"`
+	RemoteTrailers               []MediaURL                          `json:"RemoteTrailers"`
+	ProviderIDs                  map[string]*string                  `json:"ProviderIds"`
 	IsHD                         *bool                               `json:"IsHD"`
 	IsFolder                     *bool                               `json:"IsFolder"`
-	ParentId                     *string                             `json:"ParentId"`
+	ParentID                     *string                             `json:"ParentId"`
 	Type                         BaseItemKind                        `json:"Type"`
 	People                       []BaseItemPerson                    `json:"People"`
-	Studios                      []NameGuidPair                      `json:"Studios"`
-	GenreItems                   []NameGuidPair                      `json:"GenreItems"`
-	ParentLogoItemId             *string                             `json:"ParentLogoItemId"`
-	ParentBackdropItemId         *string                             `json:"ParentBackdropItemId"`
+	Studios                      []NameGUIDPair                      `json:"Studios"`
+	GenreItems                   []NameGUIDPair                      `json:"GenreItems"`
+	ParentLogoItemID             *string                             `json:"ParentLogoItemId"`
+	ParentBackdropItemID         *string                             `json:"ParentBackdropItemId"`
 	ParentBackdropImageTags      []string                            `json:"ParentBackdropImageTags"`
 	LocalTrailerCount            *int                                `json:"LocalTrailerCount"`
 	UserData                     *UserItemData                       `json:"UserData"`
 	RecursiveItemCount           *int                                `json:"RecursiveItemCount"`
 	ChildCount                   *int                                `json:"ChildCount"`
 	SeriesName                   *string                             `json:"SeriesName"`
-	SeriesId                     *string                             `json:"SeriesId"`
-	SeasonId                     *string                             `json:"SeasonId"`
+	SeriesID                     *string                             `json:"SeriesId"`
+	SeasonID                     *string                             `json:"SeasonId"`
 	SpecialFeatureCount          *int                                `json:"SpecialFeatureCount"`
-	DisplayPreferencesId         *string                             `json:"DisplayPreferencesId"`
+	DisplayPreferencesID         *string                             `json:"DisplayPreferencesId"`
 	Status                       *string                             `json:"Status"`
 	AirTime                      *string                             `json:"AirTime"`
 	AirDays                      []DayOfWeek                         `json:"AirDays"`
 	Tags                         []string                            `json:"Tags"`
 	PrimaryImageAspectRatio      *float64                            `json:"PrimaryImageAspectRatio"`
 	Artists                      []string                            `json:"Artists"`
-	ArtistItems                  []NameGuidPair                      `json:"ArtistItems"`
+	ArtistItems                  []NameGUIDPair                      `json:"ArtistItems"`
 	Album                        *string                             `json:"Album"`
 	CollectionType               *string                             `json:"CollectionType"`
 	DisplayOrder                 *string                             `json:"DisplayOrder"`
-	AlbumId                      *string                             `json:"AlbumId"`
+	AlbumID                      *string                             `json:"AlbumId"`
 	AlbumPrimaryImageTag         *string                             `json:"AlbumPrimaryImageTag"`
 	SeriesPrimaryImageTag        *string                             `json:"SeriesPrimaryImageTag"`
 	AlbumArtist                  *string                             `json:"AlbumArtist"`
-	AlbumArtists                 []NameGuidPair                      `json:"AlbumArtists"`
+	AlbumArtists                 []NameGUIDPair                      `json:"AlbumArtists"`
 	SeasonName                   *string                             `json:"SeasonName"`
 	MediaStreams                 []MediaStream                       `json:"MediaStreams"`
 	VideoType                    *VideoType                          `json:"VideoType"`
@@ -613,14 +613,14 @@ type BaseItem struct {
 	BackdropImageTags            []string                            `json:"BackdropImageTags"`
 	ScreenshotImageTags          []string                            `json:"ScreenshotImageTags"`
 	ParentLogoImageTag           *string                             `json:"ParentLogoImageTag"`
-	ParentArtItemId              *string                             `json:"ParentArtItemId"`
+	ParentArtItemID              *string                             `json:"ParentArtItemId"`
 	ParentArtImageTag            *string                             `json:"ParentArtImageTag"`
 	SeriesThumbImageTag          *string                             `json:"SeriesThumbImageTag"`
 	ImageBlurHashes              *ImageBlurHashes                    `json:"ImageBlurHashes"`
 	SeriesStudio                 *string                             `json:"SeriesStudio"`
-	ParentThumbItemId            *string                             `json:"ParentThumbItemId"`
+	ParentThumbItemID            *string                             `json:"ParentThumbItemId"`
 	ParentThumbImageTag          *string                             `json:"ParentThumbImageTag"`
-	ParentPrimaryImageItemId     *string                             `json:"ParentPrimaryImageItemId"`
+	ParentPrimaryImageItemID     *string                             `json:"ParentPrimaryImageItemId"`
 	ParentPrimaryImageTag        *string                             `json:"ParentPrimaryImageTag"`
 	Chapters                     []ChapterInfo                       `json:"Chapters"`
 	Trickplay                    map[string]map[string]TrickplayInfo `json:"Trickplay"`
@@ -653,8 +653,8 @@ type BaseItem struct {
 	Longitude                    *float64                            `json:"Longitude"`
 	Altitude                     *float64                            `json:"Altitude"`
 	IsoSpeedRating               *int                                `json:"IsoSpeedRating"`
-	SeriesTimerId                *string                             `json:"SeriesTimerId"`
-	ProgramId                    *string                             `json:"ProgramId"`
+	SeriesTimerID                *string                             `json:"SeriesTimerId"`
+	ProgramID                    *string                             `json:"ProgramId"`
 	ChannelPrimaryImageTag       *string                             `json:"ChannelPrimaryImageTag"`
 	StartDate                    *string                             `json:"StartDate"`
 	CompletionPercentage         *float64                            `json:"CompletionPercentage"`
@@ -669,7 +669,7 @@ type BaseItem struct {
 	IsNews                       *bool                               `json:"IsNews"`
 	IsKids                       *bool                               `json:"IsKids"`
 	IsPremiere                   *bool                               `json:"IsPremiere"`
-	TimerId                      *string                             `json:"TimerId"`
+	TimerID                      *string                             `json:"TimerId"`
 	NormalizationGain            *float64                            `json:"NormalizationGain"`
 	CurrentProgram               *BaseItem                           `json:"CurrentProgram"`
 }
@@ -682,15 +682,15 @@ type PlayerStateInfo struct {
 	VolumeLevel         *int           `json:"VolumeLevel"`
 	AudioStreamIndex    *int           `json:"AudioStreamIndex"`
 	SubtitleStreamIndex *int           `json:"SubtitleStreamIndex"`
-	MediaSourceId       *string        `json:"MediaSourceId"`
+	MediaSourceID       *string        `json:"MediaSourceId"`
 	PlayMethod          *PlayMethod    `json:"PlayMethod"`
 	RepeatMode          *RepeatMode    `json:"RepeatMode"`
 	PlaybackOrder       *PlaybackOrder `json:"PlaybackOrder"`
-	LiveStreamId        *string        `json:"LiveStreamId"`
+	LiveStreamID        *string        `json:"LiveStreamId"`
 }
 
 type SessionUserInfo struct {
-	UserId   string  `json:"UserId"`
+	UserID   string  `json:"UserId"`
 	UserName *string `json:"UserName"`
 }
 
@@ -711,8 +711,8 @@ type TranscodingInfo struct {
 }
 
 type QueueItem struct {
-	Id             string  `json:"Id"`
-	PlaylistItemId *string `json:"PlaylistItemId"`
+	ID             string  `json:"Id"`
+	PlaylistItemID *string `json:"PlaylistItemId"`
 }
 
 // SessionInfo is the root struct usually returned by /Sessions
@@ -722,8 +722,8 @@ type SessionInfo struct {
 	Capabilities             *ClientCapabilities  `json:"Capabilities"`
 	RemoteEndPoint           *string              `json:"RemoteEndPoint"`
 	PlayableMediaTypes       []MediaType          `json:"PlayableMediaTypes"`
-	Id                       *string              `json:"Id"`
-	UserId                   string               `json:"UserId"`
+	ID                       *string              `json:"Id"`
+	UserID                   string               `json:"UserId"`
 	UserName                 *string              `json:"UserName"`
 	Client                   *string              `json:"Client"`
 	LastActivityDate         string               `json:"LastActivityDate"`
@@ -733,7 +733,7 @@ type SessionInfo struct {
 	DeviceType               *string              `json:"DeviceType"`
 	NowPlayingItem           *BaseItem            `json:"NowPlayingItem"`
 	NowViewingItem           *BaseItem            `json:"NowViewingItem"`
-	DeviceId                 *string              `json:"DeviceId"`
+	DeviceID                 *string              `json:"DeviceId"`
 	ApplicationVersion       *string              `json:"ApplicationVersion"`
 	TranscodingInfo          *TranscodingInfo     `json:"TranscodingInfo"`
 	IsActive                 bool                 `json:"IsActive"`
@@ -742,8 +742,8 @@ type SessionInfo struct {
 	NowPlayingQueue          []QueueItem          `json:"NowPlayingQueue"`
 	NowPlayingQueueFullItems []BaseItem           `json:"NowPlayingQueueFullItems"`
 	HasCustomDeviceName      bool                 `json:"HasCustomDeviceName"`
-	PlaylistItemId           *string              `json:"PlaylistItemId"`
-	ServerId                 *string              `json:"ServerId"`
+	PlaylistItemID           *string              `json:"PlaylistItemId"`
+	ServerID                 *string              `json:"ServerId"`
 	UserPrimaryImageTag      *string              `json:"UserPrimaryImageTag"`
 	SupportedCommands        []GeneralCommandType `json:"SupportedCommands"`
 }

@@ -10,58 +10,56 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ccrsxx/api/internal/cache"
-	"github.com/ccrsxx/api/internal/config"
-)
-
-const (
-	defaultAuthURL = "https://accounts.spotify.com/api/token"
-	defaultApiURL  = "https://api.spotify.com/v1/me/player/currently-playing"
 )
 
 type Client struct {
-	apiURL       string
-	authURL      string
-	clientID     string
-	clientSecret string
-	refreshToken string
-	httpClient   *http.Client
+	apiURL      string
+	secret      string
+	authURL     string
+	refresh     string
+	clientID    string
+	httpClient  *http.Client
+	memoryCache cache.Cache
 }
 
-var (
-	once     sync.Once
-	instance *Client
+type Config struct {
+	APIURL       string
+	AuthURL      string
+	ClientID     string
+	MemoryCache  cache.Cache
+	ClientSecret string
+	RefreshToken string
+}
+
+const (
+	defaultAuthURL = "https://accounts.spotify.com/api/token"
+	defaultAPIURL  = "https://api.spotify.com/v1/me/player/currently-playing"
 )
 
-func New(clientID, clientSecret, refreshToken, authURL, apiURL string) *Client {
+var ErrNoContent = errors.New("spotify currently playing no content")
+
+func NewClient(cfg Config) *Client {
+	if cfg.APIURL == "" {
+		cfg.APIURL = defaultAPIURL
+	}
+
+	if cfg.AuthURL == "" {
+		cfg.AuthURL = defaultAuthURL
+	}
+
 	return &Client{
-		apiURL:       apiURL,
-		authURL:      authURL,
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		refreshToken: refreshToken,
-		httpClient:   &http.Client{Timeout: 8 * time.Second},
+		apiURL:      cfg.APIURL,
+		secret:      cfg.ClientSecret,
+		authURL:     cfg.AuthURL,
+		refresh:     cfg.RefreshToken,
+		clientID:    cfg.ClientID,
+		httpClient:  &http.Client{Timeout: 8 * time.Second},
+		memoryCache: cfg.MemoryCache,
 	}
 }
-
-func DefaultClient() *Client {
-	once.Do(func() {
-		instance = New(
-			config.Env().SpotifyClientID,
-			config.Env().SpotifyClientSecret,
-			config.Env().SpotifyRefreshToken,
-			defaultAuthURL,
-			defaultApiURL,
-		)
-	})
-
-	return instance
-}
-
-var ErrNoContent = errors.New("spotify currently playing no content")
 
 func (c *Client) GetCurrentlyPlaying(ctx context.Context) (SpotifyCurrentlyPlaying, error) {
 	token, err := c.getAccessToken(ctx)
@@ -126,7 +124,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 	fetcher := func() (tokenResponse, error) {
 		requestBody := url.Values{
 			"grant_type":    {"refresh_token"},
-			"refresh_token": {c.refreshToken},
+			"refresh_token": {c.refresh},
 		}
 
 		req, err := http.NewRequestWithContext(ctx, "POST", c.authURL, strings.NewReader(requestBody.Encode()))
@@ -137,7 +135,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		authString := c.clientID + ":" + c.clientSecret
+		authString := c.clientID + ":" + c.secret
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
 
@@ -187,10 +185,10 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 		return expiresIn - bufferExpiryOffset
 	}
 
-	data, err := cache.GetCachedData(
+	data, err := cache.GetOrFetch(
 		ctx,
+		c.memoryCache,
 		"api:spotify:access_token",
-		"memory",
 		fetcher,
 		ttlFunc,
 	)

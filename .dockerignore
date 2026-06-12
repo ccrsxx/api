@@ -6,11 +6,18 @@ tmp/
 vendor/
 scripts/
 node_modules/
+internal/test/
+internal/db/queries/
+internal/db/migrations/
 
 # Files
 .*
+*.out
+**/*_test.go 
 compose.yaml
 Dockerfile
 LICENSE
 Makefile
 README.md
+renovate.json
+sqlc.yaml

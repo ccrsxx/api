@@ -1,19 +1,30 @@
 package sse
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/ccrsxx/api/internal/features/auth"
-	m "github.com/ccrsxx/api/internal/middleware"
+	"github.com/ccrsxx/api/internal/middleware"
 )
 
-func LoadRoutes(router *http.ServeMux) {
-	router.Handle("GET /sse",
-		auth.Middleware.IsAuthorizedFromQuery(
-			m.RateLimit(10, 10*time.Second)(
-				Middleware.IsConnectionAllowed(
-					http.HandlerFunc(Controller.getCurrentPlayingSSE),
+type Config struct {
+	Router         *http.ServeMux
+	Service        *Service
+	AppContext     context.Context
+	AuthMiddleware *auth.Middleware
+}
+
+func LoadRoutes(cfg Config) {
+	mw := NewMiddleware(cfg.Service)
+	ctrl := NewController(cfg.AppContext, cfg.Service)
+
+	cfg.Router.Handle("GET /sse",
+		cfg.AuthMiddleware.IsAuthorizedFromQuery(
+			middleware.RateLimit(cfg.AppContext, 10, 10*time.Second)(
+				mw.IsConnectionAllowed(
+					http.HandlerFunc(ctrl.getCurrentPlayingSSE),
 				),
 			),
 		),

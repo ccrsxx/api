@@ -1,4 +1,4 @@
-package tools
+package tools_test
 
 import (
 	"errors"
@@ -7,67 +7,62 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/features/tools"
 	ipinfoLib "github.com/ipinfo/go/v2/ipinfo"
 )
 
-func TestService_getIpInfo(t *testing.T) {
-	originalFetcher := Service.fetcher
+func TestService_GetIPInfo(t *testing.T) {
+	mock := &mockIPInfoClient{
+		result: func(ip net.IP) (*ipinfoLib.Core, error) {
+			if ip.String() == "8.8.8.8" {
+				return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8"), City: "Mountain View"}, nil
+			}
 
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
+			if ip.String() == "1.1.1.1" {
+				return nil, errors.New("mock network error")
+			}
 
-	mockFetcher := func(ip net.IP) (*ipinfoLib.Core, error) {
-		if ip.String() == "8.8.8.8" {
-			return &ipinfoLib.Core{IP: net.ParseIP("8.8.8.8"), City: "Mountain View"}, nil
-		}
-
-		if ip.String() == "1.1.1.1" {
-			return nil, errors.New("mock network error")
-		}
-
-		return nil, errors.New("unknown ip")
+			return nil, errors.New("unknown ip")
+		},
 	}
-
-	Service.fetcher = mockFetcher
 
 	tests := []struct {
 		name       string
-		queryIp    string
-		requestIp  string
+		queryIP    string
+		requestIP  string
 		wantError  bool
 		wantStatus int
 	}{
 		{
 			name:      "Success with Query IP",
-			queryIp:   "8.8.8.8",
-			requestIp: "127.0.0.1",
+			queryIP:   "8.8.8.8",
+			requestIP: "127.0.0.1",
 			wantError: false,
 		},
 		{
 			name:      "Success with Request IP",
-			queryIp:   "",
-			requestIp: "8.8.8.8",
+			queryIP:   "",
+			requestIP: "8.8.8.8",
 			wantError: false,
 		},
 		{
 			name:       "Invalid Query IP",
-			queryIp:    "invalid-ip",
-			requestIp:  "8.8.8.8",
+			queryIP:    "invalid-ip",
+			requestIP:  "8.8.8.8",
 			wantError:  true,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "Invalid Request IP (fallback)",
-			queryIp:    "",
-			requestIp:  "invalid-ip",
+			queryIP:    "",
+			requestIP:  "invalid-ip",
 			wantError:  true,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "Fetcher Error",
-			queryIp:    "1.1.1.1",
-			requestIp:  "127.0.0.1",
+			queryIP:    "1.1.1.1",
+			requestIP:  "127.0.0.1",
 			wantError:  true,
 			wantStatus: 0, // General error, not HttpError
 		},
@@ -75,7 +70,9 @@ func TestService_getIpInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			info, err := Service.getIpInfo(tt.queryIp, tt.requestIp)
+			svc := tools.NewService(tools.ServiceConfig{IPInfoClient: mock})
+
+			info, err := svc.GetIPInfo(tt.queryIP, tt.requestIP)
 
 			if tt.wantError {
 				if err == nil {
@@ -84,12 +81,12 @@ func TestService_getIpInfo(t *testing.T) {
 				}
 
 				if tt.wantStatus != 0 {
-					if httpErr, ok := errors.AsType[*api.HttpError](err); ok {
+					if httpErr, ok := errors.AsType[*api.HTTPError](err); ok {
 						if httpErr.StatusCode != tt.wantStatus {
 							t.Errorf("got status %d, want %d", httpErr.StatusCode, tt.wantStatus)
 						}
 					} else {
-						t.Error("want HttpError type")
+						t.Error("want HTTPError type")
 					}
 				}
 

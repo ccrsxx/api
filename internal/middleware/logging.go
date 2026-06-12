@@ -36,7 +36,7 @@ func Logging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(wrapped, r)
 
-		ipAddress := utils.GetIpAddressFromRequest(r)
+		ipAddress := utils.GetIPAddressFromRequest(r)
 
 		end := time.Since(start).String()
 

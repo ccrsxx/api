@@ -7,24 +7,32 @@ import (
 	"github.com/ccrsxx/api/internal/features/tools"
 )
 
-func LoadRoutes(router *http.ServeMux) {
+type Config struct {
+	Router                    *http.ServeMux
+	ToolsController           *tools.Controller
+	SharedGetIPInfoController http.Handler
+}
+
+func LoadRoutes(cfg Config) {
+	ctrl := NewController()
+
 	handleHomeRequest := func(w http.ResponseWriter, r *http.Request) {
 		hostname := r.Host
 
 		switch {
 		case strings.HasPrefix(hostname, "ip."):
-			tools.Controller.GetIpAddress(w, r)
+			cfg.ToolsController.GetIPAddress(w, r)
 			return
 		case strings.HasPrefix(hostname, "ipinfo."):
-			tools.SharedGetIpInfo.ServeHTTP(w, r)
+			cfg.SharedGetIPInfoController.ServeHTTP(w, r)
 			return
 		case strings.HasPrefix(hostname, "headers."):
-			tools.Controller.GetHttpHeaders(w, r)
+			cfg.ToolsController.GetHTTPHeaders(w, r)
 			return
 		}
 
-		Controller.ping(w, r)
+		ctrl.Ping(w, r)
 	}
 
-	router.HandleFunc("GET /{$}", handleHomeRequest)
+	cfg.Router.HandleFunc("GET /{$}", handleHomeRequest)
 }

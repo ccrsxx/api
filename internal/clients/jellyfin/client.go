@@ -4,47 +4,41 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
-	"sync"
 	"time"
-
-	"github.com/ccrsxx/api/internal/config"
 )
+
+type Config struct {
+	URL        string
+	APIKey     string
+	ImageURL   string
+	Username   string
+	HTTPClient *http.Client
+}
 
 type Client struct {
 	url        string
 	apiKey     string
-	imageUrl   string
+	imageURL   string
 	username   string
 	httpClient *http.Client
 }
 
-var (
-	once   sync.Once
-	client *Client
-)
+func NewClient(cfg Config) *Client {
+	httpClient := cfg.HTTPClient
 
-func New(url, apiKey, imageUrl, username string) *Client {
-	return &Client{
-		url:        url,
-		apiKey:     apiKey,
-		imageUrl:   imageUrl,
-		username:   username,
-		httpClient: &http.Client{Timeout: 8 * time.Second},
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 8 * time.Second}
 	}
-}
 
-func DefaultClient() *Client {
-	once.Do(func() {
-		client = New(
-			config.Env().JellyfinUrl,
-			config.Env().JellyfinApiKey,
-			config.Env().JellyfinImageUrl,
-			config.Env().JellyfinUsername,
-		)
-	})
-
-	return client
+	return &Client{
+		url:        cfg.URL,
+		apiKey:     cfg.APIKey,
+		imageURL:   cfg.ImageURL,
+		username:   cfg.Username,
+		httpClient: httpClient,
+	}
 }
 
 func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
@@ -65,7 +59,7 @@ func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
 
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			fmt.Println("jellyfin currently playing close body error:", err)
+			slog.Warn("jellyfin currently playing close body error:", "error", err)
 		}
 	}()
 

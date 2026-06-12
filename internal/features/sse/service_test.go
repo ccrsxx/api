@@ -10,22 +10,58 @@ import (
 	"github.com/ccrsxx/api/internal/model"
 )
 
-func TestService_IsConnectionAllowed(t *testing.T) {
-	// Clean slate
-	Service.clients = map[chan string]clientMetadata{}
-	Service.ipAddressCounts = map[string]int{}
+type mockDataFetcher struct {
+	result model.CurrentlyPlaying
+	err    error
+}
 
+func (m *mockDataFetcher) GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error) {
+	return m.result, m.err
+}
+
+func setupTest(ctx context.Context) (*Controller, *Service) {
+	dummySpotify := &mockDataFetcher{
+		result: model.NewDefaultCurrentlyPlaying(model.PlatformSpotify),
+	}
+
+	dummyJellyfin := &mockDataFetcher{
+		result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
+	}
+
+	svc := NewService(ServiceConfig{
+		AppContext:      ctx,
+		PollInterval:    10 * time.Millisecond,
+		SpotifyService:  dummySpotify,
+		JellyfinService: dummyJellyfin,
+	})
+
+	ctrl := NewController(ctx, svc)
+
+	return ctrl, svc
+}
+
+func TestService_IsConnectionAllowed(t *testing.T) {
 	t.Run("Allowed", func(t *testing.T) {
-		if err := Service.IsConnectionAllowed("1.1.1.1"); err != nil {
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
+
+		if err := svc.IsConnectionAllowed("1.1.1.1"); err != nil {
 			t.Errorf("got %v, want allowed", err)
 		}
 	})
 
 	t.Run("IP Limit Reached", func(t *testing.T) {
-		ip := "2.2.2.2"
-		Service.ipAddressCounts[ip] = maxClientsPerIP
+		ctx := t.Context()
 
-		err := Service.IsConnectionAllowed(ip)
+		_, svc := setupTest(ctx)
+
+		ip := "2.2.2.2"
+
+		// Access private fields safely since we are in the sse package
+		svc.ipAddressCounts[ip] = maxClientsPerIP
+
+		err := svc.IsConnectionAllowed(ip)
 
 		if err == nil {
 			t.Error("want IP limit error, got nil")
@@ -33,53 +69,35 @@ func TestService_IsConnectionAllowed(t *testing.T) {
 	})
 
 	t.Run("Global Limit Reached", func(t *testing.T) {
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
+
 		// Fake filling the map
 		for range maxGlobalClients {
 			c := make(chan string)
-			Service.clients[c] = clientMetadata{}
+			svc.clients[c] = clientMetadata{}
 		}
 
-		err := Service.IsConnectionAllowed("3.3.3.3")
+		err := svc.IsConnectionAllowed("3.3.3.3")
+
 		if err == nil {
 			t.Error("want global limit error, got nil")
 		}
-
-		// Cleanup
-		Service.clients = map[chan string]clientMetadata{}
 	})
 }
 
 func TestService_AddRemoveClient(t *testing.T) {
-	originalPoll := Service.pollInterval
-
-	originalSpot := Service.spotifyFetcher
-	originalJelly := Service.jellyfinFetcher
-
-	defer func() {
-		Service.pollInterval = originalPoll
-
-		Service.spotifyFetcher = originalSpot
-		Service.jellyfinFetcher = originalJelly
-	}()
-
-	Service.pollInterval = 10 * time.Millisecond
-
-	Service.spotifyFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.CurrentlyPlaying{Platform: model.PlatformSpotify, IsPlaying: true}, nil
-	}
-
-	Service.jellyfinFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.CurrentlyPlaying{Platform: model.PlatformJellyfin, IsPlaying: false}, nil
-	}
-
 	t.Run("Add or Remove Client Lifecycle", func(t *testing.T) {
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
+
 		// Use buffered channel matching production controller
 		clientChan := make(chan string, 4)
 
-		ctx := t.Context()
-
 		// Add Client
-		Service.AddClient(ctx, clientChan, "127.0.0.1", "TestAgent")
+		svc.AddClient(ctx, clientChan, "127.0.0.1", "TestAgent")
 
 		// Verify Initial Data (Welcome + Spotify + Jellyfin)
 		timeout := time.After(1 * time.Second)
@@ -112,50 +130,58 @@ func TestService_AddRemoveClient(t *testing.T) {
 		}
 
 		// Remove Client
-		Service.RemoveClient(ctx, clientChan)
+		svc.RemoveClient(ctx, clientChan)
 
-		if len(Service.clients) != 0 {
+		if len(svc.clients) != 0 {
 			t.Error("want clients map to be empty")
 		}
 
-		if Service.stopChan != nil {
+		if svc.stopChan != nil {
 			// Wait a bit for stopWorker to finish
-			time.Sleep(20 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 
-			if Service.stopChan != nil {
+			if svc.stopChan != nil {
 				t.Error("want poller to stop")
 			}
 		}
 	})
 
 	t.Run("Client Channel Closed Before first message", func(t *testing.T) {
+		ctx := t.Context()
+
+		_, svc := setupTest(ctx)
+
 		clientChan := make(chan string, 4)
 
 		ctx, cancel := context.WithCancel(context.Background())
 
 		cancel()
 
-		Service.AddClient(ctx, clientChan, "1.1.1.1", "TestAgent")
+		svc.AddClient(ctx, clientChan, "1.1.1.1", "TestAgent")
+		svc.RemoveClient(ctx, clientChan)
 
-		Service.RemoveClient(ctx, clientChan)
-
-		if len(Service.clients) != 0 {
+		if len(svc.clients) != 0 {
 			t.Error("want clients map to be empty after removing closed channel")
 		}
 	})
 }
 
 func TestService_getSSEData_Errors(t *testing.T) {
-	Service.spotifyFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.CurrentlyPlaying{}, errors.New("spotify fail")
+	failSpotify := &mockDataFetcher{
+		err: errors.New("spotify fail"),
 	}
 
-	Service.jellyfinFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.CurrentlyPlaying{}, errors.New("jellyfin fail")
+	failJellyfin := &mockDataFetcher{
+		err: errors.New("jellyfin fail"),
 	}
+
+	svc := NewService(ServiceConfig{
+		SpotifyService:  failSpotify,
+		JellyfinService: failJellyfin,
+	})
 
 	// Should not panic, should return default empty structs
-	data := Service.getSSEData(context.Background())
+	data := svc.getSSEData(context.Background())
 
 	if !strings.Contains(data.spotify, "spotify") {
 		t.Error("want spotify event structure even on error")
@@ -163,21 +189,27 @@ func TestService_getSSEData_Errors(t *testing.T) {
 }
 
 func TestService_WorkerLocks(t *testing.T) {
-	Service.stopChan = nil
+	svc := NewService(ServiceConfig{})
 
-	Service.startWorkerLocked()
+	if svc.stopChan != nil {
+		t.Error("want initial stopChan to be nil")
+	}
 
-	if Service.stopChan == nil {
+	svc.startWorkerLocked()
+
+	if svc.stopChan == nil {
 		t.Error("want worker started")
 	}
 
-	Service.startWorkerLocked()
+	// Starting again shouldn't overwrite or panic
+	svc.startWorkerLocked()
 
-	Service.stopWorkerLocked()
+	svc.stopWorkerLocked()
 
-	if Service.stopChan != nil {
+	if svc.stopChan != nil {
 		t.Error("want worker stopped")
 	}
 
-	Service.stopWorkerLocked()
+	// Stopping again shouldn't panic
+	svc.stopWorkerLocked()
 }

@@ -18,15 +18,15 @@ func parseSpotifyCurrentlyPlaying(raw spotify.SpotifyCurrentlyPlaying) model.Cur
 
 	artistStr := strings.Join(artistNames, ", ")
 
-	var trackUrl *string
-	var imageUrl *string
+	var trackURL *string
+	var imageURL *string
 
 	albumName := "Unknown Album"
 
 	if !item.IsLocal {
 		// Only set URL if it exists
 		if url := item.ExternalURLs.Spotify; url != "" {
-			trackUrl = &url
+			trackURL = &url
 		}
 
 		// Only set album info if it exists
@@ -34,8 +34,7 @@ func parseSpotifyCurrentlyPlaying(raw spotify.SpotifyCurrentlyPlaying) model.Cur
 			albumName = item.Album.Name
 
 			if len(item.Album.Images) > 0 {
-				url := item.Album.Images[0].URL
-				imageUrl = &url
+				imageURL = new(item.Album.Images[0].URL)
 			}
 		}
 	}
@@ -44,13 +43,13 @@ func parseSpotifyCurrentlyPlaying(raw spotify.SpotifyCurrentlyPlaying) model.Cur
 		Platform:  model.PlatformSpotify,
 		IsPlaying: raw.IsPlaying,
 		Item: &model.Track{
-			TrackURL:      trackUrl,
+			TrackURL:      trackURL,
 			TrackName:     item.Name,
 			ArtistName:    artistStr,
 			ProgressMs:    raw.ProgressMs,
 			DurationMs:    item.DurationMs,
 			AlbumName:     albumName,
-			AlbumImageURL: imageUrl,
+			AlbumImageURL: imageURL,
 		},
 	}
 }

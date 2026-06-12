@@ -22,7 +22,7 @@ func TestLogging(t *testing.T) {
 	Logging(nextHandler).ServeHTTP(w, r)
 
 	if w.Code != http.StatusTeapot {
-		t.Errorf("got status %d, want 418", w.Code)
+		t.Fatalf("got status %d, want 418", w.Code)
 	}
 
 	if w.Body.String() != "I am a teapot" {

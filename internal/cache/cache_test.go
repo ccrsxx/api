@@ -1,23 +1,21 @@
-package cache
+package cache_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/ccrsxx/api/internal/cache"
 )
 
-func TestGetCachedData(t *testing.T) {
-	realCache := cacheManager.memory
-
-	defer func() {
-		cacheManager.memory = realCache
-	}()
-
+func TestGetOrFetch(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Cache Miss -> Fetch -> Set", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
+		ctx := t.Context()
+
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		key := "miss-key"
 		want := "fetched-want"
@@ -26,7 +24,7 @@ func TestGetCachedData(t *testing.T) {
 			return want, nil
 		}
 
-		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, key, fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -36,10 +34,9 @@ func TestGetCachedData(t *testing.T) {
 			t.Errorf("got %v, want %v", got, want)
 		}
 
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond) // Wait for async set
 
-		cached, err := cacheManager.memory.Get(ctx, key)
-
+		cached, err := c.Get(ctx, key)
 		if err != nil {
 			t.Fatalf("error getting from cache: %v", err)
 		}
@@ -50,12 +47,14 @@ func TestGetCachedData(t *testing.T) {
 	})
 
 	t.Run("Cache Hit -> Return Immediate", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
+		ctx := t.Context()
+
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		key := "hit-key"
 		want := "cached-want"
 
-		err := cacheManager.memory.Set(ctx, key, want, time.Minute)
+		err := c.Set(ctx, key, want, time.Minute)
 
 		if err != nil {
 			t.Fatalf("error setting up cache: %v", err)
@@ -63,10 +62,10 @@ func TestGetCachedData(t *testing.T) {
 
 		fetcher := func() (string, error) {
 			t.Fatal("fetcher should not be called")
-			return "wrong", nil
+			return "", nil
 		}
 
-		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, key, fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -78,31 +77,28 @@ func TestGetCachedData(t *testing.T) {
 	})
 
 	t.Run("Fetcher Error -> Return Error", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
+		ctx := t.Context()
+
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
+
 		wantErr := errors.New("db dead")
 
 		fetcher := func() (string, error) {
 			return "", wantErr
 		}
 
-		_, err := GetCachedData(ctx, "err-key", ProviderMemory, fetcher, StaticTTL[string](time.Minute))
+		_, err := cache.GetOrFetch(ctx, c, "err-key", fetcher, cache.StaticTTL[string](time.Minute))
 
 		if !errors.Is(err, wantErr) {
 			t.Errorf("got error %v, want %v", err, wantErr)
 		}
 	})
 
-	t.Run("Provider Fallback (Cloudflare -> Memory)", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
-
-		key := "fallback-key"
+	t.Run("Nil Cache Fallback", func(t *testing.T) {
 		want := "data"
+		fetcher := func() (string, error) { return want, nil }
 
-		fetcher := func() (string, error) {
-			return want, nil
-		}
-
-		got, err := GetCachedData(ctx, key, ProviderCloudflare, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, nil, "fallback", fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -117,7 +113,7 @@ func TestGetCachedData(t *testing.T) {
 func TestStaticTTL(t *testing.T) {
 	ttl := 10 * time.Minute
 
-	if got := StaticTTL[string](ttl)("any"); got != ttl {
+	if got := cache.StaticTTL[string](ttl)("any"); got != ttl {
 		t.Errorf("got %v, want %v", got, ttl)
 	}
 }
@@ -125,37 +121,22 @@ func TestStaticTTL(t *testing.T) {
 type faultyCache struct{}
 
 func (f *faultyCache) Get(ctx context.Context, key string) (any, error) {
-	return nil, ErrCacheMiss
+	return nil, cache.ErrCacheMiss
 }
-
 func (f *faultyCache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	return errors.New("forced storage error")
 }
+func (f *faultyCache) Delete(ctx context.Context, key string) error { return nil }
 
-func (f *faultyCache) Delete(ctx context.Context, key string) error {
-	return nil
-}
-
-func TestGetCachedDataCoverage(t *testing.T) {
-	realCache := cacheManager.memory
-
-	defer func() {
-		cacheManager.memory = realCache
-	}()
-
+func TestGetOrFetchCoverage(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Async Set Error (Log Warning)", func(t *testing.T) {
-		cacheManager.memory = &faultyCache{}
-
-		key := "log-key"
+		c := &faultyCache{}
 		want := "log-want"
+		fetcher := func() (string, error) { return want, nil }
 
-		fetcher := func() (string, error) {
-			return want, nil
-		}
-
-		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, "log-key", fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -170,23 +151,21 @@ func TestGetCachedDataCoverage(t *testing.T) {
 	})
 
 	t.Run("Type Assertion Failure (Wrong Type in Cache)", func(t *testing.T) {
-		cacheManager.memory = newMemoryCache(defaultCleanupInterval)
+		ctx := t.Context()
+
+		c := cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval)
 
 		key := "wrong-type-key"
-
-		err := cacheManager.memory.Set(ctx, key, 999, time.Minute)
+		err := c.Set(ctx, key, 999, time.Minute)
 
 		if err != nil {
 			t.Fatalf("error setting up cache: %v", err)
 		}
 
 		want := "correct-string"
+		fetcher := func() (string, error) { return want, nil }
 
-		fetcher := func() (string, error) {
-			return want, nil
-		}
-
-		got, err := GetCachedData(ctx, key, ProviderMemory, fetcher, StaticTTL[string](time.Minute))
+		got, err := cache.GetOrFetch(ctx, c, key, fetcher, cache.StaticTTL[string](time.Minute))
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)

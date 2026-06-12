@@ -5,22 +5,20 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-type controller struct{}
+type Controller struct{}
 
-var Controller = &controller{}
+func NewController() *Controller {
+	return &Controller{}
+}
 
-func (c *controller) ping(w http.ResponseWriter, r *http.Request) {
-	type response struct {
-		Message          string `json:"message"`
-		DocumentationURL string `json:"documentationUrl"`
-	}
-
-	err := api.NewSuccessResponse(w, http.StatusOK, response{
+func (c *Controller) Ping(w http.ResponseWriter, r *http.Request) {
+	err := api.NewSuccessResponse(w, http.StatusOK, model.Ping{
 		Message:          "Welcome to the API! The server is up and running.",
-		DocumentationURL: utils.GetPublicUrlFromRequest(r) + "/docs",
+		DocumentationURL: utils.GetPublicURLFromRequest(r) + "/docs",
 	})
 
 	if err != nil {

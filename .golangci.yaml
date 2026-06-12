@@ -2,3 +2,26 @@ version: '2'
 
 linters:
   default: standard
+  enable:
+    - revive
+  settings:
+    revive:
+      rules:
+        # Enforce consistent variable naming
+        - name: var-naming
+    govet:
+      enable:
+        # Prefer keyed struct over positional struct initialization
+        # Only works for non local structs tho, but better than nothing
+        - composites
+  exclusions:
+    rules:
+      - linters:
+          - revive
+        # Ignore common package name warning
+        text: 'avoid meaningless package names'
+
+      - linters:
+          - revive
+        # Ignore _type warning usage on function parameter
+        text: "method parameter type_ should be type"

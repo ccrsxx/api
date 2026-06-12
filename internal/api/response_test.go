@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/test"
+	"github.com/ccrsxx/api/internal/utils"
 )
 
 type testUser struct {
@@ -38,35 +39,111 @@ func TestNewSuccessResponse(t *testing.T) {
 		}
 	})
 
-	t.Run("Wraps Pointer to Struct in Data Field", func(t *testing.T) {
+	t.Run("Wraps Slices in Data Field", func(t *testing.T) {
 		w := httptest.NewRecorder()
+		data := []string{"a", "b"}
 
-		data := &testUser{Name: "Jane", Age: 25}
-
-		err := NewSuccessResponse(w, http.StatusCreated, data)
-
-		if err != nil {
-			t.Fatalf("unwanted error: %v", err)
-		}
-
-		want := `{"data":{"name":"Jane","age":25}}`
-
-		if strings.TrimSpace(w.Body.String()) != want {
-			t.Errorf("got body %q, want %q", w.Body.String(), want)
-		}
-	})
-
-	t.Run("Does Not Wrap Maps", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		data := map[string]string{"foo": "bar"}
-
+		// Proves that NewSuccessResponse now unconditionally wraps
 		err := NewSuccessResponse(w, http.StatusOK, data)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
 		}
 
-		want := `{"foo":"bar"}`
+		want := `{"data":["a","b"]}`
+
+		if strings.TrimSpace(w.Body.String()) != want {
+			t.Errorf("got body %q, want %q", w.Body.String(), want)
+		}
+	})
+}
+
+func TestNewSuccessPaginatedResponse(t *testing.T) {
+	t.Run("Wraps Data and Meta in Response", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		generated := utils.GenerateOffsetPaginationMeta(utils.PaginationOffsetMetaOptions{
+			Page:        1,
+			Limit:       10,
+			RecordCount: 42,
+		})
+
+		data := []testUser{{Name: "John", Age: 30}, {Name: "Jane", Age: 25}}
+
+		err := NewSuccessPaginatedResponse(w, http.StatusOK, generated.Meta, data)
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
+		}
+
+		var response SuccessPaginatedResponse[[]testUser, utils.OffsetPaginationMeta]
+
+		if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			t.Fatalf("failed to unmarshal response: %v", err)
+		}
+
+		if response.Meta.Page != 1 {
+			t.Fatalf("got meta.page %d, want 1", response.Meta.Page)
+		}
+
+		if response.Meta.Limit != 10 {
+			t.Fatalf("got meta.limit %d, want 10", response.Meta.Limit)
+		}
+
+		if response.Meta.PageCount != 5 {
+			t.Fatalf("got meta.pageCount %d, want 5", response.Meta.PageCount)
+		}
+
+		if response.Meta.RecordCount != 42 {
+			t.Fatalf("got meta.recordCount %d, want 42", response.Meta.RecordCount)
+		}
+
+		if len(response.Data) != 2 {
+			t.Errorf("got data length %d, want 2", len(response.Data))
+		}
+	})
+
+	t.Run("Empty Data Slice", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		generated := utils.GenerateOffsetPaginationMeta(utils.PaginationOffsetMetaOptions{
+			Page:        1,
+			Limit:       10,
+			RecordCount: 0,
+		})
+
+		data := []testUser{}
+
+		err := NewSuccessPaginatedResponse(w, http.StatusOK, generated.Meta, data)
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		want := `{"meta":{"page":1,"limit":10,"pageCount":0,"recordCount":0},"data":[]}`
+
+		if strings.TrimSpace(w.Body.String()) != want {
+			t.Errorf("got body %q, want %q", w.Body.String(), want)
+		}
+	})
+}
+
+func TestNewSuccessRawResponse(t *testing.T) {
+	t.Run("Does Not Wrap Struct", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		data := testUser{Name: "John", Age: 30}
+
+		err := NewSuccessRawResponse(w, http.StatusOK, data)
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		want := `{"name":"John","age":30}`
 
 		if strings.TrimSpace(w.Body.String()) != want {
 			t.Errorf("got body %q, want %q", w.Body.String(), want)
@@ -77,7 +154,7 @@ func TestNewSuccessResponse(t *testing.T) {
 		w := httptest.NewRecorder()
 		data := []string{"a", "b"}
 
-		err := NewSuccessResponse(w, http.StatusOK, data)
+		err := NewSuccessRawResponse(w, http.StatusOK, data)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)

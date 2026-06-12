@@ -7,47 +7,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestController_getCurrentPlayingSSE(t *testing.T) {
-	originalPollInterval := Service.pollInterval
-	originalSpotifyFetcher := Service.spotifyFetcher
-	originalJellyfinFetcher := Service.jellyfinFetcher
-
-	defer func() {
-		Service.pollInterval = originalPollInterval
-		Service.spotifyFetcher = originalSpotifyFetcher
-		Service.jellyfinFetcher = originalJellyfinFetcher
-	}()
-
-	Service.spotifyFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformSpotify), nil
-	}
-
-	Service.jellyfinFetcher = func(ctx context.Context) (model.CurrentlyPlaying, error) {
-		return model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin), nil
-	}
-
-	Service.pollInterval = 10 * time.Millisecond
-
 	t.Run("Client Channel Closed Externally", func(t *testing.T) {
-		// Clear State
-		Service.mu.Lock()
+		ctx := t.Context()
 
-		Service.clients = map[chan string]clientMetadata{}
-
-		Service.mu.Unlock()
+		ctrl, svc := setupTest(ctx)
 
 		done := make(chan struct{})
 
-		// Start Controller in Background
 		go func() {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
-			Controller.getCurrentPlayingSSE(w, r)
+			ctrl.getCurrentPlayingSSE(w, r)
 
 			close(done)
 		}()
@@ -56,14 +31,14 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 		var targetChan chan string
 
 		for {
-			Service.mu.RLock()
+			svc.mu.RLock()
 
-			for ch := range Service.clients {
+			for ch := range svc.clients {
 				targetChan = ch
 				break
 			}
 
-			Service.mu.RUnlock()
+			svc.mu.RUnlock()
 
 			if targetChan != nil {
 				break // Found it!
@@ -79,7 +54,7 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 
 		// Trigger !ok path
 		// We manually close the channel. This causes the controller loop to receive (!ok) and exit.
-		Service.RemoveClient(context.Background(), targetChan)
+		svc.RemoveClient(context.Background(), targetChan)
 
 		// Assert Exit
 		select {
@@ -91,13 +66,17 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
+		ctx := t.Context()
+
+		ctrl, _ := setupTest(ctx)
+
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 		r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
 		done := make(chan bool)
 
 		go func() {
-			Controller.getCurrentPlayingSSE(w, r)
+			ctrl.getCurrentPlayingSSE(w, r)
 			close(done)
 		}()
 
@@ -115,6 +94,10 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 	})
 
 	t.Run("Flush Error", func(t *testing.T) {
+		ctx := t.Context()
+
+		ctrl, _ := setupTest(ctx)
+
 		r := httptest.NewRequest(http.MethodGet, "/sse", nil)
 
 		// Use a writer that does NOT implement http.Flusher interface.
@@ -123,12 +106,14 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 
 		ctx, cancel := context.WithCancel(r.Context())
 
+		defer cancel()
+
 		r = r.WithContext(ctx)
 
-		done := make(chan bool)
+		done := make(chan struct{})
 
 		go func() {
-			Controller.getCurrentPlayingSSE(w, r)
+			ctrl.getCurrentPlayingSSE(w, r)
 			close(done)
 		}()
 
@@ -144,4 +129,36 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 			t.Fatal("handler hung")
 		}
 	})
+
+	t.Run("App Shutdown Context Cancellation", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(t.Context())
+
+		defer cancel()
+
+		ctrl, _ := setupTest(ctx)
+
+		req := httptest.NewRequest(http.MethodGet, "/sse", nil)
+		rec := httptest.NewRecorder()
+
+		done := make(chan struct{})
+
+		go func() {
+			ctrl.getCurrentPlayingSSE(rec, req)
+			close(done) // This channel closes ONLY when the handler successfully returns
+		}()
+
+		time.Sleep(10 * time.Millisecond)
+
+		// HIT THE KILL SWITCH! This triggers the <-appShutdown case
+		cancel()
+
+		select {
+		case <-done:
+			// Success! The handler caught the shutdown and exited cleanly.
+		case <-time.After(1 * time.Second):
+			// If we get here, your server is hanging!
+			t.Fatal("handler did not exit after app context was canceled (goroutine leak!)")
+		}
+	},
+	)
 }

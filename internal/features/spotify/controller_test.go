@@ -1,7 +1,6 @@
-package spotify
+package spotify_test
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,28 +9,29 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/clients/spotify"
+	spotifyFeature "github.com/ccrsxx/api/internal/features/spotify"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_getCurrentlyPlaying(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	defer func() {
-		Service.fetcher = originalFetcher
-	}()
-
+func TestController_GetCurrentlyPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{
+		mock := &mockSpotifyClient{
+			result: spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
-			}, nil
+			},
 		}
+
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := spotifyFeature.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -51,36 +51,46 @@ func TestController_getCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{}, errors.New("fail")
+		mock := &mockSpotifyClient{
+			err: errors.New("fail"),
 		}
+
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := spotifyFeature.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
-		Controller.getCurrentlyPlaying(w, r)
+		ctrl.GetCurrentlyPlaying(w, r)
 
-		// Service error returns the error to the controller, which calls HandleHttpError
-		// Since it's a generic error, it usually results in 500
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("got %d, want 500", w.Code)
 		}
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) (spotify.SpotifyCurrentlyPlaying, error) {
-			return spotify.SpotifyCurrentlyPlaying{
+		mock := &mockSpotifyClient{
+			result: spotify.SpotifyCurrentlyPlaying{
 				IsPlaying: true,
 				Item:      &spotify.SpotifyItem{Name: "Song"},
-			}, nil
+			},
 		}
+
+		svc := spotifyFeature.NewService(spotifyFeature.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := spotifyFeature.NewController(svc)
 
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := httptest.NewRecorder()
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		Controller.getCurrentlyPlaying(errWriter, r)
+		ctrl.GetCurrentlyPlaying(errWriter, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

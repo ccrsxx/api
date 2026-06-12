@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetIpAddressFromRequest(r *http.Request) string {
+func GetIPAddressFromRequest(r *http.Request) string {
 	if cfIP := r.Header.Get("CF-Connecting-IP"); cfIP != "" {
 		return cfIP
 	}
@@ -31,7 +31,17 @@ func GetIpAddressFromRequest(r *http.Request) string {
 	return ip
 }
 
-func GetHttpHeadersFromRequest(r *http.Request) map[string]string {
+func IsPrivateIP(ip string) bool {
+	parsed := net.ParseIP(ip)
+
+	if parsed == nil {
+		return false
+	}
+
+	return parsed.IsLoopback() || parsed.IsPrivate()
+}
+
+func GetHTTPHeadersFromRequest(r *http.Request) map[string]string {
 	flatHeaders := map[string]string{}
 
 	for k, v := range r.Header {
@@ -41,7 +51,7 @@ func GetHttpHeadersFromRequest(r *http.Request) map[string]string {
 	return flatHeaders
 }
 
-func GetPublicUrlFromRequest(r *http.Request) string {
+func GetPublicURLFromRequest(r *http.Request) string {
 	scheme := "http"
 
 	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {

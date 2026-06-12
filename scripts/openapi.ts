@@ -58,11 +58,11 @@ async function main(): Promise<void> {
 
   console.log('OpenAPI documentation generated successfully.');
 
-  const skipCommit = process.argv.includes('--no-commit');
+  const shouldCommit = process.argv.includes('--commit');
 
-  if (skipCommit) {
+  if (!shouldCommit) {
     console.log(
-      'Skipping commit due to --no-commit flag. Please commit manually.'
+      'Skipping commit. Pass --commit to commit changes automatically.'
     );
     return;
   }

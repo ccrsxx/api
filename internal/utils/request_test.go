@@ -1,13 +1,15 @@
-package utils
+package utils_test
 
 import (
 	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/ccrsxx/api/internal/utils"
 )
 
-func TestGetIpAddressFromRequest(t *testing.T) {
+func TestGetIPAddressFromRequest(t *testing.T) {
 	tests := []struct {
 		name       string
 		headers    map[string]string
@@ -56,14 +58,73 @@ func TestGetIpAddressFromRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-			setHttpHeaders(r, tt.headers)
+			setHTTPHeaders(r, tt.headers)
 
 			r.RemoteAddr = tt.remoteAddr
 
-			got := GetIpAddressFromRequest(r)
+			got := utils.GetIPAddressFromRequest(r)
 
 			if got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsPrivateIP(t *testing.T) {
+	tests := []struct {
+		name string
+		ip   string
+		want bool
+	}{
+		{
+			name: "Loopback IPv4",
+			ip:   "127.0.0.1",
+			want: true,
+		},
+		{
+			name: "Loopback IPv6",
+			ip:   "::1",
+			want: true,
+		},
+		{
+			name: "Private 10.x.x.x",
+			ip:   "10.0.0.1",
+			want: true,
+		},
+		{
+			name: "Private 172.16.x.x",
+			ip:   "172.16.0.1",
+			want: true,
+		},
+		{
+			name: "Private 192.168.x.x",
+			ip:   "192.168.1.100",
+			want: true,
+		},
+		{
+			name: "Public IP",
+			ip:   "8.8.8.8",
+			want: false,
+		},
+		{
+			name: "Public 172.32.x.x (Outside Private Range)",
+			ip:   "172.32.0.1",
+			want: false,
+		},
+		{
+			name: "Invalid IP",
+			ip:   "not-an-ip",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := utils.IsPrivateIP(tt.ip)
+
+			if got != tt.want {
+				t.Errorf("IsPrivateIP(%q) = %v, want %v", tt.ip, got, tt.want)
 			}
 		})
 	}
@@ -91,9 +152,9 @@ func TestGetHttpHeadersFromRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-			setHttpHeaders(r, tt.headers)
+			setHTTPHeaders(r, tt.headers)
 
-			got := GetHttpHeadersFromRequest(r)
+			got := utils.GetHTTPHeadersFromRequest(r)
 
 			for k, v := range tt.want {
 				if got[k] != v {
@@ -141,13 +202,13 @@ func TestGetPublicUrlFromRequest(t *testing.T) {
 
 			r.Host = tt.host
 
-			setHttpHeaders(r, tt.headers)
+			setHTTPHeaders(r, tt.headers)
 
 			if tt.isTLS {
 				r.TLS = &tls.ConnectionState{}
 			}
 
-			got := GetPublicUrlFromRequest(r)
+			got := utils.GetPublicURLFromRequest(r)
 
 			if got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)
@@ -156,7 +217,7 @@ func TestGetPublicUrlFromRequest(t *testing.T) {
 	}
 }
 
-func setHttpHeaders(r *http.Request, headers map[string]string) {
+func setHTTPHeaders(r *http.Request, headers map[string]string) {
 	for k, v := range headers {
 		r.Header.Set(k, v)
 	}

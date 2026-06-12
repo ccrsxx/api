@@ -1,4 +1,4 @@
-package home
+package home_test
 
 import (
 	"encoding/json"
@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/features/home"
+	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 )
 
-func TestController_ping(t *testing.T) {
+func TestController_Ping(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
@@ -18,16 +20,15 @@ func TestController_ping(t *testing.T) {
 
 		r.Host = "api.example.com"
 
-		Controller.ping(w, r)
+		ctrl := home.NewController()
+
+		ctrl.Ping(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want status 200", w.Code)
 		}
 
-		var res api.SuccessResponse[struct {
-			Message          string `json:"message"`
-			DocumentationURL string `json:"documentationUrl"`
-		}]
+		var res api.SuccessResponse[model.Ping]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -39,10 +40,10 @@ func TestController_ping(t *testing.T) {
 			t.Fatalf("got %q, want message %q", res.Data.Message, wantMsg)
 		}
 
-		wantDocUrl := "http://api.example.com/docs"
+		wantDocURL := "http://api.example.com/docs"
 
-		if res.Data.DocumentationURL != wantDocUrl {
-			t.Errorf("got %q, want docs url %q", res.Data.DocumentationURL, wantDocUrl)
+		if res.Data.DocumentationURL != wantDocURL {
+			t.Errorf("got %q, want docs url %q", res.Data.DocumentationURL, wantDocURL)
 		}
 	})
 
@@ -50,7 +51,9 @@ func TestController_ping(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/", nil)
 		w := &test.ErrorResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 
-		Controller.ping(w, r)
+		ctrl := home.NewController()
+
+		ctrl.Ping(w, r)
 
 		// Confirm the handler attempted to write OK prior to the forced write error.
 		if w.Code != http.StatusOK {

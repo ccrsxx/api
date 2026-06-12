@@ -3,36 +3,29 @@ package jellyfin
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/ccrsxx/api/internal/clients/jellyfin"
-	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/model"
 )
 
+type mockJellyfinClient struct {
+	result []jellyfin.SessionInfo
+	err    error
+}
+
+func (m *mockJellyfinClient) GetSessions(ctx context.Context) ([]jellyfin.SessionInfo, error) {
+	return m.result, m.err
+}
+
 func TestService_GetCurrentlyPlaying(t *testing.T) {
-	originalFetcher := Service.fetcher
-
-	originalUser := config.Env().JellyfinUsername
-
-	defer func() {
-		Service.fetcher = originalFetcher
-
-		config.Env().JellyfinUsername = originalUser
-	}()
-
-	config.Env().JellyfinUsername = "testuser"
-
 	validUser := "testuser"
 	otherUser := "other"
 
 	t.Run("Success Playing", func(t *testing.T) {
-		resetJellyfinCache()
-
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{
+		mock := &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{
 				{
 					UserName: &validUser,
 					NowPlayingItem: &jellyfin.BaseItem{
@@ -41,10 +34,15 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 					},
 					PlayState: &jellyfin.PlayerStateInfo{IsPaused: false},
 				},
-			}, nil
+			},
 		}
 
-		got, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := NewService(ServiceConfig{
+			Client:           mock,
+			JellyfinUsername: validUser,
+		})
+
+		got, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -60,10 +58,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Filtering Logic", func(t *testing.T) {
-		resetJellyfinCache()
-
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{
+		mock := &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{
 				{UserName: &otherUser},                      // Skip: Wrong User
 				{UserName: &validUser, NowPlayingItem: nil}, // Skip: Not Playing
 				{
@@ -71,12 +67,15 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 					NowPlayingItem: &jellyfin.BaseItem{Type: jellyfin.KindMovie}, // Skip: Not Audio
 					PlayState:      &jellyfin.PlayerStateInfo{},
 				},
-			}, nil
+			},
 		}
 
-		got, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := NewService(ServiceConfig{
+			Client:           mock,
+			JellyfinUsername: validUser,
+		})
 
-		fmt.Printf("Got state: %+v\n", got)
+		got, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -88,11 +87,15 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Fetcher Error", func(t *testing.T) {
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return nil, errors.New("network fail")
+		mock := &mockJellyfinClient{
+			err: errors.New("network fail"),
 		}
 
-		_, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := NewService(ServiceConfig{
+			Client: mock,
+		})
+
+		_, err := svc.GetCurrentlyPlaying(context.Background())
 		if err == nil {
 			t.Error("want error")
 		}
@@ -100,24 +103,29 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 	t.Run("Caching and Extrapolation", func(t *testing.T) {
 		// Prime the cache with a playing state
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{
+		playingMock := &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{
 				{
 					UserName: &validUser,
 					NowPlayingItem: &jellyfin.BaseItem{
 						Name:         new("Cached Song"),
 						Type:         jellyfin.KindAudio,
-						RunTimeTicks: new(int64(60000000)), // 6000ms duration (using large numbers for ticks)
+						RunTimeTicks: new(int64(60000000)), // 6000ms duration
 					},
 					PlayState: &jellyfin.PlayerStateInfo{
 						IsPaused:      false,
 						PositionTicks: new(int64(10000000)), // 1000ms progress
 					},
 				},
-			}, nil
+			},
 		}
 
-		_, err := Service.GetCurrentlyPlaying(context.Background())
+		svc := NewService(ServiceConfig{
+			Client:           playingMock,
+			JellyfinUsername: validUser,
+		})
+
+		_, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -125,8 +133,8 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 		// Simulate "No Content" from API (user momentarily between songs or network blip)
 		// But within grace period
-		Service.fetcher = func(ctx context.Context) ([]jellyfin.SessionInfo, error) {
-			return []jellyfin.SessionInfo{}, nil
+		svc.client = &mockJellyfinClient{
+			result: []jellyfin.SessionInfo{},
 		}
 
 		// Force time to advance slightly for extrapolation
@@ -135,7 +143,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		// For robustness, we manually tweak the lastStateTime in the struct if needed,
 		// but since we just ran it, it is definitely within the 5s grace period.
 
-		got, err := Service.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -151,13 +159,9 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 
 		// Force Cache Expiry
 		// Manually reach into the service and set time back > 5 seconds
-		Service.mu.Lock()
+		svc.lastStateTime = time.Now().Add(-10 * time.Second)
 
-		Service.lastStateTime = time.Now().Add(-10 * time.Second)
-
-		Service.mu.Unlock()
-
-		gotExpired, err := Service.GetCurrentlyPlaying(context.Background())
+		gotExpired, err := svc.GetCurrentlyPlaying(context.Background())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -169,8 +173,11 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Extrapolation Logic Edge Cases", func(t *testing.T) {
+		// Initialize empty service
+		svc := NewService(ServiceConfig{})
+
 		// Manually setup a state where Progress is near Duration
-		Service.lastState = &model.CurrentlyPlaying{
+		svc.lastState = &model.CurrentlyPlaying{
 			IsPlaying: true,
 			Item: &model.Track{
 				ProgressMs: 5000,
@@ -179,10 +186,10 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		// Set lastStateTime to 200ms ago, which would extrapolate progress to 5200ms (beyond duration)
-		Service.lastStateTime = time.Now().Add(-200 * time.Millisecond)
+		svc.lastStateTime = time.Now().Add(-200 * time.Millisecond)
 
 		// Call internal method directly to test math
-		got := Service.getExtrapolatedState()
+		got := svc.getExtrapolatedState()
 
 		// Should have advanced by ~200ms, but capped at 5100
 		if got.Item.ProgressMs > 5100 {
@@ -190,30 +197,12 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		// Test nil checks in getExtrapolatedState
-		Service.lastState = nil
+		svc.lastState = nil
 
-		gotEmpty := Service.getExtrapolatedState()
+		gotEmpty := svc.getExtrapolatedState()
 
 		if gotEmpty.IsPlaying {
 			t.Error("want empty state for nil lastState")
 		}
 	})
-
-	t.Run("Default Fetcher Execution for coverage", func(t *testing.T) {
-		f := originalFetcher
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
-
-		defer cancel()
-
-		if _, err := f(ctx); err != nil {
-			// We expect an error here since we likely don't have a Jellyfin server running during tests
-			t.Logf("default fetcher returned want error (no server): %v", err)
-			return
-		}
-	})
-}
-
-func resetJellyfinCache() {
-	Service.lastState = nil
 }

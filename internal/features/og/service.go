@@ -7,30 +7,37 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/ccrsxx/api/internal/config"
 )
 
-type service struct {
-	ogUrl      string
+type Service struct {
+	ogURL      string
 	httpClient *http.Client
 }
 
-var Service = &service{
-	ogUrl:      "http://10.0.0.60:4444/og",
-	httpClient: &http.Client{Timeout: 8 * time.Second},
+type ServiceConfig struct {
+	OgURL      string
+	HTTPClient *http.Client
 }
 
-func (s *service) getOg(ctx context.Context, query string) (io.ReadCloser, error) {
-	ogUrl := s.ogUrl
-
-	if config.Config().IsDevelopment {
-		ogUrl = "http://localhost:4444/og"
+func NewService(cfg ServiceConfig) *Service {
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = &http.Client{
+			Timeout: 8 * time.Second,
+		}
 	}
 
-	targetUrl := fmt.Sprintf("%s?%s", ogUrl, query)
+	return &Service{
+		ogURL:      cfg.OgURL,
+		httpClient: cfg.HTTPClient,
+	}
+}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetUrl, nil)
+func (s *Service) GetOg(ctx context.Context, query string) (io.ReadCloser, error) {
+	ogURL := s.ogURL
+
+	targetURL := fmt.Sprintf("%s?%s", ogURL, query)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("og request creation error: %w", err)
