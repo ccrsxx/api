@@ -28,7 +28,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		svc := navidromeFeature.NewService(navidromeFeature.ServiceConfig{
-			Client:           mock,
+			Client:            mock,
 			NavidromeUsername: validUser,
 		})
 
@@ -58,7 +58,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		}
 
 		svc := navidromeFeature.NewService(navidromeFeature.ServiceConfig{
-			Client:           mock,
+			Client:            mock,
 			NavidromeUsername: validUser,
 		})
 
