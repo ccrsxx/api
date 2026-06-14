@@ -28,11 +28,16 @@ func setupTest(ctx context.Context) (*Controller, *Service) {
 		result: model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin),
 	}
 
+	dummyNavidrome := &mockDataFetcher{
+		result: model.NewDefaultCurrentlyPlaying(model.PlatformNavidrome),
+	}
+
 	svc := NewService(ServiceConfig{
-		AppContext:      ctx,
-		PollInterval:    10 * time.Millisecond,
-		SpotifyService:  dummySpotify,
-		JellyfinService: dummyJellyfin,
+		AppContext:       ctx,
+		PollInterval:     10 * time.Millisecond,
+		SpotifyService:   dummySpotify,
+		JellyfinService:  dummyJellyfin,
+		NavidromeService: dummyNavidrome,
 	})
 
 	ctrl := NewController(ctx, svc)
@@ -94,18 +99,18 @@ func TestService_AddRemoveClient(t *testing.T) {
 		_, svc := setupTest(ctx)
 
 		// Use buffered channel matching production controller
-		clientChan := make(chan string, 4)
+		clientChan := make(chan string, 5)
 
 		// Add Client
 		svc.AddClient(ctx, clientChan, "127.0.0.1", "TestAgent")
 
-		// Verify Initial Data (Welcome + Spotify + Jellyfin)
+		// Verify Initial Data (Welcome + Spotify + Jellyfin + Navidrome)
 		timeout := time.After(1 * time.Second)
 
 		msgCount := 0
 
-		// We expect 3 initial messages
-		for i := range 3 {
+		// We expect 4 initial messages
+		for i := range 4 {
 			select {
 			case <-timeout:
 				t.Fatal("timeout waiting for initial messages")
@@ -122,7 +127,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 		select {
 		case msg := <-clientChan:
 			// Should receive updates from poll loop
-			if !strings.Contains(msg, "event: spotify") && !strings.Contains(msg, "event: jellyfin") {
+			if !strings.Contains(msg, "event: spotify") && !strings.Contains(msg, "event: jellyfin") && !strings.Contains(msg, "event: navidrome") {
 				t.Errorf("unwanted broadcast message: %s", msg)
 			}
 		case <-time.After(100 * time.Millisecond):
@@ -151,7 +156,7 @@ func TestService_AddRemoveClient(t *testing.T) {
 
 		_, svc := setupTest(ctx)
 
-		clientChan := make(chan string, 4)
+		clientChan := make(chan string, 5)
 
 		ctx, cancel := context.WithCancel(context.Background())
 
@@ -175,9 +180,14 @@ func TestService_getSSEData_Errors(t *testing.T) {
 		err: errors.New("jellyfin fail"),
 	}
 
+	failNavidrome := &mockDataFetcher{
+		err: errors.New("navidrome fail"),
+	}
+
 	svc := NewService(ServiceConfig{
-		SpotifyService:  failSpotify,
-		JellyfinService: failJellyfin,
+		SpotifyService:   failSpotify,
+		JellyfinService:  failJellyfin,
+		NavidromeService: failNavidrome,
 	})
 
 	// Should not panic, should return default empty structs

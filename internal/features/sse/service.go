@@ -28,25 +28,27 @@ type clientMetadata struct {
 }
 
 type dataFetcher interface {
-	GetCurrentlyPlaying(context.Context) (model.CurrentlyPlaying, error)
+	GetCurrentlyPlaying(ctx context.Context) (model.CurrentlyPlaying, error)
 }
 
 type Service struct {
-	mu              sync.RWMutex
-	clients         map[chan string]clientMetadata
-	stopChan        chan struct{}
-	appContext      context.Context
-	pollInterval    time.Duration
-	spotifyService  dataFetcher
-	ipAddressCounts map[string]int
-	jellyfinService dataFetcher
+	mu               sync.RWMutex
+	clients          map[chan string]clientMetadata
+	stopChan         chan struct{}
+	appContext       context.Context
+	pollInterval     time.Duration
+	spotifyService   dataFetcher
+	ipAddressCounts  map[string]int
+	jellyfinService  dataFetcher
+	navidromeService dataFetcher
 }
 
 type ServiceConfig struct {
-	AppContext      context.Context
-	PollInterval    time.Duration
-	SpotifyService  dataFetcher
-	JellyfinService dataFetcher
+	AppContext       context.Context
+	PollInterval     time.Duration
+	SpotifyService   dataFetcher
+	JellyfinService  dataFetcher
+	NavidromeService dataFetcher
 }
 
 func NewService(cfg ServiceConfig) *Service {
@@ -58,10 +60,11 @@ func NewService(cfg ServiceConfig) *Service {
 		clients:         map[chan string]clientMetadata{},
 		ipAddressCounts: map[string]int{},
 
-		appContext:      cfg.AppContext,
-		pollInterval:    cfg.PollInterval,
-		spotifyService:  cfg.SpotifyService,
-		jellyfinService: cfg.JellyfinService,
+		appContext:       cfg.AppContext,
+		pollInterval:     cfg.PollInterval,
+		spotifyService:   cfg.SpotifyService,
+		jellyfinService:  cfg.JellyfinService,
+		navidromeService: cfg.NavidromeService,
 	}
 }
 
@@ -124,6 +127,7 @@ func (s *Service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 	clientChan <- welcomeMsg
 	clientChan <- sseData.spotify
 	clientChan <- sseData.jellyfin
+	clientChan <- sseData.navidrome
 
 	if s.stopChan == nil {
 		s.startWorkerLocked()
@@ -236,16 +240,22 @@ func (s *Service) pollAndBroadcast(ctx context.Context) {
 		case clientChan <- sseData.jellyfin:
 		default:
 		}
+
+		select {
+		case clientChan <- sseData.navidrome:
+		default:
+		}
 	}
 }
 
 type sseData struct {
-	spotify  string
-	jellyfin string
+	spotify   string
+	jellyfin  string
+	navidrome string
 }
 
 func (s *Service) getSSEData(ctx context.Context) sseData {
-	var spotifyData, jellyfinData model.CurrentlyPlaying
+	var spotifyData, jellyfinData, navidromeData model.CurrentlyPlaying
 
 	var wg sync.WaitGroup
 
@@ -275,19 +285,35 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 		}
 
 		jellyfinData = data
+	})
 
+	wg.Go(func() {
+		data, err := s.navidromeService.GetCurrentlyPlaying(ctx)
+
+		if err != nil {
+			slog.Warn("sse navidrome fetch error", "error", err)
+
+			navidromeData = model.NewDefaultCurrentlyPlaying(model.PlatformNavidrome)
+
+			return
+		}
+
+		navidromeData = data
 	})
 
 	wg.Wait()
 
 	spotifyJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": spotifyData})
 	jellyfinJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": jellyfinData})
+	navidromeJSON, _ := json.Marshal(map[string]model.CurrentlyPlaying{"data": navidromeData})
 
 	msgSpotify := fmt.Sprintf("event: spotify\ndata: %s\n\n", spotifyJSON)
 	msgJellyfin := fmt.Sprintf("event: jellyfin\ndata: %s\n\n", jellyfinJSON)
+	msgNavidrome := fmt.Sprintf("event: navidrome\ndata: %s\n\n", navidromeJSON)
 
 	return sseData{
-		spotify:  msgSpotify,
-		jellyfin: msgJellyfin,
+		spotify:   msgSpotify,
+		jellyfin:  msgJellyfin,
+		navidrome: msgNavidrome,
 	}
 }

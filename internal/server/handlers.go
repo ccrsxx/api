@@ -10,6 +10,7 @@ import (
 	gmailClient "github.com/ccrsxx/api/internal/clients/gmail"
 	ipInfoClient "github.com/ccrsxx/api/internal/clients/ipinfo"
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
+	navidromeClient "github.com/ccrsxx/api/internal/clients/navidrome"
 	pixivClient "github.com/ccrsxx/api/internal/clients/pixiv"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
 	"github.com/ccrsxx/api/internal/config"
@@ -22,6 +23,7 @@ import (
 	"github.com/ccrsxx/api/internal/features/home"
 	"github.com/ccrsxx/api/internal/features/jellyfin"
 	"github.com/ccrsxx/api/internal/features/likes"
+	"github.com/ccrsxx/api/internal/features/navidrome"
 	"github.com/ccrsxx/api/internal/features/og"
 	"github.com/ccrsxx/api/internal/features/pixiv"
 	"github.com/ccrsxx/api/internal/features/spotify"
@@ -67,6 +69,12 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		Username: cfg.JellyfinUsername,
 	})
 
+	navidromeClient := navidromeClient.NewClient(navidromeClient.Config{
+		URL:      cfg.NavidromeURL,
+		Username: cfg.NavidromeUsername,
+		Password: cfg.NavidromePassword,
+	})
+
 	spotifyService := spotify.NewService(spotify.ServiceConfig{
 		Client: spotifyClient,
 	})
@@ -75,6 +83,12 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		Client:           jellyfinClient,
 		JellyfinUsername: cfg.JellyfinUsername,
 		JellyfinImageURL: cfg.JellyfinImageURL,
+	})
+
+	navidromeService := navidrome.NewService(navidrome.ServiceConfig{
+		Client:            navidromeClient,
+		BackendPublicURL:  cfg.BackendPublicURL,
+		NavidromeUsername: cfg.NavidromeUsername,
 	})
 
 	authService := auth.ServiceConfig{
@@ -136,9 +150,10 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		sse.Config{
 			Router: router,
 			Service: sse.NewService(sse.ServiceConfig{
-				AppContext:      ctx,
-				SpotifyService:  spotifyService,
-				JellyfinService: jellyfinService,
+				AppContext:       ctx,
+				SpotifyService:   spotifyService,
+				JellyfinService:  jellyfinService,
+				NavidromeService: navidromeService,
 			}),
 			AppContext:     ctx,
 			AuthMiddleware: publicAuthMiddleware,
@@ -217,6 +232,14 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		jellyfin.Config{
 			Router:         router,
 			Service:        jellyfinService,
+			AuthMiddleware: publicAuthMiddleware,
+		},
+	)
+
+	navidrome.LoadRoutes(
+		navidrome.Config{
+			Router:         router,
+			Service:        navidromeService,
 			AuthMiddleware: publicAuthMiddleware,
 		},
 	)
