@@ -129,18 +129,22 @@ func (c *Client) GetCoverArtStream(ctx context.Context, covertArtID string) (io.
 			return nil, fmt.Errorf("navidrome cover art decode response error: %w", err)
 		}
 
+		var parsedErrorCode int32
+
+		if subsonicJSONWrapper.Subsonic.Error != nil {
+			parsedErrorCode = subsonicJSONWrapper.Subsonic.Error.Code
+		}
+
 		// Error code 70 means data not found
 		// Ref: https://subsonic.org/pages/api.jsp
-		isCoverArtNotFoundError := subsonicJSONWrapper.Subsonic.Error != nil && subsonicJSONWrapper.Subsonic.Error.Code == 70
-
-		if isCoverArtNotFoundError {
+		if parsedErrorCode == 70 {
 			return nil, &api.HTTPError{
 				StatusCode: http.StatusNotFound,
 				Message:    "Cover art not found",
 			}
 		}
 
-		return nil, fmt.Errorf("navidrome now playing request status error: %d", res.StatusCode)
+		return nil, fmt.Errorf("navidrome now playing request unknown code error: %d", parsedErrorCode)
 	}
 
 	return res.Body, nil
