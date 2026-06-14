@@ -29,10 +29,8 @@ type Client struct {
 }
 
 func NewClient(cfg Config) *Client {
-	httpClient := cfg.HTTPClient
-
-	if httpClient == nil {
-		httpClient = &http.Client{Timeout: 8 * time.Second}
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
 	}
 
 	if cfg.BaseURL == "" {
@@ -49,7 +47,7 @@ func NewClient(cfg Config) *Client {
 		token:      cfg.Token,
 		userID:     userID,
 		baseURL:    cfg.BaseURL,
-		httpClient: httpClient,
+		httpClient: cfg.HTTPClient,
 	}
 }
 

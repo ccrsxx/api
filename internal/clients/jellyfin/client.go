@@ -26,10 +26,8 @@ type Client struct {
 }
 
 func NewClient(cfg Config) *Client {
-	httpClient := cfg.HTTPClient
-
-	if httpClient == nil {
-		httpClient = &http.Client{Timeout: 8 * time.Second}
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
 	}
 
 	return &Client{
@@ -37,7 +35,7 @@ func NewClient(cfg Config) *Client {
 		apiKey:     cfg.APIKey,
 		imageURL:   cfg.ImageURL,
 		username:   cfg.Username,
-		httpClient: httpClient,
+		httpClient: cfg.HTTPClient,
 	}
 }
 
