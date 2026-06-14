@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/ccrsxx/api/internal/config"
@@ -11,6 +12,7 @@ func setValidEnv(t *testing.T, appEnv string) {
 	t.Setenv("PORT", "8080")
 	t.Setenv("OG_URL", "http://localhost")
 	t.Setenv("APP_ENV", appEnv)
+	t.Setenv("BACKEND_PUBLIC_URL", "http://localhost:8080")
 	t.Setenv("FRONTEND_BASE_URL", "localhost")
 	t.Setenv("FRONTEND_PUBLIC_URL", "http://localhost")
 	t.Setenv("SECRET_KEY", "secret")
@@ -28,6 +30,9 @@ func setValidEnv(t *testing.T, appEnv string) {
 	t.Setenv("JELLYFIN_API_KEY", "key")
 	t.Setenv("JELLYFIN_USERNAME", "user")
 	t.Setenv("JELLYFIN_IMAGE_URL", "img")
+	t.Setenv("NAVIDROME_URL", "http://localhost:4533")
+	t.Setenv("NAVIDROME_USERNAME", "user")
+	t.Setenv("NAVIDROME_PASSWORD", "pass")
 	t.Setenv("SPOTIFY_CLIENT_ID", "id")
 	t.Setenv("SPOTIFY_CLIENT_SECRET", "secret")
 	t.Setenv("SPOTIFY_REFRESH_TOKEN", "refresh")
@@ -37,6 +42,10 @@ func setValidEnv(t *testing.T, appEnv string) {
 
 func TestLoad_Success(t *testing.T) {
 	t.Run("Development Mode", func(t *testing.T) {
+		t.Cleanup(func() {
+			os.Clearenv()
+		})
+
 		setValidEnv(t, string(config.EnvironmentDevelopment))
 
 		cfg := config.Load()
@@ -59,6 +68,10 @@ func TestLoad_Success(t *testing.T) {
 	})
 
 	t.Run("Production Mode", func(t *testing.T) {
+		t.Cleanup(func() {
+			os.Clearenv()
+		})
+
 		setValidEnv(t, string(config.EnvironmentProduction))
 
 		cfg := config.Load()
