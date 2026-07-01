@@ -29,15 +29,13 @@ func NewClient(cfg Config) *Client {
 		cfg.APIURL = defaultGithubUserURL
 	}
 
-	httpClient := cfg.HTTPClient
-
-	if httpClient == nil {
-		httpClient = &http.Client{Timeout: 8 * time.Second}
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
 	}
 
 	return &Client{
 		apiURL:     cfg.APIURL,
-		httpClient: httpClient,
+		httpClient: cfg.HTTPClient,
 	}
 }
 

@@ -29,6 +29,7 @@ type Config struct {
 	APIURL       string
 	AuthURL      string
 	ClientID     string
+	HTTPClient   *http.Client
 	MemoryCache  cache.Cache
 	ClientSecret string
 	RefreshToken string
@@ -42,6 +43,10 @@ const (
 var ErrNoContent = errors.New("spotify currently playing no content")
 
 func NewClient(cfg Config) *Client {
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
+	}
+
 	if cfg.APIURL == "" {
 		cfg.APIURL = defaultAPIURL
 	}
@@ -56,7 +61,7 @@ func NewClient(cfg Config) *Client {
 		authURL:     cfg.AuthURL,
 		refresh:     cfg.RefreshToken,
 		clientID:    cfg.ClientID,
-		httpClient:  &http.Client{Timeout: 8 * time.Second},
+		httpClient:  cfg.HTTPClient,
 		memoryCache: cfg.MemoryCache,
 	}
 }

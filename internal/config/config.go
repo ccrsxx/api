@@ -39,6 +39,8 @@ type AppConfig struct {
 	EmailAddress  string `env:"EMAIL_ADDRESS,required"`
 	EmailPassword string `env:"EMAIL_PASSWORD,required"`
 
+	BackendPublicURL string `env:"BACKEND_PUBLIC_URL,required"`
+
 	FrontendBaseURL   string `env:"FRONTEND_BASE_URL,required"`
 	FrontendPublicURL string `env:"FRONTEND_PUBLIC_URL,required"`
 
@@ -58,6 +60,10 @@ type AppConfig struct {
 	JellyfinAPIKey   string `env:"JELLYFIN_API_KEY,required"`
 	JellyfinUsername string `env:"JELLYFIN_USERNAME,required"`
 	JellyfinImageURL string `env:"JELLYFIN_IMAGE_URL,required"`
+
+	NavidromeURL      string `env:"NAVIDROME_URL,required"`
+	NavidromeUsername string `env:"NAVIDROME_USERNAME,required"`
+	NavidromePassword string `env:"NAVIDROME_PASSWORD,required"`
 
 	SpotifyClientID     string `env:"SPOTIFY_CLIENT_ID,required"`
 	SpotifyClientSecret string `env:"SPOTIFY_CLIENT_SECRET,required"`

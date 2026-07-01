@@ -72,20 +72,21 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 		c := NewClient(Config{
 			AuthURL: "http://auth",
 			APIURL:  "http://api",
-		})
+			HTTPClient: &http.Client{
+				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
+					if strings.Contains(req.URL.String(), "auth") {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"access_token":"t","expires_in":3600}`)),
+						}, nil
+					}
 
-		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
-			if strings.Contains(req.URL.String(), "auth") {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader(`{"access_token":"t","expires_in":3600}`)),
-				}, nil
-			}
-
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
-			}, nil
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
+					}, nil
+				}),
+			},
 		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
@@ -276,14 +277,17 @@ func TestClient_GetAccessToken(t *testing.T) {
 	})
 
 	t.Run("Body Close Error", func(t *testing.T) {
-		c := NewClient(Config{AuthURL: "http://auth"})
-
-		c.httpClient.Transport = test.CustomTransport(func(req *http.Request) (*http.Response, error) {
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
-				Header:     make(http.Header),
-			}, nil
+		c := NewClient(Config{
+			AuthURL: "http://auth",
+			HTTPClient: &http.Client{
+				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("[]")},
+						Header:     make(http.Header),
+					}, nil
+				}),
+			},
 		})
 
 		if _, err := c.getAccessToken(ctx); err == nil {

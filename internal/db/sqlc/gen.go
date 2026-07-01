@@ -15,7 +15,7 @@ func NewQueries(ctx context.Context, databaseString string) (*pgxpool.Pool, *Que
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		panic(fmt.Errorf("db ping error : %w", err))
+		panic(fmt.Errorf("db ping error: %w", err))
 	}
 
 	queries := New(pool)

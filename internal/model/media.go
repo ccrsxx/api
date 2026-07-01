@@ -3,8 +3,9 @@ package model
 type Platform string
 
 const (
-	PlatformSpotify  Platform = "spotify"
-	PlatformJellyfin Platform = "jellyfin"
+	PlatformSpotify   Platform = "spotify"
+	PlatformJellyfin  Platform = "jellyfin"
+	PlatformNavidrome Platform = "navidrome"
 )
 
 type Track struct {

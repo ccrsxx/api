@@ -25,7 +25,7 @@ func (c *Controller) getCurrentPlayingSSE(w http.ResponseWriter, r *http.Request
 	rc := http.NewResponseController(w)
 	ctx := r.Context()
 
-	clientChan := make(chan string, 4)
+	clientChan := make(chan string, 5)
 
 	ipAddress := utils.GetIPAddressFromRequest(r)
 	userAgent := r.UserAgent()
