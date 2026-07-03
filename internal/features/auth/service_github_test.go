@@ -593,3 +593,13 @@ func TestService_ValidateOauthState(t *testing.T) {
 		}
 	})
 }
+
+func TestNewSqlcTxFactory(t *testing.T) {
+	factory := auth.NewSqlcTxFactory(&sqlc.Queries{})
+
+	qtx := factory(&test.MockTx{})
+
+	if qtx == nil {
+		t.Fatal("expected non-nil querier from tx factory")
+	}
+}
