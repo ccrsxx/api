@@ -10,7 +10,6 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
-	"github.com/ccrsxx/api/internal/test"
 )
 
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
@@ -221,14 +220,4 @@ func TestService_IsAdminFromOauth(t *testing.T) {
 			t.Errorf("got %v, want is admin user from context error", err)
 		}
 	})
-}
-
-func TestAuthDatabaseWrapper_WithTx(t *testing.T) {
-	wrapper := &auth.AuthDatabaseWrapper{Queries: &sqlc.Queries{}}
-
-	result := wrapper.WithTx(&test.MockTx{})
-
-	if result == nil {
-		t.Fatal("expected non-nil querier from WithTx")
-	}
 }

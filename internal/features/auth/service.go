@@ -28,15 +28,15 @@ type querier interface {
 	CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error)
 	UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error)
 	CreateAccount(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error)
-	WithTx(tx pgx.Tx) querier
 }
 
-type AuthDatabaseWrapper struct {
-	*sqlc.Queries
-}
-
-func (w *AuthDatabaseWrapper) WithTx(tx pgx.Tx) querier {
-	return &AuthDatabaseWrapper{w.Queries.WithTx(tx)}
+// NewSqlcTxFactory returns a factory that binds sqlc queries to a transaction.
+// It lets the service open transactions without a per-feature database wrapper:
+// *sqlc.Queries already satisfies querier, and WithTx returns a tx-scoped copy.
+func NewSqlcTxFactory(db *sqlc.Queries) func(pgx.Tx) querier {
+	return func(tx pgx.Tx) querier {
+		return db.WithTx(tx)
+	}
 }
 
 type githubClient interface {
@@ -46,6 +46,7 @@ type githubClient interface {
 type Service struct {
 	db                querier
 	pool              beginner
+	newTx             func(pgx.Tx) querier
 	secretKey         string
 	jwtSecret         string
 	githubClient      githubClient
@@ -55,8 +56,11 @@ type Service struct {
 }
 
 type ServiceConfig struct {
-	Pool              beginner
-	Database          querier
+	Pool     beginner
+	Database querier
+	// WithTx binds the querier to a transaction. In production pass
+	// NewSqlcTxFactory(db); tests can leave it nil (see NewService).
+	WithTx            func(pgx.Tx) querier
 	SecretKey         string
 	JwtSecret         string
 	GithubClient      githubClient
@@ -71,9 +75,20 @@ const (
 )
 
 func NewService(cfg ServiceConfig) *Service {
+	newTx := cfg.WithTx
+
+	// Fallback for tests: the mock querier ignores the tx, so the same
+	// instance is reused inside the transaction.
+	if newTx == nil {
+		newTx = func(pgx.Tx) querier {
+			return cfg.Database
+		}
+	}
+
 	return &Service{
 		db:                cfg.Database,
 		pool:              cfg.Pool,
+		newTx:             newTx,
 		secretKey:         cfg.SecretKey,
 		jwtSecret:         cfg.JwtSecret,
 		githubClient:      cfg.GithubClient,

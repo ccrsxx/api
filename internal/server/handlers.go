@@ -93,7 +93,8 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 
 	authService := auth.ServiceConfig{
 		Pool:              pool,
-		Database:          &auth.AuthDatabaseWrapper{Queries: db},
+		Database:          db,
+		WithTx:            auth.NewSqlcTxFactory(db),
 		SecretKey:         cfg.SecretKey,
 		JwtSecret:         cfg.JWTSecret,
 		GithubClient:      githubClient,
