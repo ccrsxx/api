@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
 	CreateGuestbook(ctx context.Context, arg CreateGuestbookParams) (CreateGuestbookRow, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteGuestbook(ctx context.Context, id pgtype.UUID) error
@@ -27,6 +28,7 @@ type Querier interface {
 	IncrementContentView(ctx context.Context, arg IncrementContentViewParams) (IncrementContentViewRow, error)
 	ListContentByType(ctx context.Context, type_ string) ([]ListContentByTypeRow, error)
 	ListGuestbook(ctx context.Context) ([]ListGuestbookRow, error)
+	UpdateContactDeliveredAtByID(ctx context.Context, id pgtype.UUID) (Contact, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpsertContent(ctx context.Context, arg UpsertContentParams) (Content, error)
 	UpsertIPAddress(ctx context.Context, ipAddress string) (IpAddress, error)

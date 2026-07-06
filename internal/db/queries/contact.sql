@@ -3,7 +3,7 @@ INSERT INTO contact (name, email, message)
 VALUES ($1, $2, $3)
 RETURNING *;
 
--- name: UpdateContactByID :one
+-- name: UpdateContactDeliveredAtByID :one
 UPDATE contact
 SET delivered_at = NOW()
 WHERE id = $1

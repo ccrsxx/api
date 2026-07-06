@@ -12,5 +12,5 @@ type Config struct {
 func LoadRoutes(cfg Config) {
 	ctrl := NewController(cfg.Service)
 
-	cfg.Router.HandleFunc("POST /", ctrl.CreateContact)
+	cfg.Router.HandleFunc("POST /contacts", ctrl.CreateContact)
 }

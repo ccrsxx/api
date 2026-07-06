@@ -126,6 +126,11 @@ jobs:
 
           echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
 
+          echo "CLOUDFLARE_TURNSTILE_SECRET_KEY=${{ secrets.CLOUDFLARE_TURNSTILE_SECRET_KEY }}" >> .env
+
+          echo "PUSHOVER_USER_KEY=${{ secrets.PUSHOVER_USER_KEY }}" >> .env
+          echo "PUSHOVER_APP_TOKEN=${{ secrets.PUSHOVER_APP_TOKEN }}" >> .env
+
           echo "PIXIV_TOKEN=${{ secrets.PIXIV_TOKEN }}" >> .env
           echo "PIXIV_IMAGE_URL=${{ secrets.PIXIV_IMAGE_URL }}" >> .env
 

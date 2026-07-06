@@ -11,9 +11,9 @@ type Controller struct {
 	service *Service
 }
 
-func NewController(service *Service) *Controller {
+func NewController(svc *Service) *Controller {
 	return &Controller{
-		service: service,
+		service: svc,
 	}
 }
 

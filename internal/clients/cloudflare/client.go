@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
+
+	"github.com/ccrsxx/api/internal/api"
 )
 
 const (
@@ -30,9 +33,14 @@ func NewClient(cfg Config) *Client {
 		cfg.APIURL = defaultCloudflareTurnstileURL
 	}
 
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
+	}
+
 	return &Client{
-		apiURL:    defaultCloudflareTurnstileURL,
-		secretKey: cfg.SecretKey,
+		apiURL:     defaultCloudflareTurnstileURL,
+		secretKey:  cfg.SecretKey,
+		httpClient: cfg.HTTPClient,
 	}
 }
 
@@ -83,7 +91,12 @@ func (c *Client) VerifyTurnstile(ctx context.Context, token string, remoteIP str
 		return fmt.Errorf("cloudflare verify turnstile decode response error: %w", err)
 	}
 
-	fmt.Println(response)
+	if !response.Success {
+		return &api.HTTPError{
+			StatusCode: http.StatusForbidden,
+			Message:    "Invalid captcha",
+		}
+	}
 
 	return nil
 }

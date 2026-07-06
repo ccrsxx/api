@@ -53,8 +53,13 @@ type AppConfig struct {
 
 	IPInfoToken string `env:"IPINFO_TOKEN,required"`
 
+	CloudflareTurnstileSecretKey string `env:"CLOUDFLARE_TURNSTILE_SECRET_KEY,required"`
+
 	PixivToken    string `env:"PIXIV_TOKEN,required"`
 	PixivImageURL string `env:"PIXIV_IMAGE_URL,required"`
+
+	PushoverUserKey  string `env:"PUSHOVER_USER_KEY,required"`
+	PushoverAppToken string `env:"PUSHOVER_APP_TOKEN,required"`
 
 	JellyfinURL      string `env:"JELLYFIN_URL,required"`
 	JellyfinAPIKey   string `env:"JELLYFIN_API_KEY,required"`

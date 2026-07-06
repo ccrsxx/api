@@ -12,15 +12,15 @@ import (
 
 type Client struct {
 	apiURL     string
-	token      string
+	appToken   string
 	userKey    string
 	httpClient *http.Client
 }
 
 type Config struct {
 	APIURL     string
-	Token      string
 	UserKey    string
+	AppToken   string
 	HTTPClient *http.Client
 }
 
@@ -39,15 +39,16 @@ func NewClient(cfg Config) *Client {
 
 	return &Client{
 		apiURL:     cfg.APIURL,
-		token:      cfg.Token,
 		userKey:    cfg.UserKey,
+		appToken:   cfg.AppToken,
 		httpClient: cfg.HTTPClient,
 	}
 }
 
 func (c *Client) SendMessage(ctx context.Context, messageRequest MessageRequest) error {
-	messageRequest.Token = c.token
+	// Provide the user key and app token in the request
 	messageRequest.User = c.userKey
+	messageRequest.Token = c.appToken
 
 	body, err := json.Marshal(messageRequest)
 
