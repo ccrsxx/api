@@ -258,7 +258,9 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 
 	contacts.LoadRoutes(
 		contacts.Config{
-			Router: router,
+			Router:         router,
+			AppContext:     ctx,
+			AuthMiddleware: publicAuthMiddleware,
 			Service: contacts.NewService(contacts.ServiceConfig{
 				Database:         db,
 				EmailClient:      gmailClient,
