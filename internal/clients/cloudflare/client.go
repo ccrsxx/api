@@ -38,11 +38,15 @@ func NewClient(cfg Config) *Client {
 	}
 
 	return &Client{
-		apiURL:     defaultCloudflareTurnstileURL,
+		apiURL:     cfg.APIURL,
 		secretKey:  cfg.SecretKey,
 		httpClient: cfg.HTTPClient,
 	}
 }
+
+// jsonMarshal is a package-level function that can be overridden in tests
+// to simulate marshal errors.
+var jsonMarshal = json.Marshal
 
 func (c *Client) VerifyTurnstile(ctx context.Context, token string, remoteIP string) error {
 	payload := struct {
@@ -55,7 +59,7 @@ func (c *Client) VerifyTurnstile(ctx context.Context, token string, remoteIP str
 		RemoteIP: remoteIP,
 	}
 
-	body, err := json.Marshal(payload)
+	body, err := jsonMarshal(payload)
 
 	if err != nil {
 		return fmt.Errorf("cloudflare verify turnstile marshal error: %w", err)

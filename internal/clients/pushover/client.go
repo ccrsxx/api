@@ -45,12 +45,16 @@ func NewClient(cfg Config) *Client {
 	}
 }
 
+// jsonMarshal is a package-level function that can be overridden in tests
+// to simulate marshal errors.
+var jsonMarshal = json.Marshal
+
 func (c *Client) SendMessage(ctx context.Context, messageRequest MessageRequest) error {
 	// Provide the user key and app token in the request
 	messageRequest.User = c.userKey
 	messageRequest.Token = c.appToken
 
-	body, err := json.Marshal(messageRequest)
+	body, err := jsonMarshal(messageRequest)
 
 	if err != nil {
 		return fmt.Errorf("pushover send message marshal error: %w", err)
