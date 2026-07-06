@@ -21,7 +21,7 @@ func LoadRoutes(cfg Config) {
 
 	cfg.Router.Handle("POST /contacts",
 		cfg.AuthMiddleware.IsAuthorizedFromBearer(
-			middleware.RateLimit(cfg.AppContext, 8, 1*time.Minute)(
+			middleware.RateLimit(cfg.AppContext, 20, 1*time.Hour)(
 				http.HandlerFunc(ctrl.CreateContact),
 			),
 		),
