@@ -47,7 +47,7 @@ jobs:
       - name: Run migration
         env:
           GOOSE_DRIVER: postgres
-          GOOSE_DBSTRING: postgres://postgres:${{ secrets.DATABASE_PASSWORD }}@host.docker.internal:5432/postgres
+          GOOSE_DBSTRING: postgres://postgres:${{ secrets.DATABASE_PASSWORD }}@host.docker.internal:5444/postgres
           GOOSE_MIGRATION_DIR: internal/db/migrations
         run: make db-migrate
 
