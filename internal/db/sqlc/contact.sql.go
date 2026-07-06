@@ -40,7 +40,8 @@ func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (C
 
 const updateContactDeliveredAtByID = `-- name: UpdateContactDeliveredAtByID :one
 UPDATE contact
-SET delivered_at = NOW()
+SET delivered_at = NOW(),
+    updated_at = NOW()
 WHERE id = $1
 RETURNING id, name, email, message, delivered_at, created_at, updated_at
 `
