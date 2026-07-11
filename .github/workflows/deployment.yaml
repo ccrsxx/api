@@ -94,10 +94,10 @@ jobs:
         run: |
           if docker buildx imagetools inspect "${{ env.CURRENT_IMAGE }}" > /dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "✓ ${{ env.CURRENT_IMAGE }} already exists — skipping build"
+            echo "${{ env.CURRENT_IMAGE }} already exists, skipping build"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "🔨 ${{ env.CURRENT_IMAGE }} not found — will build"
+            echo "${{ env.CURRENT_IMAGE }} not found, will build"
           fi
 
       - name: Determine image tags
@@ -109,6 +109,8 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ]; then
             tags="$tags,${{ env.LATEST_IMAGE }}"
           fi
+
+          echo "Determined tags: $tags"
 
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
 
