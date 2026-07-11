@@ -6,16 +6,19 @@ import (
 	"time"
 
 	"github.com/ccrsxx/api/internal/cache"
+	cloudflareClient "github.com/ccrsxx/api/internal/clients/cloudflare"
 	githubClient "github.com/ccrsxx/api/internal/clients/github"
 	gmailClient "github.com/ccrsxx/api/internal/clients/gmail"
 	ipInfoClient "github.com/ccrsxx/api/internal/clients/ipinfo"
 	jellyfinClient "github.com/ccrsxx/api/internal/clients/jellyfin"
 	navidromeClient "github.com/ccrsxx/api/internal/clients/navidrome"
 	pixivClient "github.com/ccrsxx/api/internal/clients/pixiv"
+	pushoverClient "github.com/ccrsxx/api/internal/clients/pushover"
 	spotifyClient "github.com/ccrsxx/api/internal/clients/spotify"
 	"github.com/ccrsxx/api/internal/config"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/features/contacts"
 	"github.com/ccrsxx/api/internal/features/contents"
 	"github.com/ccrsxx/api/internal/features/docs"
 	"github.com/ccrsxx/api/internal/features/favicon"
@@ -47,8 +50,17 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		Password: cfg.EmailPassword,
 	})
 
+	cloudflareClient := cloudflareClient.NewClient(cloudflareClient.Config{
+		SecretKey: cfg.CloudflareTurnstileSecretKey,
+	})
+
 	pixivClient := pixivClient.NewClient(pixivClient.Config{
 		Token: cfg.PixivToken,
+	})
+
+	pushoverClient := pushoverClient.NewClient(pushoverClient.Config{
+		UserKey:  cfg.PushoverUserKey,
+		AppToken: cfg.PushoverAppToken,
 	})
 
 	ipInfoClient := ipInfoClient.NewClient(cfg.IPInfoToken)
@@ -242,6 +254,22 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 			Router:         router,
 			Service:        navidromeService,
 			AuthMiddleware: publicAuthMiddleware,
+		},
+	)
+
+	contacts.LoadRoutes(
+		contacts.Config{
+			Router:         router,
+			AppContext:     ctx,
+			AuthMiddleware: publicAuthMiddleware,
+			Service: contacts.NewService(contacts.ServiceConfig{
+				Database:         db,
+				EmailClient:      gmailClient,
+				EmailTarget:      cfg.EmailTarget,
+				EmailAddress:     cfg.EmailAddress,
+				PushoverClient:   pushoverClient,
+				CloudflareClient: cloudflareClient,
+			}),
 		},
 	)
 

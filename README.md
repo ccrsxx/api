@@ -10,6 +10,7 @@ Currently available features/endpoints:
 - Content management for blog and project entries.
 - Content statistics, views, and likes tracking.
 - Guestbook with email notifications on new posts.
+- Contact form with Cloudflare Turnstile verification and Pushover & email notifications.
 - Pixiv user bookmarks retrieval.
 - Spotify, Jellyfin, and Navidrome currently playing endpoints.
 - Real-time updates for Spotify, Jellyfin, and Navidrome via Server-Sent Events (SSE).

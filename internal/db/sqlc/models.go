@@ -18,6 +18,16 @@ type Account struct {
 	UpdatedAt         pgtype.Timestamptz
 }
 
+type Contact struct {
+	ID          pgtype.UUID
+	Name        string
+	Email       string
+	Message     string
+	DeliveredAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
 type Content struct {
 	ID        pgtype.UUID
 	Slug      string

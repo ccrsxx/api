@@ -38,6 +38,9 @@ func setValidEnv(t *testing.T, appEnv string) {
 	t.Setenv("SPOTIFY_REFRESH_TOKEN", "refresh")
 	t.Setenv("PIXIV_TOKEN", "123456_abc123")
 	t.Setenv("PIXIV_IMAGE_URL", "https://example.com")
+	t.Setenv("PUSHOVER_USER_KEY", "userkey")
+	t.Setenv("PUSHOVER_APP_TOKEN", "apptoken")
+	t.Setenv("CLOUDFLARE_TURNSTILE_SECRET_KEY", "turnstile-secret")
 }
 
 func TestLoad_Success(t *testing.T) {

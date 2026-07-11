@@ -12,25 +12,27 @@ import (
 var _ sqlc.Querier = (*MockQuerier)(nil)
 
 type MockQuerier struct {
-	CreateAccountFn          func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error)
-	CreateGuestbookFn        func(ctx context.Context, arg sqlc.CreateGuestbookParams) (sqlc.CreateGuestbookRow, error)
-	CreateUserFn             func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error)
-	DeleteGuestbookFn        func(ctx context.Context, id pgtype.UUID) error
-	GetAccountByProviderFn   func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error)
-	GetContentBySlugFn       func(ctx context.Context, slug string) (sqlc.Content, error)
-	GetContentLikeStatusFn   func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error)
-	GetContentStatsByTypeFn  func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error)
-	GetGuestbookByIDFn       func(ctx context.Context, id pgtype.UUID) (sqlc.Guestbook, error)
-	GetTotalContentMetaFn    func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error)
-	GetUserByIDFn            func(ctx context.Context, id pgtype.UUID) (sqlc.User, error)
-	GetUserWithAccountByIDFn func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error)
-	IncrementContentLikeFn   func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error)
-	IncrementContentViewFn   func(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error)
-	ListContentByTypeFn      func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
-	ListGuestbookFn          func(ctx context.Context) ([]sqlc.ListGuestbookRow, error)
-	UpdateUserFn             func(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error)
-	UpsertContentFn          func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
-	UpsertIPAddressFn        func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error)
+	CreateAccountFn                func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error)
+	CreateContactFn                func(ctx context.Context, arg sqlc.CreateContactParams) (sqlc.Contact, error)
+	CreateGuestbookFn              func(ctx context.Context, arg sqlc.CreateGuestbookParams) (sqlc.CreateGuestbookRow, error)
+	CreateUserFn                   func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error)
+	DeleteGuestbookFn              func(ctx context.Context, id pgtype.UUID) error
+	GetAccountByProviderFn         func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error)
+	GetContentBySlugFn             func(ctx context.Context, slug string) (sqlc.Content, error)
+	GetContentLikeStatusFn         func(ctx context.Context, arg sqlc.GetContentLikeStatusParams) (sqlc.GetContentLikeStatusRow, error)
+	GetContentStatsByTypeFn        func(ctx context.Context, type_ string) (sqlc.GetContentStatsByTypeRow, error)
+	GetGuestbookByIDFn             func(ctx context.Context, id pgtype.UUID) (sqlc.Guestbook, error)
+	GetTotalContentMetaFn          func(ctx context.Context, contentID pgtype.UUID) (sqlc.GetTotalContentMetaRow, error)
+	GetUserByIDFn                  func(ctx context.Context, id pgtype.UUID) (sqlc.User, error)
+	GetUserWithAccountByIDFn       func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error)
+	IncrementContentLikeFn         func(ctx context.Context, arg sqlc.IncrementContentLikeParams) (sqlc.IncrementContentLikeRow, error)
+	IncrementContentViewFn         func(ctx context.Context, arg sqlc.IncrementContentViewParams) (sqlc.IncrementContentViewRow, error)
+	ListContentByTypeFn            func(ctx context.Context, type_ string) ([]sqlc.ListContentByTypeRow, error)
+	ListGuestbookFn                func(ctx context.Context) ([]sqlc.ListGuestbookRow, error)
+	UpdateContactDeliveredAtByIDFn func(ctx context.Context, id pgtype.UUID) (sqlc.Contact, error)
+	UpdateUserFn                   func(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error)
+	UpsertContentFn                func(ctx context.Context, arg sqlc.UpsertContentParams) (sqlc.Content, error)
+	UpsertIPAddressFn              func(ctx context.Context, ipAddress string) (sqlc.IpAddress, error)
 }
 
 func (m *MockQuerier) CreateAccount(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
@@ -38,6 +40,13 @@ func (m *MockQuerier) CreateAccount(ctx context.Context, arg sqlc.CreateAccountP
 		panic("MockQuerier.CreateAccount called but not mocked")
 	}
 	return m.CreateAccountFn(ctx, arg)
+}
+
+func (m *MockQuerier) CreateContact(ctx context.Context, arg sqlc.CreateContactParams) (sqlc.Contact, error) {
+	if m.CreateContactFn == nil {
+		panic("MockQuerier.CreateContact called but not mocked")
+	}
+	return m.CreateContactFn(ctx, arg)
 }
 
 func (m *MockQuerier) CreateGuestbook(ctx context.Context, arg sqlc.CreateGuestbookParams) (sqlc.CreateGuestbookRow, error) {
@@ -143,6 +152,13 @@ func (m *MockQuerier) ListGuestbook(ctx context.Context) ([]sqlc.ListGuestbookRo
 		panic("MockQuerier.ListGuestbook called but not mocked")
 	}
 	return m.ListGuestbookFn(ctx)
+}
+
+func (m *MockQuerier) UpdateContactDeliveredAtByID(ctx context.Context, id pgtype.UUID) (sqlc.Contact, error) {
+	if m.UpdateContactDeliveredAtByIDFn == nil {
+		panic("MockQuerier.UpdateContactDeliveredAtByID called but not mocked")
+	}
+	return m.UpdateContactDeliveredAtByIDFn(ctx, id)
 }
 
 func (m *MockQuerier) UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {

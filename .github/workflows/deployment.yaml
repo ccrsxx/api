@@ -30,9 +30,9 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ needs.extract-tools-version.outputs.go-version }}
 
@@ -47,7 +47,7 @@ jobs:
       - name: Run migration
         env:
           GOOSE_DRIVER: postgres
-          GOOSE_DBSTRING: postgres://postgres:${{ secrets.DATABASE_PASSWORD }}@host.docker.internal:5432/postgres
+          GOOSE_DBSTRING: postgres://postgres:${{ secrets.DATABASE_PASSWORD }}@host.docker.internal:5444/postgres
           GOOSE_MIGRATION_DIR: internal/db/migrations
         run: make db-migrate
 
@@ -75,22 +75,22 @@ jobs:
           echo "CURRENT_IMAGE=ghcr.io/${{ github.repository }}:${{ env.SHA }}" >> $GITHUB_ENV
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ env.SHA }}
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           platforms: linux/arm64
           build-args: |
@@ -125,6 +125,11 @@ jobs:
           echo "OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}" >> .env
 
           echo "IPINFO_TOKEN=${{ secrets.IPINFO_TOKEN }}" >> .env
+
+          echo "CLOUDFLARE_TURNSTILE_SECRET_KEY=${{ secrets.CLOUDFLARE_TURNSTILE_SECRET_KEY }}" >> .env
+
+          echo "PUSHOVER_USER_KEY=${{ secrets.PUSHOVER_USER_KEY }}" >> .env
+          echo "PUSHOVER_APP_TOKEN=${{ secrets.PUSHOVER_APP_TOKEN }}" >> .env
 
           echo "PIXIV_TOKEN=${{ secrets.PIXIV_TOKEN }}" >> .env
           echo "PIXIV_IMAGE_URL=${{ secrets.PIXIV_IMAGE_URL }}" >> .env
