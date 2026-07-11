@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/ccrsxx/api:latest@sha256:9ff2a77ea2f29f5e819ab07acea914abbf78b2e1fd1b019e98d34acb140040e8
+    image: ghcr.io/ccrsxx/api:latest@sha256:75b9592727c63ae31541d7c30daec51440928bc7d60cce9125f2a7e7ee0ac3a9
     container_name: api
     restart: unless-stopped
     ports:
