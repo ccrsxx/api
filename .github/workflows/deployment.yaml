@@ -128,7 +128,7 @@ jobs:
 
       - name: Setup env
         run: |
-          cat >> .env <<'EOF'
+          cat >> .env << 'EOF'
 
           OG_URL=${{ secrets.OG_URL }}
           ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
