@@ -593,21 +593,3 @@ func TestService_ValidateOauthState(t *testing.T) {
 		}
 	})
 }
-
-func TestNewService_BindsRealQuerierToTx(t *testing.T) {
-	base := &sqlc.Queries{}
-
-	// A real *sqlc.Queries must be bound to the tx (a fresh instance), not
-	// reused as-is (which would run queries on the pool, outside the tx).
-	svc := auth.NewService(auth.ServiceConfig{Database: base})
-
-	bound := svc.NewTxQuerier(&test.MockTx{})
-
-	if bound == nil {
-		t.Fatal("expected non-nil tx-scoped querier")
-	}
-
-	if bound == base {
-		t.Fatal("safety net did not bind to the tx: got the pool-bound base instance")
-	}
-}

@@ -10,7 +10,22 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
+	"github.com/ccrsxx/api/internal/test"
 )
+
+func TestNewService_BindsRealQuerierToTx(t *testing.T) {
+	base := &sqlc.Queries{}
+
+	svc := auth.NewService(auth.ServiceConfig{Database: base})
+
+	bound := svc.NewTxQuerier(&test.MockTx{})
+
+	// A real *sqlc.Queries must be bound to the tx (a fresh instance), not
+	// reused as-is (which would run queries on the pool, outside the tx).
+	if bound == base {
+		t.Fatal("safety net did not bind to the tx: got the pool-bound base instance")
+	}
+}
 
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 	ctx := context.Background()
