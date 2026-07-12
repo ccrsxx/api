@@ -2,7 +2,13 @@ package auth
 
 import (
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 )
+
+// NewTxQuerier exposes the internal tx-scoped querier factory for testing.
+func (s *Service) NewTxQuerier(tx pgx.Tx) querier {
+	return s.newTx(tx)
+}
 
 // SetSignToken overrides the package-level signToken function for testing.
 // It returns a restore function that should be deferred.

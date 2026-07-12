@@ -58,8 +58,9 @@ type Service struct {
 type ServiceConfig struct {
 	Pool     beginner
 	Database querier
-	// WithTx binds the querier to a transaction. In production pass
-	// NewSqlcTxFactory(db); tests can leave it nil (see NewService).
+	// WithTx binds the querier to a transaction. It is optional: when nil,
+	// NewService auto-binds a real *sqlc.Queries via NewSqlcTxFactory, and
+	// reuses the instance for mocks. Set it only for a custom querier type.
 	WithTx            func(pgx.Tx) querier
 	SecretKey         string
 	JwtSecret         string
@@ -77,11 +78,18 @@ const (
 func NewService(cfg ServiceConfig) *Service {
 	newTx := cfg.WithTx
 
-	// Fallback for tests: the mock querier ignores the tx, so the same
-	// instance is reused inside the transaction.
 	if newTx == nil {
-		newTx = func(pgx.Tx) querier {
-			return cfg.Database
+		if db, ok := cfg.Database.(*sqlc.Queries); ok {
+			// Safety net: a real sqlc querier MUST bind queries to the
+			// transaction, even when WithTx was not wired explicitly. Otherwise
+			// queries would run on the pool, outside the tx, losing atomicity.
+			newTx = NewSqlcTxFactory(db)
+		} else {
+			// Tests/mocks: the querier ignores the tx, so the same instance is
+			// reused inside the transaction.
+			newTx = func(pgx.Tx) querier {
+				return cfg.Database
+			}
 		}
 	}
 
