@@ -594,22 +594,11 @@ func TestService_ValidateOauthState(t *testing.T) {
 	})
 }
 
-func TestNewSqlcTxFactory(t *testing.T) {
-	factory := auth.NewSqlcTxFactory(&sqlc.Queries{})
-
-	qtx := factory(&test.MockTx{})
-
-	if qtx == nil {
-		t.Fatal("expected non-nil querier from tx factory")
-	}
-}
-
-func TestNewService_TxFactorySafetyNet(t *testing.T) {
+func TestNewService_BindsRealQuerierToTx(t *testing.T) {
 	base := &sqlc.Queries{}
 
-	// No WithTx wired: a real *sqlc.Queries must still be bound to the tx
-	// (a fresh instance), not reused as-is (which would run queries on the
-	// pool, outside the transaction).
+	// A real *sqlc.Queries must be bound to the tx (a fresh instance), not
+	// reused as-is (which would run queries on the pool, outside the tx).
 	svc := auth.NewService(auth.ServiceConfig{Database: base})
 
 	bound := svc.NewTxQuerier(&test.MockTx{})

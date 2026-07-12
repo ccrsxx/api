@@ -30,15 +30,6 @@ type querier interface {
 	CreateAccount(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error)
 }
 
-// NewSqlcTxFactory returns a factory that binds sqlc queries to a transaction.
-// It lets the service open transactions without a per-feature database wrapper:
-// *sqlc.Queries already satisfies querier, and WithTx returns a tx-scoped copy.
-func NewSqlcTxFactory(db *sqlc.Queries) func(pgx.Tx) querier {
-	return func(tx pgx.Tx) querier {
-		return db.WithTx(tx)
-	}
-}
-
 type githubClient interface {
 	GetCurrentUser(ctx context.Context, accessToken string) (github.User, error)
 }
@@ -56,12 +47,8 @@ type Service struct {
 }
 
 type ServiceConfig struct {
-	Pool     beginner
-	Database querier
-	// WithTx binds the querier to a transaction. It is optional: when nil,
-	// NewService auto-binds a real *sqlc.Queries via NewSqlcTxFactory, and
-	// reuses the instance for mocks. Set it only for a custom querier type.
-	WithTx            func(pgx.Tx) querier
+	Pool              beginner
+	Database          querier
 	SecretKey         string
 	JwtSecret         string
 	GithubClient      githubClient
@@ -76,20 +63,16 @@ const (
 )
 
 func NewService(cfg ServiceConfig) *Service {
-	newTx := cfg.WithTx
+	// A real sqlc querier must bind each query to the transaction so writes
+	// stay atomic. Mocks don't touch a real connection, so they are reused
+	// as-is (they ignore the tx).
+	newTx := func(pgx.Tx) querier {
+		return cfg.Database
+	}
 
-	if newTx == nil {
-		if db, ok := cfg.Database.(*sqlc.Queries); ok {
-			// Safety net: a real sqlc querier MUST bind queries to the
-			// transaction, even when WithTx was not wired explicitly. Otherwise
-			// queries would run on the pool, outside the tx, losing atomicity.
-			newTx = NewSqlcTxFactory(db)
-		} else {
-			// Tests/mocks: the querier ignores the tx, so the same instance is
-			// reused inside the transaction.
-			newTx = func(pgx.Tx) querier {
-				return cfg.Database
-			}
+	if db, ok := cfg.Database.(*sqlc.Queries); ok {
+		newTx = func(tx pgx.Tx) querier {
+			return db.WithTx(tx)
 		}
 	}
 
