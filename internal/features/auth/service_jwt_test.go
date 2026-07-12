@@ -58,11 +58,9 @@ func TestService_ValidateOauthToken(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		userID := uuid.New()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
-					return mockUserWithAccount, nil
-				},
+		db := &test.MockQuerier{
+			GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
+				return mockUserWithAccount, nil
 			},
 		}
 
@@ -152,11 +150,9 @@ func TestService_ValidateOauthToken(t *testing.T) {
 	t.Run("GetUserWithAccountByID Error", func(t *testing.T) {
 		userID := uuid.New()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
-					return sqlc.GetUserWithAccountByIDRow{}, errors.New("db error")
-				},
+		db := &test.MockQuerier{
+			GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
+				return sqlc.GetUserWithAccountByIDRow{}, errors.New("db error")
 			},
 		}
 

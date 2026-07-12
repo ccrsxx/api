@@ -28,15 +28,6 @@ type querier interface {
 	CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error)
 	UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error)
 	CreateAccount(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error)
-	WithTx(tx pgx.Tx) querier
-}
-
-type AuthDatabaseWrapper struct {
-	*sqlc.Queries
-}
-
-func (w *AuthDatabaseWrapper) WithTx(tx pgx.Tx) querier {
-	return &AuthDatabaseWrapper{w.Queries.WithTx(tx)}
 }
 
 type githubClient interface {
@@ -46,6 +37,7 @@ type githubClient interface {
 type Service struct {
 	db                querier
 	pool              beginner
+	newTx             func(pgx.Tx) querier
 	secretKey         string
 	jwtSecret         string
 	githubClient      githubClient
@@ -71,9 +63,23 @@ const (
 )
 
 func NewService(cfg ServiceConfig) *Service {
+	// A real sqlc querier must bind each query to the transaction so writes
+	// stay atomic. Mocks don't touch a real connection, so they are reused
+	// as-is (they ignore the tx).
+	newTx := func(pgx.Tx) querier {
+		return cfg.Database
+	}
+
+	if db, ok := cfg.Database.(*sqlc.Queries); ok {
+		newTx = func(tx pgx.Tx) querier {
+			return db.WithTx(tx)
+		}
+	}
+
 	return &Service{
 		db:                cfg.Database,
 		pool:              cfg.Pool,
+		newTx:             newTx,
 		secretKey:         cfg.SecretKey,
 		jwtSecret:         cfg.JwtSecret,
 		githubClient:      cfg.GithubClient,

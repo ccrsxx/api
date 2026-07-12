@@ -1,19 +1,13 @@
 package auth
 
 import (
-	"github.com/ccrsxx/api/internal/test"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 )
 
-// TestMockQuerier embeds test.MockQuerier and adds WithTx
-// to satisfy auth's unexported querier interface.
-type TestMockQuerier struct {
-	test.MockQuerier
-}
-
-func (m *TestMockQuerier) WithTx(_ pgx.Tx) querier {
-	return m
+// NewTxQuerier exposes the internal tx-scoped querier factory for testing.
+func (s *Service) NewTxQuerier(tx pgx.Tx) querier {
+	return s.newTx(tx)
 }
 
 // SetSignToken overrides the package-level signToken function for testing.
