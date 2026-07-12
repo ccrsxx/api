@@ -603,3 +603,22 @@ func TestNewSqlcTxFactory(t *testing.T) {
 		t.Fatal("expected non-nil querier from tx factory")
 	}
 }
+
+func TestNewService_TxFactorySafetyNet(t *testing.T) {
+	base := &sqlc.Queries{}
+
+	// No WithTx wired: a real *sqlc.Queries must still be bound to the tx
+	// (a fresh instance), not reused as-is (which would run queries on the
+	// pool, outside the transaction).
+	svc := auth.NewService(auth.ServiceConfig{Database: base})
+
+	bound := svc.NewTxQuerier(&test.MockTx{})
+
+	if bound == nil {
+		t.Fatal("expected non-nil tx-scoped querier")
+	}
+
+	if bound == base {
+		t.Fatal("safety net did not bind to the tx: got the pool-bound base instance")
+	}
+}
