@@ -153,7 +153,7 @@ func (s *Service) IsAdminFromOauth(ctx context.Context) (bool, error) {
 // would otherwise short-circuit on a length mismatch and leak the secret's length.
 //
 // Rate limiting (Cloudflare + API Gateway) is the primary defense against
-// brute-force/timing attacks; this is defense-in-depth in case those fail open.
+// brute-force/timing attacks; this is defense-in-depth in case those protections fail.
 func (s *Service) validateSecretKey(token string) (string, error) {
 	tokenHash := sha256.Sum256([]byte(token))
 	secretKeyHash := sha256.Sum256([]byte(s.secretKey))
