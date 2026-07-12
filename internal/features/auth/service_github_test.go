@@ -64,17 +64,15 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 	t.Run("Success (New User)", func(t *testing.T) {
 		mockTx := newMockTxSuccess()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, pgx.ErrNoRows
-				},
-				CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
-				CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
-					return sqlc.Account{}, nil
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, pgx.ErrNoRows
+			},
+			CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
+				return mockSqlcUser, nil
+			},
+			CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
+				return sqlc.Account{}, nil
 			},
 		}
 
@@ -114,17 +112,15 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Name:      &newName,
 		}
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{UserID: mockUserID}, nil
-				},
-				GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
-				UpdateUserFn: func(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {
-					return sqlc.User{ID: mockUserID, Name: newName}, nil
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{UserID: mockUserID}, nil
+			},
+			GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
+				return mockSqlcUser, nil
+			},
+			UpdateUserFn: func(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {
+				return sqlc.User{ID: mockUserID, Name: newName}, nil
 			},
 		}
 
@@ -170,11 +166,9 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 	})
 
 	t.Run("GetAccountByProvider DB Error", func(t *testing.T) {
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, errors.New("db error")
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, errors.New("db error")
 			},
 		}
 
@@ -199,14 +193,12 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 	})
 
 	t.Run("GetUserByID Error", func(t *testing.T) {
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{UserID: mockUserID}, nil
-				},
-				GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
-					return sqlc.User{}, errors.New("db error")
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{UserID: mockUserID}, nil
+			},
+			GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
+				return sqlc.User{}, errors.New("db error")
 			},
 		}
 
@@ -239,17 +231,15 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Name:      &newName,
 		}
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{UserID: mockUserID}, nil
-				},
-				GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
-				UpdateUserFn: func(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {
-					return sqlc.User{}, errors.New("db error")
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{UserID: mockUserID}, nil
+			},
+			GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
+				return mockSqlcUser, nil
+			},
+			UpdateUserFn: func(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {
+				return sqlc.User{}, errors.New("db error")
 			},
 		}
 
@@ -274,11 +264,9 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 	})
 
 	t.Run("Begin Error", func(t *testing.T) {
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, pgx.ErrNoRows
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, pgx.ErrNoRows
 			},
 		}
 
@@ -310,17 +298,15 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 	t.Run("CreateAccount Error", func(t *testing.T) {
 		mockTx := newMockTxSuccess()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, pgx.ErrNoRows
-				},
-				CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
-				CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
-					return sqlc.Account{}, errors.New("db error")
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, pgx.ErrNoRows
+			},
+			CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
+				return mockSqlcUser, nil
+			},
+			CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
+				return sqlc.Account{}, errors.New("db error")
 			},
 		}
 
@@ -355,17 +341,15 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			RollbackFn: func(ctx context.Context) error { return pgx.ErrTxClosed },
 		}
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, pgx.ErrNoRows
-				},
-				CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
-				CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
-					return sqlc.Account{}, nil
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, pgx.ErrNoRows
+			},
+			CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
+				return mockSqlcUser, nil
+			},
+			CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
+				return sqlc.Account{}, nil
 			},
 		}
 
@@ -399,14 +383,12 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			RollbackFn: func(ctx context.Context) error { return errors.New("rollback error") },
 		}
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, pgx.ErrNoRows
-				},
-				CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
-					return sqlc.User{}, errors.New("db error")
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, pgx.ErrNoRows
+			},
+			CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
+				return sqlc.User{}, errors.New("db error")
 			},
 		}
 
@@ -442,14 +424,12 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 
 		defer restore()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{UserID: mockUserID}, nil
-				},
-				GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{UserID: mockUserID}, nil
+			},
+			GetUserByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.User, error) {
+				return mockSqlcUser, nil
 			},
 		}
 

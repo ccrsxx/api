@@ -110,7 +110,7 @@ func (s *Service) createNewGithubUser(ctx context.Context, githubUser github.Use
 		}
 	}()
 
-	qtx := s.db.WithTx(tx)
+	qtx := s.newTx(tx)
 
 	user, err := qtx.CreateUser(ctx, sqlc.CreateUserParams{
 		Name:  githubName,

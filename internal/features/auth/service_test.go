@@ -13,6 +13,20 @@ import (
 	"github.com/ccrsxx/api/internal/test"
 )
 
+func TestNewService_BindsRealQuerierToTx(t *testing.T) {
+	base := &sqlc.Queries{}
+
+	svc := auth.NewService(auth.ServiceConfig{Database: base})
+
+	bound := svc.NewTxQuerier(&test.MockTx{})
+
+	// A real *sqlc.Queries must be bound to the tx (a fresh instance), not
+	// reused as-is (which would run queries on the pool, outside the tx).
+	if bound == base {
+		t.Fatal("safety net did not bind to the tx: got the pool-bound base instance")
+	}
+}
+
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 	ctx := context.Background()
 
@@ -221,14 +235,4 @@ func TestService_IsAdminFromOauth(t *testing.T) {
 			t.Errorf("got %v, want is admin user from context error", err)
 		}
 	})
-}
-
-func TestAuthDatabaseWrapper_WithTx(t *testing.T) {
-	wrapper := &auth.AuthDatabaseWrapper{Queries: &sqlc.Queries{}}
-
-	result := wrapper.WithTx(&test.MockTx{})
-
-	if result == nil {
-		t.Fatal("expected non-nil querier from WithTx")
-	}
 }

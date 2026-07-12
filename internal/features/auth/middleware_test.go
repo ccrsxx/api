@@ -131,14 +131,12 @@ func TestMiddleware_IsAuthorizedFromOauth(t *testing.T) {
 		jwtSecret := "middleware-jwt-secret"
 		userID := uuid.New()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
-					return sqlc.GetUserWithAccountByIDRow{
-						Name: "Test User",
-						Role: "admin",
-					}, nil
-				},
+		db := &test.MockQuerier{
+			GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
+				return sqlc.GetUserWithAccountByIDRow{
+					Name: "Test User",
+					Role: "admin",
+				}, nil
 			},
 		}
 

@@ -88,11 +88,9 @@ func TestController_LoginGithub(t *testing.T) {
 		jwtSecret := "controller-jwt-secret"
 		userID := uuid.New()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
-					return mockUserWithAccount, nil
-				},
+		db := &test.MockQuerier{
+			GetUserWithAccountByIDFn: func(ctx context.Context, id pgtype.UUID) (sqlc.GetUserWithAccountByIDRow, error) {
+				return mockUserWithAccount, nil
 			},
 		}
 
@@ -243,17 +241,15 @@ func TestController_LoginGithubCallback(t *testing.T) {
 
 		mockTx := newMockTxSuccess()
 
-		db := &auth.TestMockQuerier{
-			MockQuerier: test.MockQuerier{
-				GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
-					return sqlc.Account{}, pgx.ErrNoRows
-				},
-				CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
-					return mockSqlcUser, nil
-				},
-				CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
-					return sqlc.Account{}, nil
-				},
+		db := &test.MockQuerier{
+			GetAccountByProviderFn: func(ctx context.Context, arg sqlc.GetAccountByProviderParams) (sqlc.Account, error) {
+				return sqlc.Account{}, pgx.ErrNoRows
+			},
+			CreateUserFn: func(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
+				return mockSqlcUser, nil
+			},
+			CreateAccountFn: func(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
+				return sqlc.Account{}, nil
 			},
 		}
 
