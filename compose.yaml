@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/ccrsxx/api:${API_IMAGE_TAG:-latest}
+    image: ghcr.io/ccrsxx/api:${IMAGE_TAG:-latest}
     container_name: api
     restart: unless-stopped
     ports:

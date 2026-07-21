@@ -179,7 +179,7 @@ jobs:
 
       - name: Deploy with Docker Compose
         env:
-          API_IMAGE_TAG: ${{ env.SHA }}
+          IMAGE_TAG: ${{ env.SHA }}
         run: |
           docker compose pull
           docker compose up -d
