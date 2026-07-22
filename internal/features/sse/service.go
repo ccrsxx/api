@@ -259,8 +259,12 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 
 	var wg sync.WaitGroup
 
+	timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Second)
+
+	defer cancel()
+
 	wg.Go(func() {
-		data, err := s.spotifyService.GetCurrentlyPlaying(ctx)
+		data, err := s.spotifyService.GetCurrentlyPlaying(timeoutCtx)
 
 		if err != nil {
 			slog.Warn("sse spotify fetch error", "error", err)
@@ -274,7 +278,7 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 	})
 
 	wg.Go(func() {
-		data, err := s.jellyfinService.GetCurrentlyPlaying(ctx)
+		data, err := s.jellyfinService.GetCurrentlyPlaying(timeoutCtx)
 
 		if err != nil {
 			slog.Warn("sse jellyfin fetch error", "error", err)
@@ -288,7 +292,7 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 	})
 
 	wg.Go(func() {
-		data, err := s.navidromeService.GetCurrentlyPlaying(ctx)
+		data, err := s.navidromeService.GetCurrentlyPlaying(timeoutCtx)
 
 		if err != nil {
 			slog.Warn("sse navidrome fetch error", "error", err)
