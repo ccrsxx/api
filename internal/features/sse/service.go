@@ -259,7 +259,7 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 
 	var wg sync.WaitGroup
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 
 	defer cancel()
 
