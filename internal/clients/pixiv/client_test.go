@@ -3,6 +3,7 @@ package pixiv_test
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -258,6 +259,87 @@ func TestClient_GetBookmarks(t *testing.T) {
 
 		if err != nil {
 			t.Fatalf("got: %v, want GetBookmarks to handle body close error gracefully", err)
+		}
+	})
+}
+
+func TestClient_GetImageStream(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Header.Get("Referer") != "https://pixiv.net" {
+				t.Errorf("got Referer %s, want https://pixiv.net", r.Header.Get("Referer"))
+			}
+
+			w.WriteHeader(http.StatusOK)
+
+			if _, err := w.Write([]byte("image_data")); err != nil {
+				t.Fatalf("failed to write response: %v", err)
+			}
+		}))
+		defer mockServer.Close()
+
+		c := pixiv.NewClient(pixiv.Config{})
+		stream, err := c.GetImageStream(context.Background(), mockServer.URL)
+		if err != nil {
+			t.Fatalf("got err: %v, want success", err)
+		}
+		defer stream.Close()
+
+		data, err := io.ReadAll(stream)
+		if err != nil {
+			t.Fatalf("failed to read stream: %v", err)
+		}
+
+		if string(data) != "image_data" {
+			t.Errorf("got %s, want image_data", string(data))
+		}
+	})
+
+	t.Run("Request Creation Error", func(t *testing.T) {
+		c := pixiv.NewClient(pixiv.Config{})
+		_, err := c.GetImageStream(context.Background(), "http://bad\x7f")
+		if err == nil {
+			t.Error("want request creation error")
+		}
+	})
+
+	t.Run("Network Error", func(t *testing.T) {
+		c := pixiv.NewClient(pixiv.Config{})
+		_, err := c.GetImageStream(context.Background(), "http://invalid.url.local")
+		if err == nil {
+			t.Error("want network error")
+		}
+	})
+
+	t.Run("Status Error", func(t *testing.T) {
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		}))
+		defer mockServer.Close()
+
+		c := pixiv.NewClient(pixiv.Config{})
+		_, err := c.GetImageStream(context.Background(), mockServer.URL)
+		if err == nil {
+			t.Error("want status error")
+		}
+	})
+
+	t.Run("Body Close Error On Status Error", func(t *testing.T) {
+		c := pixiv.NewClient(pixiv.Config{
+			HTTPClient: &http.Client{
+				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusForbidden,
+						Body:       &test.ErrorBodyCloser{Reader: strings.NewReader("")},
+						Header:     make(http.Header),
+					}, nil
+				}),
+			},
+		})
+
+		_, err := c.GetImageStream(context.Background(), "http://example.com")
+		if err == nil {
+			t.Error("want status error")
 		}
 	})
 }

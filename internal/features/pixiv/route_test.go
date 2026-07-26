@@ -29,6 +29,10 @@ func TestLoadRoutes(t *testing.T) {
 			Path:   "/pixiv/bookmarks/all",
 			Method: http.MethodGet,
 		},
+		{
+			Path:   "/pixiv/image/{url}",
+			Method: http.MethodGet,
+		},
 	}
 
 	test.AssertRoutes(t, mux, tests)
