@@ -2,6 +2,8 @@ package pixiv
 
 import (
 	"errors"
+	"net/url"
+	"path"
 	"strings"
 
 	"math"
@@ -79,4 +81,71 @@ func calculateMaster1200Dimensions(originalWidth, originalHeight int) (int, int)
 	newWidth := int(math.Ceil(float64(originalWidth) * ratio))
 
 	return newWidth, maxDimension
+}
+
+// getValidPixivImageURL takes a scheme-less pixiv image reference (e.g.
+// "i.pximg.net/img-master/img/2024/01/01/00/00/00/12345678_p0_master1200.jpg")
+// and returns a canonical HTTPS URL guaranteed to point at i.pximg.net.
+//
+// The result is rebuilt from validated parts only -- never echoed back from the
+// caller's input -- so anything not explicitly checked below (query, fragment,
+// port, credentials) is dropped by construction.
+func getValidPixivImageURL(imageURL string) (string, error) {
+	const host = "i.pximg.net"
+
+	// Caller contract is scheme-less input. Lowered so "HtTpS://" can't slip by.
+	if lower := strings.ToLower(imageURL); strings.HasPrefix(lower, "http://") ||
+		strings.HasPrefix(lower, "https://") {
+		return "", errors.New("pixiv image url must not include a scheme")
+	}
+
+	// Trim *all* leading slashes: stops "//evil.com/a.jpg" from surviving as an
+	// authority, and "/i.pximg.net/a.jpg" from parsing into an empty host.
+	parsed, err := url.Parse("https://" + strings.TrimLeft(imageURL, "/"))
+
+	if err != nil {
+		return "", errors.New("pixiv image invalid url")
+	}
+
+	switch {
+	// "foo:bar@i.pximg.net/a.jpg" passes a host check but leaks Basic auth.
+	case parsed.User != nil:
+		return "", errors.New("pixiv image url must not include credentials")
+
+	// Hostname() strips the port, so "i.pximg.net:8080" would compare equal.
+	case parsed.Port() != "":
+		return "", errors.New("pixiv image url must not include a port")
+
+	// EqualFold: url.Parse lowercases the scheme but never the host.
+	case !strings.EqualFold(parsed.Hostname(), host):
+		return "", errors.New("pixiv image invalid host")
+	}
+
+	// Validate the escaped path -- the bytes actually sent on the wire.
+	// parsed.Path is decoded, so "evil.svg%3f.jpg" would fake a ".jpg" there.
+	escaped := parsed.EscapedPath()
+
+	switch {
+	// Real pximg paths never need encoding, so ban it outright instead of
+	// reasoning about what %2e / %2f / %00 decode to. Also catches raw spaces.
+	case strings.Contains(escaped, "%"):
+		return "", errors.New("pixiv image url must not be percent-encoded")
+
+	// Reject non-canonical paths ("/a/../b.jpg", or an empty path) rather than
+	// rewriting them -- a rewrite means fetching something we never inspected.
+	case escaped != path.Clean(escaped):
+		return "", errors.New("pixiv image invalid path")
+	}
+
+	switch strings.ToLower(path.Ext(escaped)) {
+	case ".jpg", ".jpeg", ".png", ".webp", ".gif":
+		// allowed
+	default:
+		return "", errors.New("pixiv image invalid extension")
+	}
+
+	// Host is the constant, not parsed.Host, so nothing upstream can redirect it.
+	out := url.URL{Scheme: "https", Host: host, Path: parsed.Path}
+
+	return out.String(), nil
 }

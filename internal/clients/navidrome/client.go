@@ -107,14 +107,14 @@ func (c *Client) GetCoverArtStream(ctx context.Context, covertArtID string) (io.
 
 	closeBody := func() {
 		if err := res.Body.Close(); err != nil {
-			slog.Warn("navidrome now playing close body error:", "error", err)
+			slog.Warn("navidrome covert art close body error:", "error", err)
 		}
 	}
 
 	if res.StatusCode != http.StatusOK {
 		closeBody()
 
-		return nil, fmt.Errorf("navidrome now playing request status error: %d", res.StatusCode)
+		return nil, fmt.Errorf("navidrome covert art request status error: %d", res.StatusCode)
 	}
 
 	contentType := res.Header.Get("Content-Type")
@@ -144,7 +144,7 @@ func (c *Client) GetCoverArtStream(ctx context.Context, covertArtID string) (io.
 			}
 		}
 
-		return nil, fmt.Errorf("navidrome now playing request unknown code error: %d", parsedErrorCode)
+		return nil, fmt.Errorf("navidrome covert art request unknown code error: %d", parsedErrorCode)
 	}
 
 	return res.Body, nil

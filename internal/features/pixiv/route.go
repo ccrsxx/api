@@ -29,5 +29,7 @@ func LoadRoutes(cfg Config) {
 		),
 	)
 
+	mux.Handle("GET /image/{url...}", http.HandlerFunc(ctrl.GetImage))
+
 	cfg.Router.Handle("/pixiv/", http.StripPrefix("/pixiv", mux))
 }

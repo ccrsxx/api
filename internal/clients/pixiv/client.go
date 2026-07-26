@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -107,4 +108,30 @@ func (c *Client) GetBookmarks(ctx context.Context, visibility BookmarkVisibility
 	}
 
 	return artworks, response.Body.Total, nil
+}
+
+func (c *Client) GetImageStream(ctx context.Context, imageURL string) (io.ReadCloser, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", imageURL, nil)
+
+	if err != nil {
+		return nil, fmt.Errorf("pixiv image create request error: %w", err)
+	}
+
+	req.Header.Set("Referer", "https://pixiv.net")
+
+	res, err := c.httpClient.Do(req)
+
+	if err != nil {
+		return nil, fmt.Errorf("pixiv image request error: %w", err)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		if err := res.Body.Close(); err != nil {
+			slog.Warn("pixiv image close body error:", "error", err)
+		}
+
+		return nil, fmt.Errorf("pixiv image response status error: %d", res.StatusCode)
+	}
+
+	return res.Body, nil
 }

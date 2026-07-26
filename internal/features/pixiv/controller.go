@@ -1,6 +1,7 @@
 package pixiv
 
 import (
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -62,5 +63,33 @@ func (c *Controller) GetAllBookmarks(w http.ResponseWriter, r *http.Request) {
 
 	if err := api.NewSuccessResponse(w, http.StatusOK, bookmarks); err != nil {
 		slog.Warn("pixiv all bookmarks response error", "error", err)
+	}
+}
+
+func (c *Controller) GetImage(w http.ResponseWriter, r *http.Request) {
+	imageURL := r.PathValue("url")
+
+	imageStream, err := c.service.GetImage(r.Context(), imageURL)
+
+	if err != nil {
+		api.HandleHTTPError(w, r, err)
+		return
+	}
+
+	defer func() {
+		if err := imageStream.Close(); err != nil {
+			slog.Warn("pixiv image close body error", "error", err)
+		}
+	}()
+
+	// Cache Policy: Aggressive (1 Year)
+	// - public:       Allows CDNs and shared proxies to cache this.
+	// - immutable:    Prevents browsers from sending "Is this modified?" (304) checks on refresh.
+	// - no-transform: Prevents mobile carriers from compressing/blurring the image.
+	// - max-age:      31536000 seconds = 1 Year.
+	w.Header().Set("Cache-Control", "public, immutable, no-transform, max-age=31536000")
+
+	if _, err := io.Copy(w, imageStream); err != nil {
+		slog.Warn("pixiv image copy error", "error", err)
 	}
 }
