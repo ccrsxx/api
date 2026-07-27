@@ -1,0 +1,490 @@
+# Bamboo YAML Specs — 1:1 translation of .github/workflows/ci.yaml + deployment.yaml
+#
+# HARD REQUIREMENTS (not optional, Bamboo will ignore the file otherwise):
+#   1. This file must be at <repo-root>/bamboo-specs/bamboo.yaml
+#   2. The repo must be a *linked repository* in Bamboo with
+#      "Repository-stored Bamboo Specs" (RSS) enabled and allowed for the project.
+#   3. The Bamboo project (project-key below) must already exist.
+#      YAML Specs cannot create projects — only plans, deployments, permissions.
+#
+# The file is split into 4 YAML *documents* (separated by ---):
+#   1. the build plan          (= ci.yaml)
+#   2. plan permissions        (= no GH equivalent, GH uses repo perms)
+#   3. the deployment project  (= deployment.yaml)
+#   4. deployment permissions  (= GH "environments" + required reviewers)
+
+---
+version: 2
+
+# GH: `name: CI`. A plan is identified by project-key + key, not by file name.
+plan:
+  project-key: API
+  key: CI
+  name: API CI
+
+# GH: `on: pull_request` / `on: push`.
+# With a Bitbucket Data Center linked repo you get push-based triggering for free,
+# so `triggers` can usually be omitted. Explicit remote trigger shown for clarity.
+repositories:
+  - api # a linked repository configured once in Bamboo, reused by every plan
+
+triggers:
+  - remote # Bitbucket pushes to Bamboo; no polling, no webhook URL to manage
+
+# GH: PR builds. Bamboo models a PR as a *plan branch*: a clone of this plan that
+# builds the branch head (or the merge result) using this same config.
+branches:
+  create: for-pull-request
+  delete:
+    after-deleted-days: 1
+    after-inactive-days: 30
+  link-to-jira: true # this is the bit you don't get on GitHub: build status on the Jira issue
+
+# GH: `secrets.*`. Bamboo has no separate secret store for plans — secrets are
+# variables. Values whose key looks sensitive (password/secret/passphrase/sshKey)
+# MUST be encrypted in Specs; committing a raw value makes the import fail.
+# Get the BAMSCRT blob from Bamboo: Plan config > Variables > (it encrypts on save),
+# or keep them out of git entirely and define them in the UI.
+variables:
+  registry_namespace: ghcr.io/ccrsxx/api
+
+# GH: `jobs:` + `needs:`. THIS IS THE BIGGEST DIFFERENCE.
+# Bamboo has no per-job DAG. Ordering is expressed only through *stages*:
+#   - stages run strictly sequentially
+#   - jobs inside a stage run in parallel on different agents
+#   - every job in a stage must pass before the next stage starts
+# So `needs: extract-tools-version` becomes "put it in an earlier stage".
+stages:
+  - Prepare:
+      jobs:
+        - Extract Tools Version
+  - Verify:
+      jobs:
+        - Vet
+        - Lint
+        - Test
+        - Format
+
+# Jobs are declared at the document root, keyed by name, and referenced from stages.
+# The same job definition can be reused by several stages.
+
+# GH: the reusable extract-tools-version.yaml workflow with `outputs:`.
+# Bamboo has no job outputs. The equivalent is the Inject Variables task:
+# write a key=value file, inject it with scope RESULT, and every later stage
+# (and the linked deployment) can read it.
+Extract Tools Version:
+  key: TOOLS
+  tasks:
+    # An implicit checkout of the default repo is added as the first task if you
+    # don't declare one. Declared here so the order is explicit.
+    - checkout:
+        force-clean-build: false
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - |
+            set -eu
+
+            {
+              echo "go_version=$(awk '/^go/ {print $2}' go.mod)"
+              echo "sqlc_version=$(awk '/^SQLC_VERSION/ {print $3}' Makefile)"
+              echo "goose_version=$(awk '/^GOOSE_VERSION/ {print $3}' Makefile)"
+              echo "golangci_lint_version=$(awk '/^GOLANGCI_LINT_VERSION/ {print $3}' Makefile)"
+
+              # GH: `${{ inputs.sha || github.sha }}`. Bamboo exposes the built
+              # revision as ${bamboo.planRepository.revision}; persisted here so
+              # the deployment tasks can tag the image with it.
+              echo "build_sha=${bamboo_planRepository_revision}"
+            } > tools.properties
+
+            cat tools.properties
+    - inject-variables:
+        file: tools.properties
+        scope: RESULT # LOCAL = dies with the job; RESULT = survives into later stages + deployment
+        namespace: tools
+  artifacts:
+    # Not needed for the variables (RESULT scope covers that), but useful to show
+    # the mechanism: shared artifacts are how you pass *files* between stages.
+    - name: tools
+      pattern: tools.properties
+      shared: true
+      required: true
+  requirements:
+    - golang # a custom capability you define on the agent; see notes in README
+
+# GH: the `vet` job on `runs-on: self-hosted`, spinning up a throwaway Postgres.
+Vet:
+  key: VET
+  tasks:
+    - checkout:
+        force-clean-build: false
+    # GH: `sqlc-dev/setup-sqlc@v5`. There is no Bamboo action marketplace, so you
+    # either install the tool in the script or pre-install it as an agent capability.
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - go install github.com/sqlc-dev/sqlc/cmd/sqlc@${bamboo.tools.sqlc_version}
+    # GH: `services:` / the inline `docker run` block. Bamboo YAML Specs has no
+    # service containers and no Docker CLI task (Java Specs only), so a plain
+    # script is the closest equivalent — which is what the workflow already does.
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - |
+            set -eu
+
+            docker run -d --name "postgres-vet-${bamboo_buildResultKey}" \
+              -e POSTGRES_PASSWORD=postgres \
+              -p 0:5432 \
+              --health-cmd pg_isready \
+              --health-interval 5s \
+              --health-timeout 5s \
+              --health-retries 5 \
+              postgres:18-alpine
+
+            until docker inspect --format='{{.State.Health.Status}}' \
+              "postgres-vet-${bamboo_buildResultKey}" | grep -q healthy; do
+              sleep 1
+            done
+
+            PORT=$(docker port "postgres-vet-${bamboo_buildResultKey}" 5432 | cut -d: -f2)
+
+            echo "vet_database_port=${PORT}" > postgres.properties
+    - inject-variables:
+        file: postgres.properties
+        scope: LOCAL # only this job needs it
+        namespace: pg
+    - script:
+        interpreter: /bin/sh
+        environment: DATABASE_URL=postgres://postgres:postgres@host.docker.internal:${bamboo.pg.vet_database_port}/postgres
+        scripts:
+          - make db-vet
+  # GH: `if: always()`. Bamboo's equivalent is final-tasks: they always run, even
+  # if a build task failed or someone stopped the build manually.
+  final-tasks:
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - docker rm -f "postgres-vet-${bamboo_buildResultKey}" || true
+  requirements:
+    - golang
+    - hasDocker
+    - agent_type: vps # custom capability = GH's `runs-on: self-hosted`
+
+# GH: `golangci/golangci-lint-action@v9` on ubuntu-latest.
+Lint:
+  key: LINT
+  tasks:
+    - checkout:
+        force-clean-build: false
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - |
+            set -eu
+
+            apk add --no-cache make
+
+            go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${bamboo.tools.golangci_lint_version}
+
+            make lint
+  # GH: `runs-on: ubuntu-latest` + `actions/setup-go`.
+  # Bamboo's closest equivalent is running the job inside a container. Note the
+  # image tag is driven by the variable injected in the previous stage.
+  docker:
+    image: golang:${bamboo.tools.go_version}-alpine
+  requirements:
+    - hasDocker
+
+# GH: the `test` job.
+Test:
+  key: TEST
+  tasks:
+    - checkout:
+        force-clean-build: false
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - |
+            set -eu
+
+            apk add --no-cache make
+
+            make test
+  # Bamboo does not read Go's test output. Without a parser task the job is just
+  # pass/fail with a log; with one you get per-test history, flaky detection and
+  # "this test first failed in build #N". Requires emitting JUnit XML:
+  #   go install gotest.tools/gotestsum@${bamboo.tools.gotestsum_version}
+  #   gotestsum --junitfile test-reports/unit.xml -- -cover ./...
+  final-tasks:
+    - test-parser:
+        type: junit
+        test-results:
+          - test-reports/*.xml
+  docker:
+    image: golang:${bamboo.tools.go_version}-alpine
+  requirements:
+    - hasDocker
+
+# GH: the `format` job.
+Format:
+  key: FMT
+  tasks:
+    - checkout:
+        force-clean-build: false
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - |
+            set -eu
+
+            apk add --no-cache make
+
+            make format
+
+            # `go fmt` rewrites files instead of failing, so fail explicitly.
+            # GH gets away with this too — the workflow has the same hole.
+            test -z "$(git status --porcelain)" || {
+              echo 'Formatting changed files; run make format locally'
+              git --no-pager diff
+              exit 1
+            }
+  docker:
+    image: golang:${bamboo.tools.go_version}-alpine
+  requirements:
+    - hasDocker
+
+notifications:
+  - recipients:
+      - committers
+    events:
+      - plan-failed
+      - plan-status-changed
+
+other:
+  concurrent-build-plugin: system-default
+
+---
+# GH has no equivalent — on GitHub, access is repo permissions.
+# In Bamboo, who may view/run/edit a plan is itself config-as-code.
+version: 2
+
+plan: API-CI
+
+plan-permissions:
+  - roles:
+      - logged-in
+    permissions:
+      - view
+  - groups:
+      - api-developers
+    permissions:
+      - view
+      - build
+  - groups:
+      - api-admins
+    permissions:
+      - view
+      - edit
+      - build
+      - clone
+      - admin
+
+---
+# GH: deployment.yaml. In Bamboo, deploying is NOT a plan — it is a separate
+# entity called a deployment project, attached to a source plan.
+#
+# What you get for free that GH Actions makes you build yourself:
+#   - a *release* is an immutable, named snapshot of a specific build result
+#   - a deployment history per environment ("what is on prod right now?")
+#   - one-click redeploy / rollback of any previous release
+# That replaces the `workflow_dispatch: inputs.sha` escape hatch entirely: you
+# don't type a SHA, you pick a release.
+version: 2
+
+deployment:
+  name: API Production
+  source-plan: API-CI # only successful builds of this plan can be released
+
+release-naming:
+  next-version-name: release-${bamboo.buildNumber}
+  applies-to-branches: false
+  auto-increment: true
+
+# GH: the `migrate` job then the `deploy` job, wired with `needs:`.
+# Two environments chained by `environment-success` is the closest mapping and
+# keeps the same gate semantics: no deploy unless the migration succeeded.
+environments:
+  - Migrate Database
+  - Production
+
+Migrate Database:
+  # GH: `on: push: branches: [main]` + `needs: ci`.
+  # build-success fires only when the *whole* source plan passed, i.e. every
+  # stage: Prepare + Verify. That is the `needs: ci` guarantee.
+  triggers:
+    - build-success
+  tasks:
+    - clean
+    # A deployment environment has no repo by default; check one out explicitly
+    # because goose needs internal/db/migrations on disk.
+    - checkout: api
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - go install github.com/pressly/goose/v3/cmd/goose@${bamboo.tools.goose_version}
+    - script:
+        interpreter: /bin/sh
+        environment: DATABASE_PASSWORD=${bamboo.database_password}
+        scripts:
+          - docker compose up -d --wait db
+    - script:
+        interpreter: /bin/sh
+        environment: >-
+          GOOSE_DRIVER=postgres
+          GOOSE_DBSTRING=postgres://postgres:${bamboo.database_password}@host.docker.internal:5444/postgres
+          GOOSE_MIGRATION_DIR=internal/db/migrations
+        scripts:
+          - make db-migrate
+  variables:
+    # Encrypt with Bamboo Specs encryption, or drop this block and set the value
+    # in the UI. A raw value under a key named *password* fails the import.
+    database_password: BAMSCRT@0@0@REPLACE_WITH_ENCRYPTED_VALUE
+  requirements:
+    - golang
+    - hasDocker
+    - agent_type: vps
+  notifications:
+    - events:
+        - deployment-failed
+      recipients:
+        - groups:
+            - api-admins
+
+Production:
+  # GH: `needs: migrate`.
+  triggers:
+    - environment-success: Migrate Database
+  tasks:
+    - clean
+    - checkout: api
+    - script:
+        interpreter: /bin/sh
+        environment: >-
+          CURRENT_IMAGE=${bamboo.registry_namespace}:${bamboo.tools.build_sha}
+          CACHE_IMAGE=${bamboo.registry_namespace}:cache
+          LATEST_IMAGE=${bamboo.registry_namespace}:latest
+          GO_VERSION=${bamboo.tools.go_version}
+          REGISTRY_TOKEN=${bamboo.registry_secret}
+        scripts:
+          - |
+            set -eu
+
+            echo "$REGISTRY_TOKEN" | docker login ghcr.io -u ccrsxx --password-stdin
+
+            # GH: the `image-check` step + `if: steps.image-check.outputs.exists != 'true'`.
+            # Bamboo task conditions can only compare variables, not step output,
+            # so branching like this stays inside the script.
+            if docker buildx imagetools inspect "$CURRENT_IMAGE" > /dev/null 2>&1; then
+              echo "$CURRENT_IMAGE already exists, skipping build"
+            else
+              docker buildx build \
+                --platform linux/arm64 \
+                --build-arg "GO_VERSION=${GO_VERSION}" \
+                --cache-from "type=registry,ref=${CACHE_IMAGE}" \
+                --cache-to "type=registry,ref=${CACHE_IMAGE},mode=max" \
+                --tag "$CURRENT_IMAGE" \
+                --tag "$LATEST_IMAGE" \
+                --push \
+                .
+            fi
+    - script:
+        interpreter: /bin/sh
+        scripts:
+          - |
+            set -eu
+
+            # Bamboo exports every variable to the script's environment with dots
+            # turned into underscores, so $bamboo_secret_key is ${bamboo.secret_key}.
+            cat >> .env << EOF
+
+            OG_URL=${bamboo_og_url}
+            ALLOWED_ORIGINS=${bamboo_allowed_origins}
+
+            SECRET_KEY=${bamboo_secret_key}
+            PRIVATE_SECRET_KEY=${bamboo_private_secret_key}
+
+            JWT_SECRET=${bamboo_jwt_secret}
+
+            DATABASE_PASSWORD=${bamboo_database_password}
+
+            EOF
+    - script:
+        interpreter: /bin/sh
+        environment: IMAGE_TAG=${bamboo.tools.build_sha}
+        scripts:
+          - |
+            set -eu
+
+            docker compose pull
+            docker compose up -d
+  variables:
+    og_url: https://example.com
+    allowed_origins: https://example.com
+    secret_key: BAMSCRT@0@0@REPLACE_WITH_ENCRYPTED_VALUE
+    private_secret_key: BAMSCRT@0@0@REPLACE_WITH_ENCRYPTED_VALUE
+    jwt_secret: BAMSCRT@0@0@REPLACE_WITH_ENCRYPTED_VALUE
+    database_password: BAMSCRT@0@0@REPLACE_WITH_ENCRYPTED_VALUE
+    registry_secret: BAMSCRT@0@0@REPLACE_WITH_ENCRYPTED_VALUE
+  requirements:
+    - hasDocker
+    - agent_type: vps
+  notifications:
+    - events:
+        - deployment-started-and-finished
+        - deployment-failed
+      recipients:
+        - groups:
+            - api-admins
+
+---
+# GH: `environment: production` + required reviewers on the environment.
+# In Bamboo the approval gate is a *permission*: if a human lacks `deploy` on the
+# environment, they cannot promote a release to it. This is the file BRI-style
+# audit reviews will actually care about.
+version: 2
+
+deployment: API Production
+
+deployment-permissions:
+  - groups:
+      - api-admins
+    permissions:
+      - view
+      - edit
+
+default-environment-permissions:
+  - groups:
+      - api-developers
+    permissions:
+      - view
+
+environment-permissions:
+  - Migrate Database:
+      - groups:
+          - api-admins
+        permissions:
+          - view
+          - edit
+          - deploy
+  - Production:
+      - groups:
+          - api-admins
+        permissions:
+          - view
+          - edit
+          - deploy
+      - groups:
+          - api-developers
+        permissions:
+          - view
