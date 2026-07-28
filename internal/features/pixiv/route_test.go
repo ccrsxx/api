@@ -29,7 +29,7 @@ func TestLoadRoutes(t *testing.T) {
 
 	tests := []test.RouteTestCase{
 		{
-			Path:   "/pixiv/image/{url}",
+			Path:   "/pixiv/proxy/random-url",
 			Method: http.MethodGet,
 		},
 		{

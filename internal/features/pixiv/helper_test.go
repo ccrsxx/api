@@ -99,7 +99,7 @@ func Test_parseArtworkToBookmark(t *testing.T) {
 		}
 
 		// Should contain img-master and master1200, not custom-thumb/custom1200
-		wantPrefix := mockPixivImageURL + "/pixiv/image/i.pximg.net/c/1200x1200_90_webp/img-master/"
+		wantPrefix := mockPixivImageURL + "/pixiv/proxy/i.pximg.net/c/1200x1200_90_webp/img-master/"
 
 		// Only check prefix since the rest of the URL is normalized and can vary
 		if got.ImageURL[:len(wantPrefix)] != wantPrefix {

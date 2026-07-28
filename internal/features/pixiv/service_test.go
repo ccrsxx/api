@@ -168,7 +168,7 @@ func TestService_GetAllBookmarks(t *testing.T) {
 	})
 }
 
-func TestService_GetImage(t *testing.T) {
+func TestService_GetImageProxy(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mock := &mockPixivClient{
 			imageStream: io.NopCloser(strings.NewReader("image-data")),
@@ -178,7 +178,7 @@ func TestService_GetImage(t *testing.T) {
 			Client: mock,
 		})
 
-		stream, err := svc.GetImage(context.Background(), "test.jpg")
+		stream, err := svc.GetImageProxy(context.Background(), "test.jpg")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -206,7 +206,7 @@ func TestService_GetImage(t *testing.T) {
 			Client: mock,
 		})
 
-		_, err := svc.GetImage(context.Background(), "test.jpg")
+		_, err := svc.GetImageProxy(context.Background(), "test.jpg")
 
 		if err == nil {
 			t.Fatal("want error for invalid url")
@@ -231,7 +231,7 @@ func TestService_GetImage(t *testing.T) {
 			Client: mock,
 		})
 
-		_, err := svc.GetImage(context.Background(), "test.jpg")
+		_, err := svc.GetImageProxy(context.Background(), "test.jpg")
 
 		if err == nil {
 			t.Error("want error")

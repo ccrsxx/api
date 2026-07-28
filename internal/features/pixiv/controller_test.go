@@ -208,7 +208,7 @@ func TestController_GetAllBookmarks(t *testing.T) {
 	})
 }
 
-func TestController_GetImage(t *testing.T) {
+func TestController_GetImageProxy(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mock := &mockPixivClient{
 			imageStream: io.NopCloser(strings.NewReader("image-data")),
@@ -225,7 +225,7 @@ func TestController_GetImage(t *testing.T) {
 
 		r.SetPathValue("url", "test.jpg")
 
-		ctrl.GetImage(w, r)
+		ctrl.GetImageProxy(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("want 200, got %d", w.Code)
@@ -256,7 +256,7 @@ func TestController_GetImage(t *testing.T) {
 
 		r.SetPathValue("url", "test.jpg")
 
-		ctrl.GetImage(w, r)
+		ctrl.GetImageProxy(w, r)
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("want 500, got %d", w.Code)
@@ -279,7 +279,7 @@ func TestController_GetImage(t *testing.T) {
 
 		r.SetPathValue("url", "test.jpg")
 
-		ctrl.GetImage(w, r)
+		ctrl.GetImageProxy(w, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want 200", w.Code)
@@ -317,7 +317,7 @@ func TestController_GetImage(t *testing.T) {
 
 		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
 
-		ctrl.GetImage(errWriter, r)
+		ctrl.GetImageProxy(errWriter, r)
 
 		if w.Code != http.StatusOK {
 			t.Errorf("got %d, want %d", w.Code, http.StatusOK)

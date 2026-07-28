@@ -17,7 +17,7 @@ func LoadRoutes(cfg Config) {
 
 	ctrl := NewController(cfg.Service)
 
-	mux.Handle("GET /image/{url...}", http.HandlerFunc(ctrl.GetImage))
+	mux.Handle("GET /proxy/{url...}", http.HandlerFunc(ctrl.GetImageProxy))
 
 	mux.Handle("GET /bookmarks",
 		cfg.AuthMiddleware.IsAuthorizedFromBearer(

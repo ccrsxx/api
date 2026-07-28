@@ -85,7 +85,7 @@ func (s *Service) GetAllBookmarks(ctx context.Context, visibility pixiv.Bookmark
 	return allBookmarks, nil
 }
 
-func (s *Service) GetImage(ctx context.Context, imageURL string) (io.ReadCloser, error) {
+func (s *Service) GetImageProxy(ctx context.Context, imageURL string) (io.ReadCloser, error) {
 	imageStream, err := s.client.GetImageStream(ctx, imageURL)
 
 	if errors.Is(err, pixiv.ErrPixivInvalidURL) {
@@ -96,7 +96,7 @@ func (s *Service) GetImage(ctx context.Context, imageURL string) (io.ReadCloser,
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("pixiv image error: %w", err)
+		return nil, fmt.Errorf("pixiv image proxy error: %w", err)
 	}
 
 	return imageStream, nil

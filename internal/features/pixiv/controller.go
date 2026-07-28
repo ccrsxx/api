@@ -66,10 +66,10 @@ func (c *Controller) GetAllBookmarks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Controller) GetImage(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetImageProxy(w http.ResponseWriter, r *http.Request) {
 	imageURL := r.PathValue("url")
 
-	imageStream, err := c.service.GetImage(r.Context(), imageURL)
+	imageStream, err := c.service.GetImageProxy(r.Context(), imageURL)
 
 	if err != nil {
 		api.HandleHTTPError(w, r, err)

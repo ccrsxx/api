@@ -33,7 +33,7 @@ func parseArtworkToBookmark(artwork pClient.Artwork, publicURL string) (model.Bo
 	imageURL = strings.Replace(imageURL, "/img-master/", "/c/1200x1200_90_webp/img-master/", 1)
 
 	// Rewrite to proxy
-	imageURL = strings.Replace(imageURL, "https://", publicURL+"/pixiv/image/", 1)
+	imageURL = strings.Replace(imageURL, "https://", publicURL+"/pixiv/proxy/", 1)
 
 	// Image dimensions
 	width, height := calculateMaster1200Dimensions(artwork.Width, artwork.Height)
