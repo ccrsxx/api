@@ -90,7 +90,7 @@ func (s *Service) GetImage(ctx context.Context, imageURL string) (io.ReadCloser,
 
 	if errors.Is(err, pixiv.ErrPixivInvalidURL) {
 		return nil, &api.HTTPError{
-			Message:    "Image url is invalid",
+			Message:    "Invalid url",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
