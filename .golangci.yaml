@@ -17,6 +17,11 @@ linters:
   exclusions:
     rules:
       - linters:
+          - staticcheck
+        # Ignore nil context warning in tests
+        text: 'do not pass a nil Context'
+
+      - linters:
           - revive
         # Ignore common package name warning
         text: 'avoid meaningless package names'
