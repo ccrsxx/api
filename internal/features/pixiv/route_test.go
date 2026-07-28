@@ -29,15 +29,15 @@ func TestLoadRoutes(t *testing.T) {
 
 	tests := []test.RouteTestCase{
 		{
+			Path:   "/pixiv/image/{url}",
+			Method: http.MethodGet,
+		},
+		{
 			Path:   "/pixiv/bookmarks",
 			Method: http.MethodGet,
 		},
 		{
 			Path:   "/pixiv/bookmarks/all",
-			Method: http.MethodGet,
-		},
-		{
-			Path:   "/pixiv/image/{url}",
 			Method: http.MethodGet,
 		},
 	}

@@ -17,6 +17,8 @@ func LoadRoutes(cfg Config) {
 
 	ctrl := NewController(cfg.Service)
 
+	mux.Handle("GET /image/{url...}", http.HandlerFunc(ctrl.GetImage))
+
 	mux.Handle("GET /bookmarks",
 		cfg.AuthMiddleware.IsAuthorizedFromBearer(
 			http.HandlerFunc(ctrl.GetBookmarks),
@@ -28,8 +30,6 @@ func LoadRoutes(cfg Config) {
 			http.HandlerFunc(ctrl.GetAllBookmarks),
 		),
 	)
-
-	mux.Handle("GET /image/{url...}", http.HandlerFunc(ctrl.GetImage))
 
 	cfg.Router.Handle("/pixiv/", http.StripPrefix("/pixiv", mux))
 }
