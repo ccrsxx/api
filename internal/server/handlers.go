@@ -304,11 +304,13 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		},
 	)
 
-	handlers := middleware.Recovery(
-		middleware.Cors(cfg.AllowedOrigins)(
-			middleware.Logging(
-				middleware.RateLimit(ctx, 100, 1*time.Minute)(
-					router,
+	handlers := middleware.RequestID(
+		middleware.Recovery(
+			middleware.Cors(cfg.AllowedOrigins)(
+				middleware.Logging(
+					middleware.RateLimit(ctx, 100, 1*time.Minute)(
+						router,
+					),
 				),
 			),
 		),

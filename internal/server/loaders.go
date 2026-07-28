@@ -8,5 +8,5 @@ import (
 
 func LoadLoaders(cfg config.AppConfig) {
 	api.Load(cfg.IsDevelopment)
-	logger.Load(cfg.IsDevelopment)
+	logger.Load(cfg)
 }
