@@ -2,6 +2,7 @@ package pixiv
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -13,10 +14,6 @@ import (
 	"github.com/ccrsxx/api/internal/utils"
 )
 
-const (
-	validPixivImagePrefix = "i.pximg.net"
-)
-
 type pixivClient interface {
 	GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVisibility, page int) ([]pixiv.Artwork, int, error)
 	GetImageStream(ctx context.Context, url string) (io.ReadCloser, error)
@@ -24,20 +21,17 @@ type pixivClient interface {
 
 type Service struct {
 	client           pixivClient
-	pixivImageURL    string
 	backendPublicURL string
 }
 
 type ServiceConfig struct {
 	Client           pixivClient
-	PixivImageURL    string
 	BackendPublicURL string
 }
 
 func NewService(cfg ServiceConfig) *Service {
 	return &Service{
 		client:           cfg.Client,
-		pixivImageURL:    cfg.PixivImageURL,
 		backendPublicURL: cfg.BackendPublicURL,
 	}
 }
@@ -52,7 +46,7 @@ func (s *Service) GetBookmarks(ctx context.Context, visibility pixiv.BookmarkVis
 	bookmarks := make([]model.Bookmark, 0, len(artworks))
 
 	for _, artwork := range artworks {
-		bookmark, err := parseArtworkToBookmark(artwork, s.pixivImageURL)
+		bookmark, err := parseArtworkToBookmark(artwork, s.backendPublicURL)
 
 		if err != nil {
 			slog.Warn("pixiv bookmarks skip invalid artwork parse", "error", err)
@@ -92,14 +86,18 @@ func (s *Service) GetAllBookmarks(ctx context.Context, visibility pixiv.Bookmark
 }
 
 func (s *Service) GetImage(ctx context.Context, imageURL string) (io.ReadCloser, error) {
-	validImageURL, err := getValidPixivImageURL(imageURL)
+	imageStream, err := s.client.GetImageStream(ctx, imageURL)
 
-	if err != nil {
+	if errors.Is(err, pixiv.ErrPixivInvalidURL) {
 		return nil, &api.HTTPError{
+			Message:    "Image url is invalid",
 			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid image url",
 		}
 	}
 
-	return s.client.GetImageStream(ctx, validImageURL)
+	if err != nil {
+		return nil, fmt.Errorf("pixiv image error: %w", err)
+	}
+
+	return imageStream, nil
 }

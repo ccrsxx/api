@@ -226,8 +226,8 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 			Router:         router,
 			AuthMiddleware: privateAuthMiddleware,
 			Service: pixiv.NewService(pixiv.ServiceConfig{
-				Client:        pixivClient,
-				PixivImageURL: cfg.PixivImageURL,
+				Client:           pixivClient,
+				BackendPublicURL: cfg.BackendPublicURL,
 			}),
 		},
 	)

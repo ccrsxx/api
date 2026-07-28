@@ -3,6 +3,7 @@ package pixiv
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -110,8 +111,16 @@ func (c *Client) GetBookmarks(ctx context.Context, visibility BookmarkVisibility
 	return artworks, response.Body.Total, nil
 }
 
+var ErrPixivInvalidURL = errors.New("pixiv image url is invalid")
+
 func (c *Client) GetImageStream(ctx context.Context, imageURL string) (io.ReadCloser, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", imageURL, nil)
+	pixivImageURL, err := getValidPixivImageURL(imageURL)
+
+	if err != nil {
+		return nil, ErrPixivInvalidURL
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", pixivImageURL, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("pixiv image create request error: %w", err)

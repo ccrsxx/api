@@ -1,6 +1,7 @@
 package pixiv_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -12,7 +13,13 @@ import (
 func TestLoadRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	service := pixiv.NewService(pixiv.ServiceConfig{})
+	mock := &mockPixivClient{
+		imageErr: errors.New("not found"),
+	}
+
+	service := pixiv.NewService(pixiv.ServiceConfig{
+		Client: mock,
+	})
 
 	authService := auth.NewService(auth.ServiceConfig{})
 

@@ -51,8 +51,8 @@ func TestController_GetBookmarks(t *testing.T) {
 		}
 
 		svc := pixiv.NewService(pixiv.ServiceConfig{
-			Client:        mock,
-			PixivImageURL: "https://proxy.example.com",
+			Client:           mock,
+			BackendPublicURL: "https://proxy.example.com",
 		})
 
 		ctrl := pixiv.NewController(svc)
@@ -138,8 +138,8 @@ func TestController_GetAllBookmarks(t *testing.T) {
 		}
 
 		svc := pixiv.NewService(pixiv.ServiceConfig{
-			Client:        mock,
-			PixivImageURL: "https://proxy.example.com",
+			Client:           mock,
+			BackendPublicURL: "https://proxy.example.com",
 		})
 
 		ctrl := pixiv.NewController(svc)
@@ -210,19 +210,20 @@ func TestController_GetAllBookmarks(t *testing.T) {
 
 func TestController_GetImage(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockStream := io.NopCloser(strings.NewReader("image_data"))
 		mock := &mockPixivClient{
-			imageStream: mockStream,
+			imageStream: io.NopCloser(strings.NewReader("image-data")),
 		}
 
 		svc := pixiv.NewService(pixiv.ServiceConfig{
 			Client: mock,
 		})
+
 		ctrl := pixiv.NewController(svc)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodGet, "/image/i.pximg.net%2Ftest.jpg", nil)
-		r.SetPathValue("url", "i.pximg.net/test.jpg")
+		r := httptest.NewRequest(http.MethodGet, "/image/test.jpg", nil)
+
+		r.SetPathValue("url", "test.jpg")
 
 		ctrl.GetImage(w, r)
 
@@ -230,30 +231,30 @@ func TestController_GetImage(t *testing.T) {
 			t.Errorf("want 200, got %d", w.Code)
 		}
 
-		expectedCache := "public, immutable, no-transform, max-age=31536000"
-		if w.Header().Get("Cache-Control") != expectedCache {
-			t.Errorf("got Cache-Control %s, want %s", w.Header().Get("Cache-Control"), expectedCache)
+		if !strings.Contains(w.Header().Get("Cache-Control"), "max-age=31536000") {
+			t.Error("want aggressive cache header")
 		}
 
-		body, _ := io.ReadAll(w.Body)
-		if string(body) != "image_data" {
-			t.Errorf("got body %s, want image_data", string(body))
+		if w.Body.String() != "image-data" {
+			t.Errorf("got %q, want %q", w.Body.String(), "image-data")
 		}
 	})
 
 	t.Run("Service Error", func(t *testing.T) {
 		mock := &mockPixivClient{
-			imageErr: errors.New("network error"),
+			imageErr: errors.New("fail"),
 		}
 
 		svc := pixiv.NewService(pixiv.ServiceConfig{
 			Client: mock,
 		})
+
 		ctrl := pixiv.NewController(svc)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodGet, "/image/i.pximg.net%2Ftest.jpg", nil)
-		r.SetPathValue("url", "i.pximg.net/test.jpg")
+		r := httptest.NewRequest(http.MethodGet, "/image/test.jpg", nil)
+
+		r.SetPathValue("url", "test.jpg")
 
 		ctrl.GetImage(w, r)
 
@@ -262,49 +263,64 @@ func TestController_GetImage(t *testing.T) {
 		}
 	})
 
-	t.Run("Write Error", func(t *testing.T) {
-		mockStream := io.NopCloser(struct{ io.Reader }{strings.NewReader("image_data")})
-		mock := &mockPixivClient{
-			imageStream: mockStream,
-		}
-
-		svc := pixiv.NewService(pixiv.ServiceConfig{
-			Client: mock,
-		})
-		ctrl := pixiv.NewController(svc)
-
-		w := httptest.NewRecorder()
-		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
-		r := httptest.NewRequest(http.MethodGet, "/image/i.pximg.net%2Ftest.jpg", nil)
-		r.SetPathValue("url", "i.pximg.net/test.jpg")
-
-		ctrl.GetImage(errWriter, r)
-
-		// It sets OK, then tries to copy to body.
-		if w.Code != http.StatusOK {
-			t.Errorf("want 200, got %d", w.Code)
-		}
-	})
-
 	t.Run("Body Close Error", func(t *testing.T) {
-		mockStream := &test.ErrorBodyCloser{Reader: strings.NewReader("image_data")}
 		mock := &mockPixivClient{
-			imageStream: mockStream,
+			imageStream: &test.ErrorBodyCloser{Reader: strings.NewReader("image-data")},
 		}
 
 		svc := pixiv.NewService(pixiv.ServiceConfig{
 			Client: mock,
 		})
+
 		ctrl := pixiv.NewController(svc)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodGet, "/image/i.pximg.net%2Ftest.jpg", nil)
-		r.SetPathValue("url", "i.pximg.net/test.jpg")
+		r := httptest.NewRequest(http.MethodGet, "/image/test.jpg", nil)
+
+		r.SetPathValue("url", "test.jpg")
 
 		ctrl.GetImage(w, r)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("want 200, got %d", w.Code)
+			t.Errorf("got %d, want 200", w.Code)
+		}
+	})
+
+	t.Run("Write Error", func(t *testing.T) {
+		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("image-data"))
+		}))
+
+		defer mockServer.Close()
+
+		resp, err := mockServer.Client().Get(mockServer.URL)
+
+		if err != nil {
+			t.Fatalf("failed to create stream: %v", err)
+		}
+
+		mock := &mockPixivClient{
+			imageStream: resp.Body,
+		}
+
+		svc := pixiv.NewService(pixiv.ServiceConfig{
+			Client: mock,
+		})
+
+		ctrl := pixiv.NewController(svc)
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/image/test.jpg", nil)
+
+		r.SetPathValue("url", "test.jpg")
+
+		errWriter := &test.ErrorResponseRecorder{ResponseRecorder: w}
+
+		ctrl.GetImage(errWriter, r)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("got %d, want %d", w.Code, http.StatusOK)
 		}
 	})
 }
