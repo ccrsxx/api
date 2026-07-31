@@ -11,6 +11,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/model"
+	"github.com/ccrsxx/api/internal/observability"
 	"github.com/google/uuid"
 )
 
@@ -114,6 +115,8 @@ func (s *Service) AddClient(ctx context.Context, clientChan chan string, ipAddre
 	s.clients[clientChan] = meta
 	s.ipAddressCounts[ipAddress]++
 
+	observability.SSEActiveClients.Set(float64(len(s.clients)))
+
 	slog.Info("sse client connected",
 		"id", meta.ID,
 		"ip_address", meta.IPAddress,
@@ -155,6 +158,8 @@ func (s *Service) RemoveClient(ctx context.Context, clientChan chan string) {
 	if s.ipAddressCounts[meta.IPAddress] <= 0 {
 		delete(s.ipAddressCounts, meta.IPAddress)
 	}
+
+	observability.SSEActiveClients.Set(float64(len(s.clients)))
 
 	slog.Info("sse client disconnected",
 		"id", meta.ID,
@@ -254,6 +259,42 @@ type sseData struct {
 	navidrome string
 }
 
+// fetchCurrentlyPlaying fetches from a single upstream, records its latency and
+// outcome, and falls back to a default payload on error.
+//
+// The metric matters because the fallback is silent: without it, an upstream
+// outage is indistinguishable from "the user isn't listening to anything".
+func fetchCurrentlyPlaying(
+	ctx context.Context,
+	platform model.Platform,
+	fetcher dataFetcher,
+) model.CurrentlyPlaying {
+	start := time.Now()
+
+	data, err := fetcher.GetCurrentlyPlaying(ctx)
+
+	result := "success"
+
+	if err != nil {
+		result = "error"
+	}
+
+	observability.UpstreamRequestDuration.
+		WithLabelValues(string(platform), result).
+		Observe(time.Since(start).Seconds())
+
+	if err != nil {
+		slog.WarnContext(ctx, "sse upstream fetch error",
+			"platform", platform,
+			"error", err,
+		)
+
+		return model.NewDefaultCurrentlyPlaying(platform)
+	}
+
+	return data
+}
+
 func (s *Service) getSSEData(ctx context.Context) sseData {
 	var spotifyData, jellyfinData, navidromeData model.CurrentlyPlaying
 
@@ -264,45 +305,15 @@ func (s *Service) getSSEData(ctx context.Context) sseData {
 	defer cancel()
 
 	wg.Go(func() {
-		data, err := s.spotifyService.GetCurrentlyPlaying(timeoutCtx)
-
-		if err != nil {
-			slog.Warn("sse spotify fetch error", "error", err)
-
-			spotifyData = model.NewDefaultCurrentlyPlaying(model.PlatformSpotify)
-
-			return
-		}
-
-		spotifyData = data
+		spotifyData = fetchCurrentlyPlaying(timeoutCtx, model.PlatformSpotify, s.spotifyService)
 	})
 
 	wg.Go(func() {
-		data, err := s.jellyfinService.GetCurrentlyPlaying(timeoutCtx)
-
-		if err != nil {
-			slog.Warn("sse jellyfin fetch error", "error", err)
-
-			jellyfinData = model.NewDefaultCurrentlyPlaying(model.PlatformJellyfin)
-
-			return
-		}
-
-		jellyfinData = data
+		jellyfinData = fetchCurrentlyPlaying(timeoutCtx, model.PlatformJellyfin, s.jellyfinService)
 	})
 
 	wg.Go(func() {
-		data, err := s.navidromeService.GetCurrentlyPlaying(timeoutCtx)
-
-		if err != nil {
-			slog.Warn("sse navidrome fetch error", "error", err)
-
-			navidromeData = model.NewDefaultCurrentlyPlaying(model.PlatformNavidrome)
-
-			return
-		}
-
-		navidromeData = data
+		navidromeData = fetchCurrentlyPlaying(timeoutCtx, model.PlatformNavidrome, s.navidromeService)
 	})
 
 	wg.Wait()

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"log/slog"
 	"time"
+
+	"github.com/ccrsxx/api/internal/observability"
 )
 
 var ErrCacheMiss = errors.New("cache miss")
@@ -43,10 +45,15 @@ func GetOrFetch[T any](
 
 	if err == nil {
 		if casted, ok := val.(T); ok {
+			observability.CacheOperationsTotal.WithLabelValues("hit").Inc()
+
 			slog.Debug("cache hit", "key", key)
+
 			return casted, nil
 		}
 	}
+
+	observability.CacheOperationsTotal.WithLabelValues("miss").Inc()
 
 	data, err := fetcher()
 

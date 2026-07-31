@@ -12,6 +12,20 @@ services:
       - PORT=4000
       - APP_ENV=production
       - DATABASE_URL=postgres://postgres:${DATABASE_PASSWORD}@db:5432/postgres
+      # Observability. METRICS_PORT is intentionally NOT published: the Alloy
+      # collector scrapes it over the shared 'observability' network.
+      - METRICS_PORT=9090
+      - OTEL_SERVICE_NAME=api
+      - TRACING_ENABLED=${TRACING_ENABLED:-false}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - TRACE_SAMPLE_RATIO=${TRACE_SAMPLE_RATIO:-0.1}
+      # Tell the Go runtime about the container memory limit so it GCs harder
+      # instead of being OOM-killed. Keep below the limit below.
+      - GOMEMLIMIT=450MiB
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     read_only: true
     cap_drop:
       - ALL
@@ -20,6 +34,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - default
+      - observability
 
   db:
     image: postgres:18.4
@@ -60,3 +77,10 @@ services:
 
 volumes:
   db-data:
+
+networks:
+  default:
+  # Shared with the LGTM stack so Alloy can scrape api:9090 and the API can
+  # reach the collector's OTLP endpoint. Create once: docker network create observability
+  observability:
+    external: true

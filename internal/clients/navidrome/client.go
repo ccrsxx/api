@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ccrsxx/api/internal/utils"
+
 	"github.com/ccrsxx/api/internal/api"
 )
 
@@ -37,7 +39,7 @@ const (
 
 func NewClient(cfg Config) *Client {
 	if cfg.HTTPClient == nil {
-		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
+		cfg.HTTPClient = utils.NewHTTPClient(8 * time.Second)
 	}
 
 	authParams := createAuthParams(cfg.Username, cfg.Password)
