@@ -55,6 +55,10 @@ func TestCors(t *testing.T) {
 
 				mw.ServeHTTP(w, r)
 
+				if w.Header().Get("Vary") != "Origin" {
+					t.Errorf("want Vary header to be Origin")
+				}
+
 				if tt.allowed {
 					if w.Header().Get("Access-Control-Allow-Origin") != tt.origin {
 						t.Errorf("want Access-Control-Allow-Origin header to be %s", tt.origin)
@@ -77,20 +81,54 @@ func TestCors(t *testing.T) {
 	})
 
 	t.Run("Preflight OPTIONS Request", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodOptions, "/", nil)
-
-		r.Header.Set("Origin", "https://allowed.com")
-
-		w := httptest.NewRecorder()
-
-		mw.ServeHTTP(w, r)
-
-		if w.Code != http.StatusNoContent {
-			t.Errorf("got status %d, want %d for OPTIONS", w.Code, http.StatusNoContent)
+		tests := []struct {
+			name    string
+			origin  string
+			allowed bool
+		}{
+			{
+				name:    "Allowed Origin",
+				origin:  "https://allowed.com",
+				allowed: true,
+			},
+			{
+				name:    "Disallowed Origin",
+				origin:  "https://hacker.com",
+				allowed: false,
+			},
 		}
 
-		if w.Header().Get("Access-Control-Allow-Methods") == "" {
-			t.Error("want Access-Control-Allow-Methods header")
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				r := httptest.NewRequest(http.MethodOptions, "/", nil)
+				r.Header.Set("Origin", tt.origin)
+
+				w := httptest.NewRecorder()
+
+				mw.ServeHTTP(w, r)
+
+				if w.Header().Get("Vary") != "Origin" {
+					t.Errorf("want Vary header to be Origin")
+				}
+
+				if tt.allowed {
+					if w.Code != http.StatusNoContent {
+						t.Errorf("got status %d, want %d for OPTIONS", w.Code, http.StatusNoContent)
+					}
+
+					if w.Header().Get("Access-Control-Allow-Methods") == "" {
+						t.Error("want Access-Control-Allow-Methods header")
+					}
+				} else {
+					if w.Code != http.StatusOK {
+						t.Errorf("got status %d, want %d for OPTIONS", w.Code, http.StatusOK)
+					}
+
+					if w.Header().Get("Access-Control-Allow-Methods") != "" {
+						t.Error("want no Access-Control-Allow-Methods header")
+					}
+				}
+			})
 		}
 	})
 }
