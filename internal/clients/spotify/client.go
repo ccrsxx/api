@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ccrsxx/api/internal/utils"
+
 	"github.com/ccrsxx/api/internal/cache"
 )
 
@@ -44,7 +46,7 @@ var ErrNoContent = errors.New("spotify currently playing no content")
 
 func NewClient(cfg Config) *Client {
 	if cfg.HTTPClient == nil {
-		cfg.HTTPClient = &http.Client{Timeout: 8 * time.Second}
+		cfg.HTTPClient = utils.NewHTTPClient(8 * time.Second)
 	}
 
 	if cfg.APIURL == "" {

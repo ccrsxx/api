@@ -35,6 +35,7 @@ import (
 	"github.com/ccrsxx/api/internal/features/tools"
 	"github.com/ccrsxx/api/internal/features/views"
 	"github.com/ccrsxx/api/internal/middleware"
+	"github.com/ccrsxx/api/internal/observability"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -308,13 +309,19 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 		middleware.Recovery(
 			middleware.Cors(cfg.AllowedOrigins)(
 				middleware.Logging(
-					middleware.RateLimit(ctx, 100, 1*time.Minute)(
-						router,
+					middleware.Metrics(
+						middleware.RateLimit(ctx, 100, 1*time.Minute)(
+							// Innermost: renames the span to the matched route
+							// once the mux has resolved r.Pattern.
+							observability.TraceRoute(router),
+						),
 					),
 				),
 			),
 		),
 	)
 
-	return handlers
+	// Tracing wraps everything so a span exists before RequestID runs, letting
+	// the log correlation ids come straight from the active span.
+	return observability.TraceHandler(handlers)
 }

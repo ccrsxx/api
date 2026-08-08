@@ -35,6 +35,10 @@ ENTRYPOINT [ "/main" ]
 
 EXPOSE 4000
 
+# Internal-only metrics/health port. Documented here but deliberately not
+# published to the host in compose; the collector scrapes it over the network.
+EXPOSE 9090
+
 LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
     org.opencontainers.image.source="https://github.com/ccrsxx/api" \
     org.opencontainers.image.description="My personal API for my projects" \
