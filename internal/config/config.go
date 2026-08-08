@@ -74,6 +74,20 @@ type AppConfig struct {
 	SpotifyClientSecret string `env:"SPOTIFY_CLIENT_SECRET,required"`
 	SpotifyRefreshToken string `env:"SPOTIFY_REFRESH_TOKEN,required"`
 
+	// Observability
+	//
+	// These are intentionally NOT required and carry sane defaults so local
+	// development and existing deployments keep working without any new env.
+	//
+	// The OTEL_* names follow the OpenTelemetry environment variable spec so
+	// the SDK (added in a later change) can read them natively.
+	LogFormat        string  `env:"LOG_FORMAT" envDefault:"json"` // json | text
+	MetricsPort      int     `env:"METRICS_PORT" envDefault:"9090"`
+	ServiceName      string  `env:"OTEL_SERVICE_NAME" envDefault:"api"`
+	TracingEnabled   bool    `env:"TRACING_ENABLED" envDefault:"false"`
+	OtlpEndpoint     string  `env:"OTEL_EXPORTER_OTLP_ENDPOINT" envDefault:""`
+	TraceSampleRatio float64 `env:"TRACE_SAMPLE_RATIO" envDefault:"0.1"`
+
 	// Computed fields for convenience
 	IsProduction  bool
 	IsDevelopment bool
