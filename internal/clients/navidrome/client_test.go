@@ -1,7 +1,6 @@
 package navidrome_test
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -47,7 +46,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		entries, err := c.GetNowPlaying(context.Background())
+		entries, err := c.GetNowPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -65,7 +64,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 	t.Run("Request Creation Error", func(t *testing.T) {
 		c := navidrome.NewClient(navidrome.Config{URL: "http://bad\x7f"})
 
-		_, err := c.GetNowPlaying(context.Background())
+		_, err := c.GetNowPlaying(t.Context())
 
 		if err == nil {
 			t.Error("want error from NewRequestWithContext")
@@ -75,7 +74,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 	t.Run("Network Error", func(t *testing.T) {
 		c := navidrome.NewClient(navidrome.Config{URL: "http://invalid.url.local"})
 
-		_, err := c.GetNowPlaying(context.Background())
+		_, err := c.GetNowPlaying(t.Context())
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -91,7 +90,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetNowPlaying(context.Background())
+		_, err := c.GetNowPlaying(t.Context())
 
 		if err == nil {
 			t.Error("want status error for 401")
@@ -111,7 +110,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetNowPlaying(context.Background())
+		_, err := c.GetNowPlaying(t.Context())
 
 		if err == nil {
 			t.Error("want decode error")
@@ -135,7 +134,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetNowPlaying(context.Background())
+		_, err := c.GetNowPlaying(t.Context())
 
 		if err == nil {
 			t.Error("want error for nil now playing")
@@ -166,7 +165,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 			},
 		})
 
-		_, err := c.GetNowPlaying(context.Background())
+		_, err := c.GetNowPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("got: %v, want GetNowPlaying to handle body close error gracefully", err)
@@ -189,7 +188,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		body, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		body, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -215,7 +214,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 	t.Run("Request Creation Error", func(t *testing.T) {
 		c := navidrome.NewClient(navidrome.Config{URL: "http://bad\x7f"})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Error("want error from NewRequestWithContext")
@@ -225,7 +224,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 	t.Run("Network Error", func(t *testing.T) {
 		c := navidrome.NewClient(navidrome.Config{URL: "http://invalid.url.local"})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -241,7 +240,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Error("want status error for 500")
@@ -262,7 +261,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 			},
 		})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Error("want status error even when body close fails")
@@ -289,7 +288,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Fatal("want error for cover art not found")
@@ -326,7 +325,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Error("want error for non-70 error code")
@@ -351,7 +350,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 
 		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
 
-		_, err := c.GetCoverArtStream(context.Background(), "cover-1")
+		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
 		if err == nil {
 			t.Error("want decode error")

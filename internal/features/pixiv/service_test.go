@@ -52,7 +52,7 @@ func TestService_GetBookmarks(t *testing.T) {
 			BackendPublicURL: "https://proxy.example.com",
 		})
 
-		bookmarks, meta, err := svc.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		bookmarks, meta, err := svc.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -76,7 +76,7 @@ func TestService_GetBookmarks(t *testing.T) {
 			Client: mock,
 		})
 
-		_, _, err := svc.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := svc.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err == nil {
 			t.Error("want error")
@@ -107,7 +107,7 @@ func TestService_GetBookmarks(t *testing.T) {
 			BackendPublicURL: "https://proxy.example.com",
 		})
 
-		bookmarks, _, err := svc.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		bookmarks, _, err := svc.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -140,7 +140,7 @@ func TestService_GetAllBookmarks(t *testing.T) {
 			BackendPublicURL: "https://proxy.example.com",
 		})
 
-		bookmarks, err := svc.GetAllBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic)
+		bookmarks, err := svc.GetAllBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -160,7 +160,7 @@ func TestService_GetAllBookmarks(t *testing.T) {
 			Client: mock,
 		})
 
-		_, err := svc.GetAllBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic)
+		_, err := svc.GetAllBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic)
 
 		if err == nil {
 			t.Error("want error")
@@ -178,7 +178,7 @@ func TestService_GetImageProxy(t *testing.T) {
 			Client: mock,
 		})
 
-		stream, err := svc.GetImageProxy(context.Background(), "test.jpg")
+		stream, err := svc.GetImageProxy(t.Context(), "test.jpg")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -206,7 +206,7 @@ func TestService_GetImageProxy(t *testing.T) {
 			Client: mock,
 		})
 
-		_, err := svc.GetImageProxy(context.Background(), "test.jpg")
+		_, err := svc.GetImageProxy(t.Context(), "test.jpg")
 
 		if err == nil {
 			t.Fatal("want error for invalid url")
@@ -231,7 +231,7 @@ func TestService_GetImageProxy(t *testing.T) {
 			Client: mock,
 		})
 
-		_, err := svc.GetImageProxy(context.Background(), "test.jpg")
+		_, err := svc.GetImageProxy(t.Context(), "test.jpg")
 
 		if err == nil {
 			t.Error("want error")

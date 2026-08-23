@@ -1,7 +1,6 @@
 package views_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -20,7 +19,7 @@ func TestLoadRoutes(t *testing.T) {
 
 	svc := views.NewService(views.ServiceConfig{Database: db})
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	authMw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{}))
 

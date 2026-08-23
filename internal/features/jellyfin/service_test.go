@@ -42,7 +42,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			JellyfinUsername: validUser,
 		})
 
-		got, err := svc.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -75,7 +75,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			JellyfinUsername: validUser,
 		})
 
-		got, err := svc.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -95,7 +95,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			Client: mock,
 		})
 
-		_, err := svc.GetCurrentlyPlaying(context.Background())
+		_, err := svc.GetCurrentlyPlaying(t.Context())
 		if err == nil {
 			t.Error("want error")
 		}
@@ -125,7 +125,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			JellyfinUsername: validUser,
 		})
 
-		_, err := svc.GetCurrentlyPlaying(context.Background())
+		_, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -143,7 +143,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		// For robustness, we manually tweak the lastStateTime in the struct if needed,
 		// but since we just ran it, it is definitely within the 5s grace period.
 
-		got, err := svc.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -161,7 +161,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		// Manually reach into the service and set time back > 5 seconds
 		svc.lastStateTime = time.Now().Add(-10 * time.Second)
 
-		gotExpired, err := svc.GetCurrentlyPlaying(context.Background())
+		gotExpired, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)

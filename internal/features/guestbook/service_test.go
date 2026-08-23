@@ -65,7 +65,7 @@ func TestService_CreateGuestbook(t *testing.T) {
 			EmailClient: &mockEmailClient{},
 		})
 
-		ctx := auth.SetUserContext(context.Background(), mockUser)
+		ctx := auth.SetUserContext(t.Context(), mockUser)
 
 		input := guestbook.CreateGuestbookInput{Text: "Hello world!"}
 
@@ -83,7 +83,7 @@ func TestService_CreateGuestbook(t *testing.T) {
 	t.Run("Context User Error", func(t *testing.T) {
 		svc := guestbook.NewService(guestbook.ServiceConfig{})
 
-		_, err := svc.CreateGuestbook(context.Background(), guestbook.CreateGuestbookInput{Text: "Hello"})
+		_, err := svc.CreateGuestbook(t.Context(), guestbook.CreateGuestbookInput{Text: "Hello"})
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -105,7 +105,7 @@ func TestService_CreateGuestbook(t *testing.T) {
 			Database: db,
 		})
 
-		ctx := auth.SetUserContext(context.Background(), mockUser)
+		ctx := auth.SetUserContext(t.Context(), mockUser)
 
 		_, err := svc.CreateGuestbook(ctx, guestbook.CreateGuestbookInput{Text: "Hello"})
 
@@ -130,7 +130,7 @@ func TestService_CreateGuestbook(t *testing.T) {
 			EmailClient: &mockEmailClient{err: errors.New("email fail")},
 		})
 
-		ctx := auth.SetUserContext(context.Background(), mockUser)
+		ctx := auth.SetUserContext(t.Context(), mockUser)
 
 		_, err := svc.CreateGuestbook(ctx, guestbook.CreateGuestbookInput{Text: "Hello"})
 
@@ -153,7 +153,7 @@ func TestService_ListGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		list, err := svc.ListGuestbook(context.Background())
+		list, err := svc.ListGuestbook(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -173,7 +173,7 @@ func TestService_ListGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		list, err := svc.ListGuestbook(context.Background())
+		list, err := svc.ListGuestbook(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -193,7 +193,7 @@ func TestService_ListGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		_, err := svc.ListGuestbook(context.Background())
+		_, err := svc.ListGuestbook(t.Context())
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -218,7 +218,7 @@ func TestService_DeleteGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		err := svc.DeleteGuestbook(context.Background(), uuid.New().String())
+		err := svc.DeleteGuestbook(t.Context(), uuid.New().String())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -228,7 +228,7 @@ func TestService_DeleteGuestbook(t *testing.T) {
 	t.Run("Invalid UUID", func(t *testing.T) {
 		svc := guestbook.NewService(guestbook.ServiceConfig{})
 
-		err := svc.DeleteGuestbook(context.Background(), "invalid-uuid")
+		err := svc.DeleteGuestbook(t.Context(), "invalid-uuid")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -254,7 +254,7 @@ func TestService_DeleteGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		err := svc.DeleteGuestbook(context.Background(), uuid.New().String())
+		err := svc.DeleteGuestbook(t.Context(), uuid.New().String())
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -280,7 +280,7 @@ func TestService_DeleteGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		err := svc.DeleteGuestbook(context.Background(), uuid.New().String())
+		err := svc.DeleteGuestbook(t.Context(), uuid.New().String())
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -303,7 +303,7 @@ func TestService_DeleteGuestbook(t *testing.T) {
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{Database: db})
 
-		err := svc.DeleteGuestbook(context.Background(), uuid.New().String())
+		err := svc.DeleteGuestbook(t.Context(), uuid.New().String())
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

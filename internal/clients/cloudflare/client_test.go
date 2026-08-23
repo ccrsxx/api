@@ -1,7 +1,6 @@
 package cloudflare_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +36,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -53,7 +52,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: "http://example.com"})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err == nil {
 			t.Error("want marshal error")
@@ -63,7 +62,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 	t.Run("Request Creation Error", func(t *testing.T) {
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: "http://bad\x7f"})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err == nil {
 			t.Error("want error from NewRequestWithContext")
@@ -73,7 +72,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 	t.Run("Network Error", func(t *testing.T) {
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: "http://invalid.url.local"})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -89,7 +88,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err == nil {
 			t.Error("want status error for 500")
@@ -111,7 +110,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err == nil {
 			t.Error("want decode error")
@@ -132,7 +131,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 			},
 		})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("got: %v, want VerifyTurnstile to handle body close error gracefully", err)
@@ -154,7 +153,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 
 		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
 
-		err := c.VerifyTurnstile(context.Background(), "test_token", "127.0.0.1")
+		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("want error for failed captcha")

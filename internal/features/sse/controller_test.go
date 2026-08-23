@@ -54,7 +54,7 @@ func TestController_getCurrentPlayingSSE(t *testing.T) {
 
 		// Trigger !ok path
 		// We manually close the channel. This causes the controller loop to receive (!ok) and exit.
-		svc.RemoveClient(context.Background(), targetChan)
+		svc.RemoveClient(t.Context(), targetChan)
 
 		// Assert Exit
 		select {

@@ -1,7 +1,6 @@
 package pushover_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -36,7 +35,7 @@ func TestClient_SendMessage(t *testing.T) {
 
 		c := pushover.NewClient(pushover.Config{APIURL: mockServer.URL})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{
 			Message: "test message",
 			Title:   "test title",
 		})
@@ -55,7 +54,7 @@ func TestClient_SendMessage(t *testing.T) {
 
 		c := pushover.NewClient(pushover.Config{APIURL: "http://example.com"})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{})
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
 		if err == nil {
 			t.Error("want marshal error")
@@ -65,7 +64,7 @@ func TestClient_SendMessage(t *testing.T) {
 	t.Run("Request Creation Error", func(t *testing.T) {
 		c := pushover.NewClient(pushover.Config{APIURL: "http://bad\x7f"})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{})
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
 		if err == nil {
 			t.Error("want error from NewRequestWithContext")
@@ -75,7 +74,7 @@ func TestClient_SendMessage(t *testing.T) {
 	t.Run("Network Error", func(t *testing.T) {
 		c := pushover.NewClient(pushover.Config{APIURL: "http://invalid.url.local"})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{})
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -91,7 +90,7 @@ func TestClient_SendMessage(t *testing.T) {
 
 		c := pushover.NewClient(pushover.Config{APIURL: mockServer.URL})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{})
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
 		if err == nil {
 			t.Error("want status error for 500")
@@ -113,7 +112,7 @@ func TestClient_SendMessage(t *testing.T) {
 
 		c := pushover.NewClient(pushover.Config{APIURL: mockServer.URL})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{})
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
 		if err == nil {
 			t.Error("want decode error")
@@ -134,7 +133,7 @@ func TestClient_SendMessage(t *testing.T) {
 			},
 		})
 
-		err := c.SendMessage(context.Background(), pushover.MessageRequest{})
+		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
 		if err != nil {
 			t.Fatalf("got: %v, want SendMessage to handle body close error gracefully", err)

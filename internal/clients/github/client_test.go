@@ -1,7 +1,6 @@
 package github_test
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,7 +19,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClient_GetCurrentUser(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	token := "dummy_token"
 
 	t.Run("Request Creation Error", func(t *testing.T) {

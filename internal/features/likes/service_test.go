@@ -53,7 +53,7 @@ func TestService_GetLikeStatus(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		status, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
+		status, err := svc.GetLikeStatus(t.Context(), "test-slug", "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -77,7 +77,7 @@ func TestService_GetLikeStatus(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.GetLikeStatus(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -94,7 +94,7 @@ func TestService_GetLikeStatus(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.GetLikeStatus(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -114,7 +114,7 @@ func TestService_GetLikeStatus(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.GetLikeStatus(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -142,7 +142,7 @@ func TestService_GetLikeStatus(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.GetLikeStatus(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.GetLikeStatus(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -165,7 +165,7 @@ func TestService_IncrementLike(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		status, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
+		status, err := svc.IncrementLike(t.Context(), "test-slug", "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -190,7 +190,7 @@ func TestService_IncrementLike(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementLike(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -212,7 +212,7 @@ func TestService_IncrementLike(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementLike(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -230,7 +230,7 @@ func TestService_IncrementLike(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementLike(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -259,7 +259,7 @@ func TestService_IncrementLike(t *testing.T) {
 
 		svc := likes.NewService(likes.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementLike(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementLike(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

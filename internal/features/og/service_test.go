@@ -1,7 +1,6 @@
 package og_test
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -41,7 +40,7 @@ func TestService_GetOg(t *testing.T) {
 			HTTPClient: mockServer.Client(),
 		})
 
-		stream, err := svc.GetOg(context.Background(), "title=hello")
+		stream, err := svc.GetOg(t.Context(), "title=hello")
 
 		if err != nil {
 			t.Fatalf("got error: %v, want success", err)
@@ -76,7 +75,7 @@ func TestService_GetOg(t *testing.T) {
 			HTTPClient: mockServer.Client(),
 		})
 
-		_, err := svc.GetOg(context.Background(), "")
+		_, err := svc.GetOg(t.Context(), "")
 
 		if err == nil {
 			t.Error("want error for status 500")
@@ -93,7 +92,7 @@ func TestService_GetOg(t *testing.T) {
 			HTTPClient: &http.Client{Timeout: 1 * time.Millisecond},
 		})
 
-		_, err := svc.GetOg(context.Background(), "")
+		_, err := svc.GetOg(t.Context(), "")
 
 		if err == nil {
 			t.Error("want network error")
@@ -109,7 +108,7 @@ func TestService_GetOg(t *testing.T) {
 			OgURL: "http://\x7f",
 		})
 
-		_, err := svc.GetOg(context.Background(), "")
+		_, err := svc.GetOg(t.Context(), "")
 
 		if err == nil {
 			t.Error("want error from request creation")
@@ -129,7 +128,7 @@ func TestService_GetOg(t *testing.T) {
 			},
 		})
 
-		_, err := svc.GetOg(context.Background(), "")
+		_, err := svc.GetOg(t.Context(), "")
 
 		if err == nil {
 			t.Error("want error from body close failure")

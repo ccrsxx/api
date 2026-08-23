@@ -1,7 +1,6 @@
 package jellyfin_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -36,7 +35,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
 
-		sessions, err := c.GetSessions(context.Background())
+		sessions, err := c.GetSessions(t.Context())
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -50,7 +49,7 @@ func TestClient_GetSessions(t *testing.T) {
 	t.Run("Request Creation Error", func(t *testing.T) {
 		c := jellyfin.NewClient(jellyfin.Config{URL: "http://bad\x7f"})
 
-		_, err := c.GetSessions(context.Background())
+		_, err := c.GetSessions(t.Context())
 
 		if err == nil {
 			t.Error("want error from NewRequestWithContext")
@@ -60,7 +59,7 @@ func TestClient_GetSessions(t *testing.T) {
 	t.Run("Network Error", func(t *testing.T) {
 		c := jellyfin.NewClient(jellyfin.Config{URL: "http://invalid.url.local"})
 
-		_, err := c.GetSessions(context.Background())
+		_, err := c.GetSessions(t.Context())
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -76,7 +75,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
 
-		_, err := c.GetSessions(context.Background())
+		_, err := c.GetSessions(t.Context())
 
 		if err == nil {
 			t.Error("want status error for 401")
@@ -98,7 +97,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
 
-		_, err := c.GetSessions(context.Background())
+		_, err := c.GetSessions(t.Context())
 
 		if err == nil {
 			t.Error("want decode error")
@@ -119,7 +118,7 @@ func TestClient_GetSessions(t *testing.T) {
 			},
 		})
 
-		_, err := c.GetSessions(context.Background())
+		_, err := c.GetSessions(t.Context())
 
 		if err != nil {
 			t.Fatalf("got: %v, want GetSessions to handle body close error gracefully", err)

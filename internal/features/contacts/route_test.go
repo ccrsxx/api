@@ -1,7 +1,6 @@
 package contacts_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -15,7 +14,7 @@ func TestLoadRoutes(t *testing.T) {
 
 	svc := contacts.NewService(contacts.ServiceConfig{})
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	authMw := auth.NewMiddleware(auth.NewService(auth.ServiceConfig{}))
 

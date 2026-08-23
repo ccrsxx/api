@@ -158,12 +158,12 @@ func TestService_AddRemoveClient(t *testing.T) {
 
 		clientChan := make(chan string, 5)
 
-		ctx, cancel := context.WithCancel(context.Background())
+		cancelCtx, cancel := context.WithCancel(ctx)
 
 		cancel()
 
-		svc.AddClient(ctx, clientChan, "1.1.1.1", "TestAgent")
-		svc.RemoveClient(ctx, clientChan)
+		svc.AddClient(cancelCtx, clientChan, "1.1.1.1", "TestAgent")
+		svc.RemoveClient(cancelCtx, clientChan)
 
 		if len(svc.clients) != 0 {
 			t.Error("want clients map to be empty after removing closed channel")
@@ -191,7 +191,7 @@ func TestService_getSSEData_Errors(t *testing.T) {
 	})
 
 	// Should not panic, should return default empty structs
-	data := svc.getSSEData(context.Background())
+	data := svc.getSSEData(t.Context())
 
 	if !strings.Contains(data.spotify, "spotify") {
 		t.Error("want spotify event structure even on error")

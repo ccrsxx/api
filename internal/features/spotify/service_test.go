@@ -36,7 +36,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			Client: mock,
 		})
 
-		got, err := svc.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -60,7 +60,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			Client: mock,
 		})
 
-		got, err := svc.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(t.Context())
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -84,7 +84,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 			Client: mock,
 		})
 
-		got, err := svc.GetCurrentlyPlaying(context.Background())
+		got, err := svc.GetCurrentlyPlaying(t.Context())
 
 		// The service WRAPS the error, so err should NOT be nil
 		if err == nil {

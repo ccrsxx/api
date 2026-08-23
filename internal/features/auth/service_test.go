@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -28,7 +27,7 @@ func TestNewService_BindsRealQuerierToTx(t *testing.T) {
 }
 
 func TestService_getAuthorizationFromBearerToken(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tests := []struct {
 		name        string
@@ -86,7 +85,7 @@ func TestService_getAuthorizationFromBearerToken(t *testing.T) {
 }
 
 func TestService_getAuthorizationFromQuery(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tests := []struct {
 		name       string
@@ -124,7 +123,7 @@ func TestService_getAuthorizationFromQuery(t *testing.T) {
 }
 
 func TestService_getAuthorizationFromBearerOrQuery(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tests := []struct {
 		name        string
@@ -179,7 +178,7 @@ func TestService_getAuthorizationFromBearerOrQuery(t *testing.T) {
 
 func TestService_IsAdminFromOauth(t *testing.T) {
 	t.Run("Success (Admin)", func(t *testing.T) {
-		ctx := auth.SetUserContext(context.Background(), sqlc.GetUserWithAccountByIDRow{
+		ctx := auth.SetUserContext(t.Context(), sqlc.GetUserWithAccountByIDRow{
 			Name: "Admin User",
 			Role: "admin",
 		})
@@ -198,7 +197,7 @@ func TestService_IsAdminFromOauth(t *testing.T) {
 	})
 
 	t.Run("Non-Admin (403 Forbidden)", func(t *testing.T) {
-		ctx := auth.SetUserContext(context.Background(), sqlc.GetUserWithAccountByIDRow{
+		ctx := auth.SetUserContext(t.Context(), sqlc.GetUserWithAccountByIDRow{
 			Name: "Regular User",
 			Role: "user",
 		})
@@ -225,7 +224,7 @@ func TestService_IsAdminFromOauth(t *testing.T) {
 	t.Run("No User in Context", func(t *testing.T) {
 		svc := auth.NewService(auth.ServiceConfig{})
 
-		_, err := svc.IsAdminFromOauth(context.Background())
+		_, err := svc.IsAdminFromOauth(t.Context())
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

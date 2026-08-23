@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetOrFetch(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("Cache Miss -> Fetch -> Set", func(t *testing.T) {
 		ctx := t.Context()
@@ -129,7 +129,7 @@ func (f *faultyCache) Set(ctx context.Context, key string, value any, ttl time.D
 func (f *faultyCache) Delete(ctx context.Context, key string) error { return nil }
 
 func TestGetOrFetchCoverage(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("Async Set Error (Log Warning)", func(t *testing.T) {
 		c := &faultyCache{}

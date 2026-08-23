@@ -91,7 +91,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			},
 		})
 
-		token, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		token, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -134,7 +134,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Database: db,
 		})
 
-		token, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		token, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -154,7 +154,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			},
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -181,7 +181,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Database: db,
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -211,7 +211,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Database: db,
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -252,7 +252,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Database: db,
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -284,7 +284,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			},
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -324,7 +324,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			},
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -367,7 +367,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			},
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -406,7 +406,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			},
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -443,7 +443,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 			Database: db,
 		})
 
-		_, err := svc.CreateOauthTokenForGithubUser(context.Background(), "test-access-token")
+		_, err := svc.CreateOauthTokenForGithubUser(t.Context(), "test-access-token")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

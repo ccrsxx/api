@@ -1,7 +1,6 @@
 package pixiv_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -49,7 +48,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		artworks, total, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		artworks, total, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -80,7 +79,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		artworks, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		artworks, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -107,7 +106,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		artworks, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		artworks, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success with skipped artwork", err)
@@ -124,7 +123,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: "http://bad\x7f",
 		})
 
-		_, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err == nil {
 			t.Error("want error from new request creation")
@@ -137,7 +136,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: "http://invalid.url.local",
 		})
 
-		_, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -156,7 +155,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		_, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err == nil {
 			t.Error("want status error for 401")
@@ -179,7 +178,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		_, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err == nil {
 			t.Error("want decode error")
@@ -202,7 +201,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		_, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err == nil {
 			t.Error("want error from API error response")
@@ -230,7 +229,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			BaseURL: mockServer.URL,
 		})
 
-		artworks, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		artworks, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success with skipped artwork", err)
@@ -256,7 +255,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 			},
 		})
 
-		_, _, err := c.GetBookmarks(context.Background(), pixiv.BookmarkVisibilityPublic, 1)
+		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
 
 		if err != nil {
 			t.Fatalf("got: %v, want GetBookmarks to handle body close error gracefully", err)
@@ -279,7 +278,7 @@ func TestClient_GetImageStream(t *testing.T) {
 			},
 		})
 
-		body, err := c.GetImageStream(context.Background(), "i.pximg.net/img-master/test.jpg")
+		body, err := c.GetImageStream(t.Context(), "i.pximg.net/img-master/test.jpg")
 
 		if err != nil {
 			t.Fatalf("got err: %v, want success", err)
@@ -307,7 +306,7 @@ func TestClient_GetImageStream(t *testing.T) {
 			Token: "456_abc",
 		})
 
-		_, err := c.GetImageStream(context.Background(), "https://i.pximg.net/img-master/test.jpg")
+		_, err := c.GetImageStream(t.Context(), "https://i.pximg.net/img-master/test.jpg")
 
 		if !errors.Is(err, pixiv.ErrPixivInvalidURL) {
 			t.Errorf("got %v, want ErrPixivInvalidURL", err)
@@ -336,7 +335,7 @@ func TestClient_GetImageStream(t *testing.T) {
 			},
 		})
 
-		_, err := c.GetImageStream(context.Background(), "i.pximg.net/img-master/test.jpg")
+		_, err := c.GetImageStream(t.Context(), "i.pximg.net/img-master/test.jpg")
 
 		if err == nil {
 			t.Error("want error from httpClient.Do")
@@ -357,7 +356,7 @@ func TestClient_GetImageStream(t *testing.T) {
 			},
 		})
 
-		_, err := c.GetImageStream(context.Background(), "i.pximg.net/img-master/test.jpg")
+		_, err := c.GetImageStream(t.Context(), "i.pximg.net/img-master/test.jpg")
 
 		if err == nil {
 			t.Error("want status error for 403")
@@ -378,7 +377,7 @@ func TestClient_GetImageStream(t *testing.T) {
 			},
 		})
 
-		_, err := c.GetImageStream(context.Background(), "i.pximg.net/img-master/test.jpg")
+		_, err := c.GetImageStream(t.Context(), "i.pximg.net/img-master/test.jpg")
 
 		if err == nil {
 			t.Error("want status error even when body close fails")

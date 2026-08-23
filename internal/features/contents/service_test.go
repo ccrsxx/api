@@ -21,7 +21,7 @@ func TestService_GetContentsData(t *testing.T) {
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
-		data, err := svc.GetContentsData(context.Background(), "blog")
+		data, err := svc.GetContentsData(t.Context(), "blog")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -44,7 +44,7 @@ func TestService_GetContentsData(t *testing.T) {
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
-		data, err := svc.GetContentsData(context.Background(), "blog")
+		data, err := svc.GetContentsData(t.Context(), "blog")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -63,7 +63,7 @@ func TestService_GetContentsData(t *testing.T) {
 		db := &test.MockQuerier{}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
-		_, err := svc.GetContentsData(context.Background(), "invalid")
+		_, err := svc.GetContentsData(t.Context(), "invalid")
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -78,7 +78,7 @@ func TestService_GetContentsData(t *testing.T) {
 		}
 
 		svc := contents.NewService(contents.ServiceConfig{Database: db})
-		_, err := svc.GetContentsData(context.Background(), "blog")
+		_, err := svc.GetContentsData(t.Context(), "blog")
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -101,7 +101,7 @@ func TestService_UpsertContent(t *testing.T) {
 			Type: "blog",
 		}
 
-		content, err := svc.UpsertContent(context.Background(), input)
+		content, err := svc.UpsertContent(t.Context(), input)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -130,7 +130,7 @@ func TestService_UpsertContent(t *testing.T) {
 			Type: "blog",
 		}
 
-		_, err := svc.UpsertContent(context.Background(), input)
+		_, err := svc.UpsertContent(t.Context(), input)
 
 		if err == nil {
 			t.Fatal("got nil, want error")

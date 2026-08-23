@@ -1,7 +1,6 @@
 package spotify
 
 import (
-	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -22,7 +21,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClient_GetCurrentlyPlaying(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	validAuthHandler := func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte(`{"access_token":"valid","expires_in":3600}`)); err != nil {
@@ -228,7 +227,7 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 }
 
 func TestClient_GetAccessToken(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("Request Creation Error", func(t *testing.T) {
 		c := NewClient(Config{AuthURL: "http://bad\x7f"})

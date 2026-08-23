@@ -58,7 +58,7 @@ func TestService_GetViewCount(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		viewCount, err := svc.GetViewCount(context.Background(), "test-slug")
+		viewCount, err := svc.GetViewCount(t.Context(), "test-slug")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -78,7 +78,7 @@ func TestService_GetViewCount(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		_, err := svc.GetViewCount(context.Background(), "test-slug")
+		_, err := svc.GetViewCount(t.Context(), "test-slug")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -95,7 +95,7 @@ func TestService_GetViewCount(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		_, err := svc.GetViewCount(context.Background(), "test-slug")
+		_, err := svc.GetViewCount(t.Context(), "test-slug")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -115,7 +115,7 @@ func TestService_GetViewCount(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		_, err := svc.GetViewCount(context.Background(), "test-slug")
+		_, err := svc.GetViewCount(t.Context(), "test-slug")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -144,7 +144,7 @@ func TestService_IncrementView(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		viewCount, err := svc.IncrementView(context.Background(), "test-slug", "127.0.0.1")
+		viewCount, err := svc.IncrementView(t.Context(), "test-slug", "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -165,7 +165,7 @@ func TestService_IncrementView(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementView(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementView(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -187,7 +187,7 @@ func TestService_IncrementView(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementView(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementView(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -210,7 +210,7 @@ func TestService_IncrementView(t *testing.T) {
 
 		svc := views.NewService(views.ServiceConfig{Database: db})
 
-		_, err := svc.IncrementView(context.Background(), "test-slug", "127.0.0.1")
+		_, err := svc.IncrementView(t.Context(), "test-slug", "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

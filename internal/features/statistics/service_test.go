@@ -25,7 +25,7 @@ func TestService_GetContentsStatistics(t *testing.T) {
 		}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
-		stats, err := svc.GetContentsStatistics(context.Background(), "blog")
+		stats, err := svc.GetContentsStatistics(t.Context(), "blog")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -52,7 +52,7 @@ func TestService_GetContentsStatistics(t *testing.T) {
 		}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
-		stats, err := svc.GetContentsStatistics(context.Background(), "")
+		stats, err := svc.GetContentsStatistics(t.Context(), "")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -67,7 +67,7 @@ func TestService_GetContentsStatistics(t *testing.T) {
 		db := &test.MockQuerier{}
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
-		_, err := svc.GetContentsStatistics(context.Background(), "invalid")
+		_, err := svc.GetContentsStatistics(t.Context(), "invalid")
 
 		if err == nil {
 			t.Fatal("got nil, want error")
@@ -83,7 +83,7 @@ func TestService_GetContentsStatistics(t *testing.T) {
 
 		svc := statistics.NewService(statistics.ServiceConfig{Database: db})
 
-		_, err := svc.GetContentsStatistics(context.Background(), "blog")
+		_, err := svc.GetContentsStatistics(t.Context(), "blog")
 
 		if err == nil {
 			t.Error("got nil, want error")

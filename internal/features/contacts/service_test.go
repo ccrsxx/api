@@ -73,7 +73,7 @@ func TestService_CreateContact(t *testing.T) {
 			Token:   "test_token",
 		}
 
-		err := svc.CreateContact(context.Background(), input, "127.0.0.1")
+		err := svc.CreateContact(t.Context(), input, "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -89,7 +89,7 @@ func TestService_CreateContact(t *testing.T) {
 
 		svc := contacts.NewService(contacts.ServiceConfig{Database: db})
 
-		err := svc.CreateContact(context.Background(), contacts.CreateContactInput{}, "127.0.0.1")
+		err := svc.CreateContact(t.Context(), contacts.CreateContactInput{}, "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -112,7 +112,7 @@ func TestService_CreateContact(t *testing.T) {
 			PushoverClient: &mockPushoverClient{err: errors.New("pushover error")},
 		})
 
-		err := svc.CreateContact(context.Background(), contacts.CreateContactInput{}, "127.0.0.1")
+		err := svc.CreateContact(t.Context(), contacts.CreateContactInput{}, "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -139,7 +139,7 @@ func TestService_CreateContact(t *testing.T) {
 			EmailClient:    &mockEmailClient{},
 		})
 
-		err := svc.CreateContact(context.Background(), contacts.CreateContactInput{}, "127.0.0.1")
+		err := svc.CreateContact(t.Context(), contacts.CreateContactInput{}, "127.0.0.1")
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -166,7 +166,7 @@ func TestService_CreateContact(t *testing.T) {
 			EmailClient:    &mockEmailClient{err: errors.New("email fail")},
 		})
 
-		err := svc.CreateContact(context.Background(), contacts.CreateContactInput{}, "127.0.0.1")
+		err := svc.CreateContact(t.Context(), contacts.CreateContactInput{}, "127.0.0.1")
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
