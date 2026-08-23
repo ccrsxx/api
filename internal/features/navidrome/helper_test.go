@@ -12,13 +12,11 @@ func Test_parseNavidromeCurrentlyPlaying(t *testing.T) {
 
 	t.Run("Playing", func(t *testing.T) {
 		entry := navidrome.NowPlayingEntry{
-			Child: navidrome.Child{
-				Title:    "Song",
-				Album:    "Album",
-				Artist:   "Artist",
-				CoverArt: "ca-123",
-				Duration: 300,
-			},
+			Title:      "Song",
+			Album:      "Album",
+			Artist:     "Artist",
+			CoverArt:   "ca-123",
+			Duration:   300,
 			UserName:   "user1",
 			State:      "playing",
 			PositionMs: 5000,

@@ -5,8 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type SuccessResponse[T any] struct {

@@ -83,7 +83,7 @@ func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (
 	return model.Content{
 		Slug:      content.Slug,
 		Type:      content.Type,
-		CreatedAt: &content.CreatedAt.Time,
-		UpdatedAt: &content.UpdatedAt.Time,
+		CreatedAt: content.CreatedAt.Time,
+		UpdatedAt: content.UpdatedAt.Time,
 	}, nil
 }

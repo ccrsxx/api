@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"uuid"
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/model"
-	"github.com/google/uuid"
 )
 
 const (

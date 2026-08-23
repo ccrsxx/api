@@ -5,8 +5,8 @@ import "time"
 type Content struct {
 	Slug      string     `json:"slug"`
 	Type      string     `json:"type"`
-	Views     int64      `json:"views,omitempty"`
-	Likes     int64      `json:"likes,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	Views     int64     `json:"views"`
+	Likes     int64     `json:"likes"`
+	CreatedAt time.Time `json:"createdAt,omitzero"`
+	UpdatedAt time.Time `json:"updatedAt,omitzero"`
 }

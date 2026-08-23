@@ -332,9 +332,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 			t.Error("want error for non-70 error code")
 		}
 
-		var httpErr *api.HTTPError
-
-		if errors.As(err, &httpErr) {
+		if _, ok := errors.AsType[*api.HTTPError](err); ok {
 			t.Error("want generic error, not *api.HTTPError")
 		}
 	})

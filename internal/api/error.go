@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"uuid"
 
 	"github.com/ccrsxx/api/internal/utils"
-	"github.com/google/uuid"
 )
 
 var isDevelopmentMode bool

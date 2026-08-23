@@ -18,9 +18,7 @@ func TestService_GetCurrentlyPlaying(t *testing.T) {
 		mock := &mockNavidromeClient{
 			nowPlayingResult: []navidrome.NowPlayingEntry{
 				{
-					Child: navidrome.Child{
-						Title: "Song",
-					},
+					Title:    "Song",
 					UserName: validUser,
 					State:    "playing",
 				},
