@@ -287,12 +287,10 @@ func TestController_GetImageProxy(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte("image-data"))
 		}))
-
-		defer mockServer.Close()
 
 		resp, err := mockServer.Client().Get(mockServer.URL)
 

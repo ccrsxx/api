@@ -14,7 +14,7 @@ import (
 
 func TestService_GetOg(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodGet {
 				t.Errorf("got %s, want GET", r.Method)
 			}
@@ -31,8 +31,6 @@ func TestService_GetOg(t *testing.T) {
 				t.Fatalf("failed to write response body: %v", err)
 			}
 		}))
-
-		defer mockServer.Close()
 
 		// Inject the mock server directly
 		svc := og.NewService(og.ServiceConfig{
@@ -64,11 +62,9 @@ func TestService_GetOg(t *testing.T) {
 	})
 
 	t.Run("Status Error (500)", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
-
-		defer mockServer.Close()
 
 		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,

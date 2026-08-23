@@ -22,7 +22,7 @@ func TestNewClient(t *testing.T) {
 
 func TestClient_VerifyTurnstile(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			_, err := w.Write([]byte(`{"success": true}`))
@@ -32,9 +32,10 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
+		c := cloudflare.NewClient(cloudflare.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
@@ -80,13 +81,14 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 	})
 
 	t.Run("Status 500", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 
-		defer mockServer.Close()
-
-		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
+		c := cloudflare.NewClient(cloudflare.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
@@ -96,7 +98,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			_, err := w.Write([]byte(`invalid-json`))
@@ -106,9 +108,10 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
+		c := cloudflare.NewClient(cloudflare.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 
@@ -139,7 +142,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 	})
 
 	t.Run("Captcha Failure", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			_, err := w.Write([]byte(`{"success": false}`))
@@ -149,9 +152,10 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := cloudflare.NewClient(cloudflare.Config{APIURL: mockServer.URL})
+		c := cloudflare.NewClient(cloudflare.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.VerifyTurnstile(t.Context(), "test_token", "127.0.0.1")
 

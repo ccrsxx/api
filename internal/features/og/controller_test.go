@@ -12,7 +12,7 @@ import (
 
 func TestController_GetOg(t *testing.T) {
 	t.Run("Success Default (No Cache)", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query().Get("title") != "test" {
 				t.Errorf("got %s, want query param title=test", r.URL.Query().Encode())
 			}
@@ -23,8 +23,6 @@ func TestController_GetOg(t *testing.T) {
 				t.Fatalf("failed to write response body: %v", err)
 			}
 		}))
-
-		defer mockServer.Close()
 
 		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,
@@ -57,7 +55,7 @@ func TestController_GetOg(t *testing.T) {
 	})
 
 	t.Run("Success Production (With Cache)", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, err := w.Write([]byte("png-data"))
 
@@ -65,8 +63,6 @@ func TestController_GetOg(t *testing.T) {
 				t.Fatalf("failed to write response body: %v", err)
 			}
 		}))
-
-		defer mockServer.Close()
 
 		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,
@@ -91,11 +87,9 @@ func TestController_GetOg(t *testing.T) {
 	})
 
 	t.Run("Service Error (Upstream 500)", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
-
-		defer mockServer.Close()
 
 		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,
@@ -117,12 +111,10 @@ func TestController_GetOg(t *testing.T) {
 	})
 
 	t.Run("Write Error", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte("data"))
 		}))
-
-		defer mockServer.Close()
 
 		svc := og.NewService(og.ServiceConfig{
 			OgURL:      mockServer.URL,

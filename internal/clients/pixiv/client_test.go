@@ -33,7 +33,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(wrapResponseJSON(createArtworkByID(`"123"`)))); err != nil {
@@ -41,11 +41,10 @@ func TestClient_GetBookmarks(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "456_abc",
-			BaseURL: mockServer.URL,
+			Token:      "456_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		artworks, total, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
@@ -64,7 +63,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 	})
 
 	t.Run("Success With Numeric ID", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(wrapResponseJSON(createArtworkByID(`12345`)))); err != nil {
@@ -72,11 +71,10 @@ func TestClient_GetBookmarks(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "456_abc",
-			BaseURL: mockServer.URL,
+			Token:      "456_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		artworks, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
@@ -91,7 +89,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 	})
 
 	t.Run("Invalid FlexibleID", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(wrapResponseJSON(createArtworkByID(`true`)))); err != nil {
@@ -99,11 +97,10 @@ func TestClient_GetBookmarks(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "1_abc",
-			BaseURL: mockServer.URL,
+			Token:      "1_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		artworks, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
@@ -144,15 +141,14 @@ func TestClient_GetBookmarks(t *testing.T) {
 	})
 
 	t.Run("Status Error", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "456_abc",
-			BaseURL: mockServer.URL,
+			Token:      "456_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
@@ -163,7 +159,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(`invalid-json`)); err != nil {
@@ -171,11 +167,10 @@ func TestClient_GetBookmarks(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "456_abc",
-			BaseURL: mockServer.URL,
+			Token:      "456_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
@@ -186,7 +181,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 	})
 
 	t.Run("API Error Response", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(`{"error":true,"message":"some api error"}`)); err != nil {
@@ -194,11 +189,10 @@ func TestClient_GetBookmarks(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "456_abc",
-			BaseURL: mockServer.URL,
+			Token:      "456_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		_, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)
@@ -213,7 +207,7 @@ func TestClient_GetBookmarks(t *testing.T) {
 	})
 
 	t.Run("Invalid Artwork Skipped", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			// One valid artwork and one invalid (malformed JSON in works array)
@@ -222,11 +216,10 @@ func TestClient_GetBookmarks(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
 		c := pixiv.NewClient(pixiv.Config{
-			Token:   "456_abc",
-			BaseURL: mockServer.URL,
+			Token:      "456_abc",
+			BaseURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
 		})
 
 		artworks, _, err := c.GetBookmarks(t.Context(), pixiv.BookmarkVisibilityPublic, 1)

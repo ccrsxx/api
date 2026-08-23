@@ -58,13 +58,14 @@ func TestClient_GetCurrentUser(t *testing.T) {
 	})
 
 	t.Run("Status Error", func(t *testing.T) {
-		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized) // Any non-200 status
 		}))
 
-		defer s.Close()
-
-		c := github.NewClient(github.Config{APIURL: s.URL})
+		c := github.NewClient(github.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetCurrentUser(ctx, token)
 
@@ -78,7 +79,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 	})
 
 	t.Run("Decode Error", func(t *testing.T) {
-		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(`{bad-json`)); err != nil {
@@ -86,9 +87,10 @@ func TestClient_GetCurrentUser(t *testing.T) {
 			}
 		}))
 
-		defer s.Close()
-
-		c := github.NewClient(github.Config{APIURL: s.URL})
+		c := github.NewClient(github.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		if _, err := c.GetCurrentUser(ctx, token); err == nil {
 			t.Error("want error from malformed JSON decode")
@@ -96,7 +98,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if got := r.Header.Get("Accept"); got != "application/vnd.github+json" {
 				t.Fatalf("got Accept %q, want application/vnd.github+json", got)
 			}
@@ -110,9 +112,10 @@ func TestClient_GetCurrentUser(t *testing.T) {
 			}
 		}))
 
-		defer s.Close()
-
-		c := github.NewClient(github.Config{APIURL: s.URL})
+		c := github.NewClient(github.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		if _, err := c.GetCurrentUser(ctx, token); err != nil {
 			t.Fatalf("unwanted error: %v", err)

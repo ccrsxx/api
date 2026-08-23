@@ -457,7 +457,7 @@ func TestService_CreateOauthTokenForGithubUser(t *testing.T) {
 
 func TestService_ValidateOauthState(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
 			err := json.NewEncoder(w).Encode(map[string]any{
@@ -471,18 +471,18 @@ func TestService_ValidateOauthState(t *testing.T) {
 			}
 		}))
 
-		defer ts.Close()
+		ctx := context.WithValue(t.Context(), oauth2.HTTPClient, mockServer.Client())
 
 		svc := auth.NewService(auth.ServiceConfig{
 			GithubOauthConfig: &oauth2.Config{
-				Endpoint: oauth2.Endpoint{TokenURL: ts.URL},
+				Endpoint: oauth2.Endpoint{TokenURL: mockServer.URL},
 			},
 		})
 
-		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil)
+		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil).WithContext(ctx)
 		r.AddCookie(&http.Cookie{Name: "oauth-state", Value: "test-state"})
 
-		token, err := svc.ValidateOauthState(r.Context(), r)
+		token, err := svc.ValidateOauthState(ctx, r)
 
 		if err != nil {
 			t.Fatalf("unwanted error: %v", err)
@@ -528,23 +528,23 @@ func TestService_ValidateOauthState(t *testing.T) {
 	})
 
 	t.Run("Exchange Error", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 		}))
 
-		defer ts.Close()
+		ctx := context.WithValue(t.Context(), oauth2.HTTPClient, mockServer.Client())
 
 		svc := auth.NewService(auth.ServiceConfig{
 			GithubOauthConfig: &oauth2.Config{
-				Endpoint: oauth2.Endpoint{TokenURL: ts.URL},
+				Endpoint: oauth2.Endpoint{TokenURL: mockServer.URL},
 			},
 		})
 
-		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=bad-code", nil)
+		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=bad-code", nil).WithContext(ctx)
 
 		r.AddCookie(&http.Cookie{Name: "oauth-state", Value: "test-state"})
 
-		_, err := svc.ValidateOauthState(r.Context(), r)
+		_, err := svc.ValidateOauthState(ctx, r)
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -556,7 +556,7 @@ func TestService_ValidateOauthState(t *testing.T) {
 	})
 
 	t.Run("Invalid Token", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
 			err := json.NewEncoder(w).Encode(map[string]any{
@@ -570,19 +570,19 @@ func TestService_ValidateOauthState(t *testing.T) {
 			}
 		}))
 
-		defer ts.Close()
+		ctx := context.WithValue(t.Context(), oauth2.HTTPClient, mockServer.Client())
 
 		svc := auth.NewService(auth.ServiceConfig{
 			GithubOauthConfig: &oauth2.Config{
-				Endpoint: oauth2.Endpoint{TokenURL: ts.URL},
+				Endpoint: oauth2.Endpoint{TokenURL: mockServer.URL},
 			},
 		})
 
-		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil)
+		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil).WithContext(ctx)
 
 		r.AddCookie(&http.Cookie{Name: "oauth-state", Value: "test-state"})
 
-		_, err := svc.ValidateOauthState(r.Context(), r)
+		_, err := svc.ValidateOauthState(ctx, r)
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

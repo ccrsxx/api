@@ -24,7 +24,7 @@ func TestNewClient(t *testing.T) {
 
 func TestClient_GetNowPlaying(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			resp := navidrome.JSONWrapper{
@@ -42,9 +42,10 @@ func TestClient_GetNowPlaying(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		entries, err := c.GetNowPlaying(t.Context())
 
@@ -82,13 +83,14 @@ func TestClient_GetNowPlaying(t *testing.T) {
 	})
 
 	t.Run("Status Error", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetNowPlaying(t.Context())
 
@@ -98,7 +100,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			if _, err := w.Write([]byte(`{bad-json`)); err != nil {
@@ -106,9 +108,10 @@ func TestClient_GetNowPlaying(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetNowPlaying(t.Context())
 
@@ -118,7 +121,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 	})
 
 	t.Run("Nil NowPlaying", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			resp := navidrome.JSONWrapper{
@@ -130,9 +133,10 @@ func TestClient_GetNowPlaying(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetNowPlaying(t.Context())
 
@@ -175,7 +179,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 
 func TestClient_GetCoverArtStream(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "image/webp")
 			w.WriteHeader(http.StatusOK)
 
@@ -184,9 +188,10 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		body, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
@@ -232,13 +237,14 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 	})
 
 	t.Run("Status Error", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
@@ -269,7 +275,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 	})
 
 	t.Run("JSON Content Type Cover Art Not Found", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
@@ -284,9 +290,10 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
@@ -306,7 +313,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 	})
 
 	t.Run("JSON Content Type Other Error", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
@@ -321,9 +328,10 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 
@@ -337,7 +345,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 	})
 
 	t.Run("JSON Content Type Malformed JSON", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
@@ -346,9 +354,10 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := navidrome.NewClient(navidrome.Config{URL: mockServer.URL})
+		c := navidrome.NewClient(navidrome.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetCoverArtStream(t.Context(), "cover-1")
 

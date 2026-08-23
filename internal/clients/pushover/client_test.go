@@ -21,7 +21,7 @@ func TestNewClient(t *testing.T) {
 
 func TestClient_SendMessage(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			_, err := w.Write([]byte(`{"status": 1, "request": "test-request-id"}`))
@@ -31,9 +31,10 @@ func TestClient_SendMessage(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := pushover.NewClient(pushover.Config{APIURL: mockServer.URL})
+		c := pushover.NewClient(pushover.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.SendMessage(t.Context(), pushover.MessageRequest{
 			Message: "test message",
@@ -82,13 +83,14 @@ func TestClient_SendMessage(t *testing.T) {
 	})
 
 	t.Run("Status 500", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 
-		defer mockServer.Close()
-
-		c := pushover.NewClient(pushover.Config{APIURL: mockServer.URL})
+		c := pushover.NewClient(pushover.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 
@@ -98,7 +100,7 @@ func TestClient_SendMessage(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			_, err := w.Write([]byte(`invalid-json`))
@@ -108,9 +110,10 @@ func TestClient_SendMessage(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := pushover.NewClient(pushover.Config{APIURL: mockServer.URL})
+		c := pushover.NewClient(pushover.Config{
+			APIURL:     mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		err := c.SendMessage(t.Context(), pushover.MessageRequest{})
 

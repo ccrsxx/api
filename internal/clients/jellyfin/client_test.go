@@ -21,7 +21,7 @@ func TestNewClient(t *testing.T) {
 
 func TestClient_GetSessions(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			id := "1"
@@ -31,9 +31,10 @@ func TestClient_GetSessions(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
+		c := jellyfin.NewClient(jellyfin.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		sessions, err := c.GetSessions(t.Context())
 
@@ -67,13 +68,14 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Status 401", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 
-		defer mockServer.Close()
-
-		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
+		c := jellyfin.NewClient(jellyfin.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetSessions(t.Context())
 
@@ -83,7 +85,7 @@ func TestClient_GetSessions(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			_, err := w.Write([]byte(`invalid-json`))
@@ -93,9 +95,10 @@ func TestClient_GetSessions(t *testing.T) {
 			}
 		}))
 
-		defer mockServer.Close()
-
-		c := jellyfin.NewClient(jellyfin.Config{URL: mockServer.URL})
+		c := jellyfin.NewClient(jellyfin.Config{
+			URL:        mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		_, err := c.GetSessions(t.Context())
 

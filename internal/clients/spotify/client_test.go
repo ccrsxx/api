@@ -38,13 +38,12 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("API Request Creation Error", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(validAuthHandler))
 
 		c := NewClient(Config{
-			AuthURL: authSrv.URL,
-			APIURL:  "http://bad\x7f",
+			AuthURL:    mockServer.URL,
+			APIURL:     "http://bad\x7f",
+			HTTPClient: mockServer.Client(),
 		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
@@ -53,13 +52,21 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("API Network Error", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
-
 		c := NewClient(Config{
-			AuthURL: authSrv.URL,
-			APIURL:  "http://invalid.url.local",
+			AuthURL: "http://auth",
+			APIURL:  "http://api",
+			HTTPClient: &http.Client{
+				Transport: test.CustomTransport(func(req *http.Request) (*http.Response, error) {
+					if strings.Contains(req.URL.String(), "auth") {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"access_token":"t","expires_in":3600}`)),
+						}, nil
+					}
+
+					return nil, errors.New("network error")
+				}),
+			},
 		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
@@ -94,19 +101,18 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Success NoContent", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
-
-		apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/token", validAuthHandler)
+		mux.HandleFunc("/me/player/currently-playing", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNoContent)
-		}))
+		})
 
-		defer apiSrv.Close()
+		mockServer := httptest.NewTestServer(t, mux)
 
 		c := NewClient(Config{
-			AuthURL: authSrv.URL,
-			APIURL:  apiSrv.URL,
+			AuthURL:    mockServer.URL + "/token",
+			APIURL:     mockServer.URL + "/me/player/currently-playing",
+			HTTPClient: mockServer.Client(),
 		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); !errors.Is(err, ErrNoContent) {
@@ -115,19 +121,18 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("API Status Error", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
-
-		apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/token", validAuthHandler)
+		mux.HandleFunc("/me/player/currently-playing", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
-		}))
+		})
 
-		defer apiSrv.Close()
+		mockServer := httptest.NewTestServer(t, mux)
 
 		c := NewClient(Config{
-			AuthURL: authSrv.URL,
-			APIURL:  apiSrv.URL,
+			AuthURL:    mockServer.URL + "/token",
+			APIURL:     mockServer.URL + "/me/player/currently-playing",
+			HTTPClient: mockServer.Client(),
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -142,21 +147,20 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("API Malformed JSON", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
-
-		apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/token", validAuthHandler)
+		mux.HandleFunc("/me/player/currently-playing", func(w http.ResponseWriter, r *http.Request) {
 			if _, err := w.Write([]byte(`{bad-json`)); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
-		}))
+		})
 
-		defer apiSrv.Close()
+		mockServer := httptest.NewTestServer(t, mux)
 
 		c := NewClient(Config{
-			AuthURL: authSrv.URL,
-			APIURL:  apiSrv.URL,
+			AuthURL:    mockServer.URL + "/token",
+			APIURL:     mockServer.URL + "/me/player/currently-playing",
+			HTTPClient: mockServer.Client(),
 		})
 
 		if _, err := c.GetCurrentlyPlaying(ctx); err == nil {
@@ -165,22 +169,21 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Invalid Item Type", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
-
-		apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/token", validAuthHandler)
+		mux.HandleFunc("/me/player/currently-playing", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			if _, err := w.Write([]byte(`{"item": {"name": "JRE", "type": "podcast"}}`)); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
-		}))
+		})
 
-		defer apiSrv.Close()
+		mockServer := httptest.NewTestServer(t, mux)
 
 		c := NewClient(Config{
-			AuthURL: authSrv.URL,
-			APIURL:  apiSrv.URL,
+			AuthURL:    mockServer.URL + "/token",
+			APIURL:     mockServer.URL + "/me/player/currently-playing",
+			HTTPClient: mockServer.Client(),
 		})
 
 		_, err := c.GetCurrentlyPlaying(ctx)
@@ -195,22 +198,21 @@ func TestClient_GetCurrentlyPlaying(t *testing.T) {
 	})
 
 	t.Run("Success Track", func(t *testing.T) {
-		authSrv := httptest.NewServer(http.HandlerFunc(validAuthHandler))
-
-		defer authSrv.Close()
-
-		apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/token", validAuthHandler)
+		mux.HandleFunc("/me/player/currently-playing", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			if _, err := w.Write([]byte(`{"is_playing":true, "item": {"name": "Song", "type": "track"}}`)); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
-		}))
+		})
 
-		defer apiSrv.Close()
+		mockServer := httptest.NewTestServer(t, mux)
 
 		c := NewClient(Config{
-			AuthURL:     authSrv.URL,
-			APIURL:      apiSrv.URL,
+			AuthURL:     mockServer.URL + "/token",
+			APIURL:      mockServer.URL + "/me/player/currently-playing",
+			HTTPClient:  mockServer.Client(),
 			MemoryCache: cache.NewMemoryCache(ctx, cache.DefaultCleanupInterval),
 		})
 
@@ -246,13 +248,14 @@ func TestClient_GetAccessToken(t *testing.T) {
 	})
 
 	t.Run("Status Error", func(t *testing.T) {
-		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 
-		defer s.Close()
-
-		c := NewClient(Config{AuthURL: s.URL})
+		c := NewClient(Config{
+			AuthURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		if _, err := c.getAccessToken(ctx); err == nil {
 			t.Fatal("want error from non-200 status")
@@ -260,15 +263,16 @@ func TestClient_GetAccessToken(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON", func(t *testing.T) {
-		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if _, err := w.Write([]byte(`{bad-json`)); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
 
-		defer s.Close()
-
-		c := NewClient(Config{AuthURL: s.URL})
+		c := NewClient(Config{
+			AuthURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		if _, err := c.getAccessToken(ctx); err == nil {
 			t.Error("want error from malformed JSON")
@@ -295,15 +299,16 @@ func TestClient_GetAccessToken(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if _, err := w.Write([]byte(`{"access_token":"valid_token","expires_in":3600}`)); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
 
-		defer s.Close()
-
-		c := NewClient(Config{AuthURL: s.URL})
+		c := NewClient(Config{
+			AuthURL:    mockServer.URL,
+			HTTPClient: mockServer.Client(),
+		})
 
 		token, err := c.getAccessToken(ctx)
 

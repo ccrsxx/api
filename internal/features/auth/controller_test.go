@@ -223,7 +223,7 @@ func TestController_LogoutGithub(t *testing.T) {
 
 func TestController_LoginGithubCallback(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
 			err := json.NewEncoder(w).Encode(map[string]any{
@@ -236,8 +236,6 @@ func TestController_LoginGithubCallback(t *testing.T) {
 				t.Fatalf("failed to encode response: %v", err)
 			}
 		}))
-
-		defer ts.Close()
 
 		mockTx := newMockTxSuccess()
 
@@ -253,6 +251,8 @@ func TestController_LoginGithubCallback(t *testing.T) {
 			},
 		}
 
+		ctx := context.WithValue(t.Context(), oauth2.HTTPClient, mockServer.Client())
+
 		svc := auth.NewService(auth.ServiceConfig{
 			JwtSecret:         "controller-jwt-secret",
 			FrontendBaseURL:   "example.com",
@@ -263,7 +263,7 @@ func TestController_LoginGithubCallback(t *testing.T) {
 				},
 			},
 			GithubOauthConfig: &oauth2.Config{
-				Endpoint: oauth2.Endpoint{TokenURL: ts.URL},
+				Endpoint: oauth2.Endpoint{TokenURL: mockServer.URL},
 			},
 			Database: db,
 			Pool: &test.MockBeginner{
@@ -275,8 +275,7 @@ func TestController_LoginGithubCallback(t *testing.T) {
 
 		ctrl := auth.NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil)
-
+		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil).WithContext(ctx)
 		r.AddCookie(&http.Cookie{Name: "oauth-state", Value: "test-state"})
 
 		w := httptest.NewRecorder()
@@ -327,7 +326,7 @@ func TestController_LoginGithubCallback(t *testing.T) {
 	})
 
 	t.Run("CreateOauthTokenForGithubUser Error (github client error)", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
 			err := json.NewEncoder(w).Encode(map[string]any{
@@ -342,7 +341,7 @@ func TestController_LoginGithubCallback(t *testing.T) {
 
 		}))
 
-		defer ts.Close()
+		ctx := context.WithValue(t.Context(), oauth2.HTTPClient, mockServer.Client())
 
 		svc := auth.NewService(auth.ServiceConfig{
 			GithubClient: &mockGithubClient{
@@ -351,14 +350,13 @@ func TestController_LoginGithubCallback(t *testing.T) {
 				},
 			},
 			GithubOauthConfig: &oauth2.Config{
-				Endpoint: oauth2.Endpoint{TokenURL: ts.URL},
+				Endpoint: oauth2.Endpoint{TokenURL: mockServer.URL},
 			},
 		})
 
 		ctrl := auth.NewController(svc)
 
-		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil)
-
+		r := httptest.NewRequest(http.MethodGet, "/?state=test-state&code=test-code", nil).WithContext(ctx)
 		r.AddCookie(&http.Cookie{Name: "oauth-state", Value: "test-state"})
 
 		w := httptest.NewRecorder()
