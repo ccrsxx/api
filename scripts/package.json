@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "volta": {
-    "node": "24.19.0"
+    "node": "24.20.0"
   },
   "devDependencies": {
     "@types/node": "25.9.5",
