@@ -9,7 +9,7 @@ Currently available features/endpoints:
 - Auth with GitHub OAuth and JWT session management.
 - Content management for blog and project entries.
 - Content statistics, views, and likes tracking.
-- Guestbook with email notifications on new posts.
+- Guestbook with Pushover & email notifications on new posts.
 - Contact form with Cloudflare Turnstile verification and Pushover & email notifications.
 - Pixiv user bookmarks retrieval.
 - Spotify, Jellyfin, and Navidrome currently playing endpoints.
