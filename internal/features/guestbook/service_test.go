@@ -11,6 +11,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/clients/gmail"
+	"github.com/ccrsxx/api/internal/clients/pushover"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/ccrsxx/api/internal/features/guestbook"
@@ -24,6 +25,14 @@ type mockEmailClient struct {
 }
 
 func (m *mockEmailClient) Send(msg gmail.Message) error {
+	return m.err
+}
+
+type mockPushoverClient struct {
+	err error
+}
+
+func (m *mockPushoverClient) SendMessage(ctx context.Context, messageRequest pushover.MessageRequest) error {
 	return m.err
 }
 
@@ -61,8 +70,9 @@ func TestService_CreateGuestbook(t *testing.T) {
 		}
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{
-			Database:    db,
-			EmailClient: &mockEmailClient{},
+			Database:       db,
+			EmailClient:    &mockEmailClient{},
+			PushoverClient: &mockPushoverClient{},
 		})
 
 		ctx := auth.SetUserContext(t.Context(), mockUser)
@@ -118,6 +128,31 @@ func TestService_CreateGuestbook(t *testing.T) {
 		}
 	})
 
+	t.Run("Pushover Error", func(t *testing.T) {
+		db := &test.MockQuerier{
+			CreateGuestbookFn: func(ctx context.Context, arg sqlc.CreateGuestbookParams) (sqlc.CreateGuestbookRow, error) {
+				return mockCreateGuestbookRow, nil
+			},
+		}
+
+		svc := guestbook.NewService(guestbook.ServiceConfig{
+			Database:       db,
+			EmailClient:    &mockEmailClient{},
+			PushoverClient: &mockPushoverClient{err: errors.New("pushover fail")},
+		})
+
+		ctx := auth.SetUserContext(t.Context(), mockUser)
+
+		_, err := svc.CreateGuestbook(ctx, guestbook.CreateGuestbookInput{Text: "Hello"})
+
+		if err != nil {
+			t.Fatalf("unwanted error: %v", err)
+		}
+
+		// Wait for goroutine to hit the slog.Error path.
+		time.Sleep(10 * time.Millisecond)
+	})
+
 	t.Run("Email Error", func(t *testing.T) {
 		db := &test.MockQuerier{
 			CreateGuestbookFn: func(ctx context.Context, arg sqlc.CreateGuestbookParams) (sqlc.CreateGuestbookRow, error) {
@@ -126,8 +161,9 @@ func TestService_CreateGuestbook(t *testing.T) {
 		}
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{
-			Database:    db,
-			EmailClient: &mockEmailClient{err: errors.New("email fail")},
+			Database:       db,
+			EmailClient:    &mockEmailClient{err: errors.New("email fail")},
+			PushoverClient: &mockPushoverClient{},
 		})
 
 		ctx := auth.SetUserContext(t.Context(), mockUser)

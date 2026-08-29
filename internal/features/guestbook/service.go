@@ -10,6 +10,7 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/clients/gmail"
+	"github.com/ccrsxx/api/internal/clients/pushover"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/ccrsxx/api/internal/model"
@@ -25,30 +26,37 @@ type querier interface {
 	DeleteGuestbook(ctx context.Context, id pgtype.UUID) error
 }
 
+type pushoverClient interface {
+	SendMessage(ctx context.Context, messageRequest pushover.MessageRequest) error
+}
+
 type emailClient interface {
 	Send(msg gmail.Message) error
 }
 
 type Service struct {
-	db           querier
-	emailClient  emailClient
-	emailTarget  string
-	emailAddress string
+	db             querier
+	emailClient    emailClient
+	emailTarget    string
+	emailAddress   string
+	pushoverClient pushoverClient
 }
 
 type ServiceConfig struct {
-	Database     querier
-	EmailClient  emailClient
-	EmailTarget  string
-	EmailAddress string
+	Database       querier
+	EmailClient    emailClient
+	EmailTarget    string
+	EmailAddress   string
+	PushoverClient pushoverClient
 }
 
 func NewService(cfg ServiceConfig) *Service {
 	return &Service{
-		db:           cfg.Database,
-		emailClient:  cfg.EmailClient,
-		emailTarget:  cfg.EmailTarget,
-		emailAddress: cfg.EmailAddress,
+		db:             cfg.Database,
+		emailClient:    cfg.EmailClient,
+		emailTarget:    cfg.EmailTarget,
+		emailAddress:   cfg.EmailAddress,
+		pushoverClient: cfg.PushoverClient,
 	}
 }
 
@@ -72,7 +80,7 @@ func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInpu
 		return model.Guestbook{}, fmt.Errorf("create guestbook error: %w", err)
 	}
 
-	go s.sendNewGuestbookEmail(user, guestbook)
+	go s.sendNewGuestbookNotifications(user, guestbook)
 
 	return model.Guestbook{
 		ID:        guestbook.ID.String(),
@@ -84,16 +92,27 @@ func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInpu
 	}, nil
 }
 
-func (s *Service) sendNewGuestbookEmail(user sqlc.GetUserWithAccountByIDRow, guestbook sqlc.CreateGuestbookRow) {
+func (s *Service) sendNewGuestbookNotifications(user sqlc.GetUserWithAccountByIDRow, guestbook sqlc.CreateGuestbookRow) {
 	subject := fmt.Sprintf("New guestbook from %s (%s)", user.Name, user.Email.String)
 
-	err := s.emailClient.Send(gmail.Message{
+	err := s.pushoverClient.SendMessage(context.Background(), pushover.MessageRequest{
+		Title:   subject,
+		Message: guestbook.Text,
+	})
+
+	// Log the error but don't return it, since this is a background task
+	if err != nil {
+		slog.Error("send new guestbook pushover error", "error", err)
+	}
+
+	err = s.emailClient.Send(gmail.Message{
 		From:    s.emailAddress,
 		To:      s.emailTarget,
 		Subject: subject,
 		Text:    guestbook.Text,
 	})
 
+	// Log the error but don't return it, since this is a background task
 	if err != nil {
 		slog.Error("send new guestbook email error", "error", err)
 	}

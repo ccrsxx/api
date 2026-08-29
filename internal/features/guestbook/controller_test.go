@@ -102,8 +102,9 @@ func TestController_CreateGuestbook(t *testing.T) {
 		}
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{
-			Database:    db,
-			EmailClient: &mockEmailClient{},
+			Database:       db,
+			EmailClient:    &mockEmailClient{},
+			PushoverClient: &mockPushoverClient{},
 		})
 
 		ctrl := guestbook.NewController(svc)
@@ -175,8 +176,9 @@ func TestController_CreateGuestbook(t *testing.T) {
 		}
 
 		svc := guestbook.NewService(guestbook.ServiceConfig{
-			Database:    db,
-			EmailClient: &mockEmailClient{},
+			Database:       db,
+			EmailClient:    &mockEmailClient{},
+			PushoverClient: &mockPushoverClient{},
 		})
 
 		ctrl := guestbook.NewController(svc)
