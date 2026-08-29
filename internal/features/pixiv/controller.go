@@ -82,6 +82,9 @@ func (c *Controller) GetImageProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	// Omit Content-Type to allow net/http to automatically sniff the correct
+	// MIME type across varying image formats (WebP, JPEG, PNG, GIF).
+
 	w.Header().Set("Cache-Control", api.CacheControlImmutable)
 
 	if _, err := io.Copy(w, imageStream); err != nil {
