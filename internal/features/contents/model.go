@@ -7,6 +7,5 @@ type Content struct {
 	Type      string    `json:"type"`
 	Views     int64     `json:"views"`
 	Likes     int64     `json:"likes"`
-	CreatedAt time.Time `json:"createdAt,omitzero"`
-	UpdatedAt time.Time `json:"updatedAt,omitzero"`
+	CreatedAt time.Time `json:"createdAt"`
 }

@@ -83,6 +83,5 @@ func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (
 		Slug:      content.Slug,
 		Type:      content.Type,
 		CreatedAt: content.CreatedAt.Time,
-		UpdatedAt: content.UpdatedAt.Time,
 	}, nil
 }
