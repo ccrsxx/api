@@ -8,7 +8,6 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/clients/pixiv"
-	"github.com/ccrsxx/api/internal/utils"
 )
 
 type Controller struct {
@@ -83,7 +82,7 @@ func (c *Controller) GetImageProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	w.Header().Set("Cache-Control", utils.CacheControlImmutable)
+	w.Header().Set("Cache-Control", api.CacheControlImmutable)
 
 	if _, err := io.Copy(w, imageStream); err != nil {
 		slog.Warn("pixiv image copy error", "error", err)

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/utils"
 )
 
 type Controller struct {
@@ -44,7 +43,7 @@ func (c *Controller) GetOg(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/png")
 
 	if c.isProduction {
-		w.Header().Set("Cache-Control", utils.CacheControlImmutable)
+		w.Header().Set("Cache-Control", api.CacheControlImmutable)
 	}
 
 	if _, err := io.Copy(w, imageStream); err != nil {

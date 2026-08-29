@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/utils"
 )
 
 type Controller struct {
@@ -50,7 +49,7 @@ func (c *Controller) GetCoverArt(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/webp")
 
-	w.Header().Set("Cache-Control", utils.CacheControlImmutable)
+	w.Header().Set("Cache-Control", api.CacheControlImmutable)
 
 	if _, err := io.Copy(w, coverArtStream); err != nil {
 		slog.Warn("navidrome cover art response write error", "error", err)

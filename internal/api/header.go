@@ -1,4 +1,4 @@
-package utils
+package api
 
 // CacheControlImmutable is for static/immutable assets (images, fonts, etc.)
 //   - public:       Allows CDNs and shared proxies to cache.
