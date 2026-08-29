@@ -14,7 +14,6 @@ import (
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
 	"github.com/ccrsxx/api/internal/features/guestbook"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -39,7 +38,7 @@ func TestController_GetGuestbook(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[[]model.Guestbook]
+		var res api.SuccessResponse[[]guestbook.Guestbook]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -124,7 +123,7 @@ func TestController_CreateGuestbook(t *testing.T) {
 			t.Fatalf("got %d, want 201", w.Code)
 		}
 
-		var res api.SuccessResponse[model.Guestbook]
+		var res api.SuccessResponse[guestbook.Guestbook]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)

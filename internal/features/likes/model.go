@@ -1,4 +1,4 @@
-package model
+package likes
 
 type LikeStatus struct {
 	Likes     int64 `json:"likes"`

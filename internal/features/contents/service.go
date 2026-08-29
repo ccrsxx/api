@@ -7,7 +7,6 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/utils"
 )
 
@@ -30,7 +29,7 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]model.Content, error) {
+func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]Content, error) {
 	if contentType != "" {
 		if err := utils.Validate.Var(contentType, "content_type"); err != nil {
 			return nil, &api.HTTPError{
@@ -51,10 +50,10 @@ func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]mo
 		dbRows = []sqlc.ListContentByTypeRow{}
 	}
 
-	contents := make([]model.Content, len(dbRows))
+	contents := make([]Content, len(dbRows))
 
 	for i, row := range dbRows {
-		contents[i] = model.Content{
+		contents[i] = Content{
 			Slug:  row.Slug,
 			Type:  row.Type,
 			Views: row.Views,
@@ -70,17 +69,17 @@ type UpsertContentInput struct {
 	Type string `json:"type" validate:"required,content_type"`
 }
 
-func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (model.Content, error) {
+func (s *Service) UpsertContent(ctx context.Context, input UpsertContentInput) (Content, error) {
 	content, err := s.db.UpsertContent(ctx, sqlc.UpsertContentParams{
 		Slug: input.Slug,
 		Type: input.Type,
 	})
 
 	if err != nil {
-		return model.Content{}, fmt.Errorf("upsert content error: %w", err)
+		return Content{}, fmt.Errorf("upsert content error: %w", err)
 	}
 
-	return model.Content{
+	return Content{
 		Slug:      content.Slug,
 		Type:      content.Type,
 		CreatedAt: content.CreatedAt.Time,

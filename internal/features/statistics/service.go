@@ -7,7 +7,6 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/utils"
 )
 
@@ -29,10 +28,10 @@ func NewService(cfg ServiceConfig) *Service {
 	}
 }
 
-func (s *Service) GetContentsStatistics(ctx context.Context, contentType string) (model.Statistic, error) {
+func (s *Service) GetContentsStatistics(ctx context.Context, contentType string) (Statistic, error) {
 	if contentType != "" {
 		if err := utils.Validate.Var(contentType, "content_type"); err != nil {
-			return model.Statistic{}, &api.HTTPError{
+			return Statistic{}, &api.HTTPError{
 				Message:    "Invalid content type",
 				StatusCode: http.StatusBadRequest,
 			}
@@ -42,7 +41,7 @@ func (s *Service) GetContentsStatistics(ctx context.Context, contentType string)
 	stats, err := s.db.GetContentStatsByType(ctx, contentType)
 
 	if err != nil {
-		return model.Statistic{}, fmt.Errorf("get content stats by type error: %w", err)
+		return Statistic{}, fmt.Errorf("get content stats by type error: %w", err)
 	}
 
 	parsedContentType := contentType
@@ -51,7 +50,7 @@ func (s *Service) GetContentsStatistics(ctx context.Context, contentType string)
 		parsedContentType = "all"
 	}
 
-	return model.Statistic{
+	return Statistic{
 		Type:       parsedContentType,
 		TotalPosts: stats.TotalPosts,
 		TotalViews: stats.TotalViews,

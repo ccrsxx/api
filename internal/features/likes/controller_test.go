@@ -11,7 +11,6 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/likes"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 )
 
@@ -36,7 +35,7 @@ func TestController_GetLikeStatus(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[model.LikeStatus]
+		var res api.SuccessResponse[likes.LikeStatus]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -120,7 +119,7 @@ func TestController_IncrementLike(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[model.LikeStatus]
+		var res api.SuccessResponse[likes.LikeStatus]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)

@@ -6,7 +6,6 @@ import (
 	"uuid"
 
 	"github.com/ccrsxx/api/internal/api"
-	"github.com/ccrsxx/api/internal/model"
 )
 
 type Controller struct {
@@ -27,7 +26,7 @@ func (c *Controller) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.NewSuccessResponse(w, http.StatusOK, model.User{
+	err = api.NewSuccessResponse(w, http.StatusOK, User{
 		ID:       user.ID.String(),
 		Name:     user.Name,
 		Role:     user.Role,

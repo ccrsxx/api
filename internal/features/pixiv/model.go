@@ -1,4 +1,4 @@
-package model
+package pixiv
 
 import "time"
 

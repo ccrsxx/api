@@ -13,7 +13,6 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	pClient "github.com/ccrsxx/api/internal/clients/pixiv"
 	"github.com/ccrsxx/api/internal/features/pixiv"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 	"github.com/ccrsxx/api/internal/utils"
 )
@@ -66,7 +65,7 @@ func TestController_GetBookmarks(t *testing.T) {
 			t.Errorf("want 200, got %d", w.Code)
 		}
 
-		var res api.SuccessPaginatedResponse[[]model.Bookmark, utils.OffsetPaginationMeta]
+		var res api.SuccessPaginatedResponse[[]pixiv.Bookmark, utils.OffsetPaginationMeta]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatal(err)
@@ -153,7 +152,7 @@ func TestController_GetAllBookmarks(t *testing.T) {
 			t.Errorf("want 200, got %d", w.Code)
 		}
 
-		var res api.SuccessResponse[[]model.Bookmark]
+		var res api.SuccessResponse[[]pixiv.Bookmark]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatal(err)

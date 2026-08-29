@@ -13,7 +13,6 @@ import (
 	"github.com/ccrsxx/api/internal/clients/pushover"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/auth"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -64,11 +63,11 @@ type CreateGuestbookInput struct {
 	Text string `json:"text" validate:"required"`
 }
 
-func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInput) (model.Guestbook, error) {
+func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInput) (Guestbook, error) {
 	user, err := auth.GetUserFromContext(ctx)
 
 	if err != nil {
-		return model.Guestbook{}, fmt.Errorf("get user by id error: %w", err)
+		return Guestbook{}, fmt.Errorf("get user by id error: %w", err)
 	}
 
 	guestbook, err := s.db.CreateGuestbook(ctx, sqlc.CreateGuestbookParams{
@@ -77,12 +76,12 @@ func (s *Service) CreateGuestbook(ctx context.Context, input CreateGuestbookInpu
 	})
 
 	if err != nil {
-		return model.Guestbook{}, fmt.Errorf("create guestbook error: %w", err)
+		return Guestbook{}, fmt.Errorf("create guestbook error: %w", err)
 	}
 
 	go s.sendNewGuestbookNotifications(user, guestbook)
 
-	return model.Guestbook{
+	return Guestbook{
 		ID:        guestbook.ID.String(),
 		Text:      guestbook.Text,
 		Name:      guestbook.Name,
@@ -118,7 +117,7 @@ func (s *Service) sendNewGuestbookNotifications(user sqlc.GetUserWithAccountByID
 	}
 }
 
-func (s *Service) ListGuestbook(ctx context.Context) ([]model.Guestbook, error) {
+func (s *Service) ListGuestbook(ctx context.Context) ([]Guestbook, error) {
 	dbRows, err := s.db.ListGuestbook(ctx)
 
 	if err != nil {
@@ -129,10 +128,10 @@ func (s *Service) ListGuestbook(ctx context.Context) ([]model.Guestbook, error) 
 		dbRows = []sqlc.ListGuestbookRow{}
 	}
 
-	guestbooks := make([]model.Guestbook, len(dbRows))
+	guestbooks := make([]Guestbook, len(dbRows))
 
 	for i, row := range dbRows {
-		guestbooks[i] = model.Guestbook{
+		guestbooks[i] = Guestbook{
 			ID:        row.ID.String(),
 			Text:      row.Text,
 			Name:      row.Name,

@@ -11,7 +11,6 @@ import (
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
 	"github.com/ccrsxx/api/internal/features/views"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/ccrsxx/api/internal/test"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -36,7 +35,7 @@ func TestController_GetViewCount(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[model.ViewCount]
+		var res api.SuccessResponse[views.ViewCount]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
@@ -114,7 +113,7 @@ func TestController_IncrementView(t *testing.T) {
 			t.Fatalf("got %d, want 200", w.Code)
 		}
 
-		var res api.SuccessResponse[model.ViewCount]
+		var res api.SuccessResponse[views.ViewCount]
 
 		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)

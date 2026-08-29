@@ -1,4 +1,4 @@
-package model
+package home
 
 type Ping struct {
 	Message          string `json:"message"`

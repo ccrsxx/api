@@ -1,4 +1,4 @@
-package model
+package statistics
 
 type Statistic struct {
 	Type       string `json:"type"`

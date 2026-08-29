@@ -8,7 +8,6 @@ import (
 
 	"github.com/ccrsxx/api/internal/api"
 	"github.com/ccrsxx/api/internal/db/sqlc"
-	"github.com/ccrsxx/api/internal/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -51,23 +50,23 @@ func (s *Service) getContentBySlug(ctx context.Context, slug string) (sqlc.Conte
 	return content, nil
 }
 
-func (s *Service) GetViewCount(ctx context.Context, slug string) (model.ViewCount, error) {
+func (s *Service) GetViewCount(ctx context.Context, slug string) (ViewCount, error) {
 	content, err := s.getContentBySlug(ctx, slug)
 
 	if err != nil {
-		return model.ViewCount{}, err
+		return ViewCount{}, err
 	}
 
 	meta, err := s.db.GetTotalContentMeta(ctx, content.ID)
 
 	if err != nil {
-		return model.ViewCount{}, fmt.Errorf("get view count error: %w", err)
+		return ViewCount{}, fmt.Errorf("get view count error: %w", err)
 	}
 
-	return model.ViewCount{Views: meta.TotalViews}, nil
+	return ViewCount{Views: meta.TotalViews}, nil
 }
 
-func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress string) (model.ViewCount, error) {
+func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress string) (ViewCount, error) {
 	/*
 		TODO: Better approach maybe be in the future with less call to db, it's possible to apply to /likes too
 		Get content with full stats -> Increment -> Increment from the first struct
@@ -76,13 +75,13 @@ func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress stri
 	content, err := s.getContentBySlug(ctx, slug)
 
 	if err != nil {
-		return model.ViewCount{}, err
+		return ViewCount{}, err
 	}
 
 	ip, err := s.db.UpsertIPAddress(ctx, ipAddress)
 
 	if err != nil {
-		return model.ViewCount{}, fmt.Errorf("upsert ip address error: %w", err)
+		return ViewCount{}, fmt.Errorf("upsert ip address error: %w", err)
 	}
 
 	_, err = s.db.IncrementContentView(ctx, sqlc.IncrementContentViewParams{
@@ -91,14 +90,14 @@ func (s *Service) IncrementView(ctx context.Context, slug string, ipAddress stri
 	})
 
 	if err != nil {
-		return model.ViewCount{}, fmt.Errorf("create content view error: %w", err)
+		return ViewCount{}, fmt.Errorf("create content view error: %w", err)
 	}
 
 	meta, err := s.db.GetTotalContentMeta(ctx, content.ID)
 
 	if err != nil {
-		return model.ViewCount{}, fmt.Errorf("get view count after increment error: %w", err)
+		return ViewCount{}, fmt.Errorf("get view count after increment error: %w", err)
 	}
 
-	return model.ViewCount{Views: meta.TotalViews}, nil
+	return ViewCount{Views: meta.TotalViews}, nil
 }

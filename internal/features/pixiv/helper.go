@@ -2,17 +2,15 @@ package pixiv
 
 import (
 	"errors"
+	"math"
 	"strings"
 
-	"math"
-
 	pClient "github.com/ccrsxx/api/internal/clients/pixiv"
-	"github.com/ccrsxx/api/internal/model"
 )
 
-func parseArtworkToBookmark(artwork pClient.Artwork, publicURL string) (model.Bookmark, error) {
+func parseArtworkToBookmark(artwork pClient.Artwork, publicURL string) (Bookmark, error) {
 	if !artwork.IsBookmarkable {
-		return model.Bookmark{}, errors.New("artwork is not bookmarkable")
+		return Bookmark{}, errors.New("artwork is not bookmarkable")
 	}
 
 	imageURL := artwork.URL
@@ -42,7 +40,7 @@ func parseArtworkToBookmark(artwork pClient.Artwork, publicURL string) (model.Bo
 	pixivURL := "https://pixiv.net/artworks/" + string(artwork.ID)
 	aiGenerated := artwork.AIType == pClient.AIGenerated
 
-	return model.Bookmark{
+	return Bookmark{
 		ID:          string(artwork.ID),
 		Title:       artwork.Title,
 		ImageURL:    imageURL,
