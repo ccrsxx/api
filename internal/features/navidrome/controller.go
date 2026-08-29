@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/api"
+	"github.com/ccrsxx/api/internal/utils"
 )
 
 type Controller struct {
@@ -49,12 +50,7 @@ func (c *Controller) GetCoverArt(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/webp")
 
-	// Cache Policy: Aggressive (1 Year)
-	// - public:       Allows CDNs and shared proxies to cache this.
-	// - immutable:    Prevents browsers from sending "Is this modified?" (304) checks on refresh.
-	// - no-transform: Prevents mobile carriers from compressing/blurring the image.
-	// - max-age:      31536000 seconds = 1 Year.
-	w.Header().Set("Cache-Control", "public, immutable, no-transform, max-age=31536000")
+	w.Header().Set("Cache-Control", utils.CacheControlImmutable)
 
 	if _, err := io.Copy(w, coverArtStream); err != nil {
 		slog.Warn("navidrome cover art response write error", "error", err)
