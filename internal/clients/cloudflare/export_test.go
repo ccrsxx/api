@@ -1,8 +1,10 @@
 package cloudflare
 
+import "encoding/json/v2"
+
 // SetJSONMarshal overrides the package-level jsonMarshal function for testing.
 // It returns a restore function that should be deferred.
-func SetJSONMarshal(fn func(v any) ([]byte, error)) func() {
+func SetJSONMarshal(fn func(v any, opts ...json.Options) ([]byte, error)) func() {
 	original := jsonMarshal
 	jsonMarshal = fn
 

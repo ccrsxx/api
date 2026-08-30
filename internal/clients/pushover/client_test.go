@@ -1,6 +1,7 @@
 package pushover_test
 
 import (
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -47,7 +48,7 @@ func TestClient_SendMessage(t *testing.T) {
 	})
 
 	t.Run("Marshal Error", func(t *testing.T) {
-		restore := pushover.SetJSONMarshal(func(v any) ([]byte, error) {
+		restore := pushover.SetJSONMarshal(func(v any, opts ...json.Options) ([]byte, error) {
 			return nil, errors.New("marshal error")
 		})
 

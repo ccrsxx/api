@@ -2,7 +2,7 @@ package pixiv
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -87,7 +87,7 @@ func (c *Client) GetBookmarks(ctx context.Context, visibility BookmarkVisibility
 
 	var response Response
 
-	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+	if err := json.UnmarshalRead(res.Body, &response); err != nil {
 		return nil, 0, fmt.Errorf("pixiv bookmarks decode response error: %w", err)
 	}
 

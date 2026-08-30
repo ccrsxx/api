@@ -2,7 +2,7 @@ package jellyfin_test
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -47,7 +47,7 @@ func TestController_GetCurrentlyPlaying(t *testing.T) {
 			IsPlaying bool `json:"isPlaying"`
 		}]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatal(err)
 		}
 

@@ -1,6 +1,7 @@
 package cloudflare_test
 
 import (
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -45,7 +46,7 @@ func TestClient_VerifyTurnstile(t *testing.T) {
 	})
 
 	t.Run("Marshal Error", func(t *testing.T) {
-		restore := cloudflare.SetJSONMarshal(func(v any) ([]byte, error) {
+		restore := cloudflare.SetJSONMarshal(func(v any, opts ...json.Options) ([]byte, error) {
 			return nil, errors.New("marshal error")
 		})
 

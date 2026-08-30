@@ -1,7 +1,7 @@
 package api_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -32,6 +32,7 @@ func TestHandleHTTPError(t *testing.T) {
 		}
 
 		var res api.ErrorResponse
+
 		err := json.Unmarshal(w.Body.Bytes(), &res)
 
 		if err != nil {

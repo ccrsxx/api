@@ -2,7 +2,7 @@ package likes_test
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +37,7 @@ func TestController_GetLikeStatus(t *testing.T) {
 
 		var res api.SuccessResponse[likes.LikeStatus]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
@@ -121,7 +121,7 @@ func TestController_IncrementLike(t *testing.T) {
 
 		var res api.SuccessResponse[likes.LikeStatus]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 

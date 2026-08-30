@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"net/http"
@@ -87,10 +87,6 @@ func NewSuccessRawResponse[T any](w http.ResponseWriter, statusCode int, data T)
 }
 
 func NewErrorResponse(w http.ResponseWriter, statusCode int, message string, details []string, id string) error {
-	if details == nil {
-		details = []string{}
-	}
-
 	return newResponse(w, statusCode, ErrorResponse{
 		Error: ErrorObject{
 			ID:      id,

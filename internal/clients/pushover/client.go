@@ -3,7 +3,7 @@ package pushover
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -87,7 +87,7 @@ func (c *Client) SendMessage(ctx context.Context, messageRequest MessageRequest)
 
 	var data MessageResponse
 
-	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
+	if err := json.UnmarshalRead(res.Body, &data); err != nil {
 		return fmt.Errorf("pushover send message decode response error: %w", err)
 	}
 

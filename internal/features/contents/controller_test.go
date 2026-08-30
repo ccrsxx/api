@@ -3,7 +3,7 @@ package contents_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -43,7 +43,7 @@ func TestController_GetContentsData(t *testing.T) {
 
 		var res api.SuccessResponse[[]contents.Content]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
@@ -131,7 +131,7 @@ func TestController_UpsertContent(t *testing.T) {
 
 		var res api.SuccessResponse[contents.Content]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 

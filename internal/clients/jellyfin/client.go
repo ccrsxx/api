@@ -2,7 +2,7 @@ package jellyfin
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -68,7 +68,7 @@ func (c *Client) GetSessions(ctx context.Context) ([]SessionInfo, error) {
 
 	var sessions []SessionInfo
 
-	if err := json.NewDecoder(res.Body).Decode(&sessions); err != nil {
+	if err := json.UnmarshalRead(res.Body, &sessions); err != nil {
 		return nil, fmt.Errorf("jellyfin currently playing decode response error: %w", err)
 	}
 

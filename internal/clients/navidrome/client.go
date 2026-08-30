@@ -5,7 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -79,7 +79,7 @@ func (c *Client) GetNowPlaying(ctx context.Context) ([]NowPlayingEntry, error) {
 
 	var subsonicJSONWrapper JSONWrapper
 
-	if err := json.NewDecoder(res.Body).Decode(&subsonicJSONWrapper); err != nil {
+	if err := json.UnmarshalRead(res.Body, &subsonicJSONWrapper); err != nil {
 		return []NowPlayingEntry{}, fmt.Errorf("navidrome now playing decode response error: %w", err)
 	}
 
@@ -125,7 +125,7 @@ func (c *Client) GetCoverArtStream(ctx context.Context, covertArtID string) (io.
 
 		var subsonicJSONWrapper JSONWrapper
 
-		if err := json.NewDecoder(res.Body).Decode(&subsonicJSONWrapper); err != nil {
+		if err := json.UnmarshalRead(res.Body, &subsonicJSONWrapper); err != nil {
 			return nil, fmt.Errorf("navidrome cover art decode response error: %w", err)
 		}
 

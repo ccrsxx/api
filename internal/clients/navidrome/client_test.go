@@ -1,7 +1,7 @@
 package navidrome_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"io"
 	"net/http"
@@ -37,7 +37,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 				},
 			}
 
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.MarshalWrite(w, resp); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
@@ -128,7 +128,7 @@ func TestClient_GetNowPlaying(t *testing.T) {
 				Subsonic: navidrome.Subsonic{},
 			}
 
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.MarshalWrite(w, resp); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
@@ -149,7 +149,9 @@ func TestClient_GetNowPlaying(t *testing.T) {
 		resp := navidrome.JSONWrapper{
 			Subsonic: navidrome.Subsonic{
 				NowPlaying: &navidrome.NowPlaying{
-					Entry: []navidrome.NowPlayingEntry{},
+					Entry: []navidrome.NowPlayingEntry{
+						{UserName: "user1"},
+					},
 				},
 			},
 		}
@@ -285,7 +287,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 				},
 			}
 
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.MarshalWrite(w, resp); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
@@ -323,7 +325,7 @@ func TestClient_GetCoverArtStream(t *testing.T) {
 				},
 			}
 
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.MarshalWrite(w, resp); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))

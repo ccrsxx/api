@@ -2,7 +2,7 @@ package pixiv_test
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"io"
 	"net/http"
@@ -67,7 +67,7 @@ func TestController_GetBookmarks(t *testing.T) {
 
 		var res api.SuccessPaginatedResponse[[]pixiv.Bookmark, utils.OffsetPaginationMeta]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatal(err)
 		}
 
@@ -154,7 +154,7 @@ func TestController_GetAllBookmarks(t *testing.T) {
 
 		var res api.SuccessResponse[[]pixiv.Bookmark]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatal(err)
 		}
 

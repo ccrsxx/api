@@ -46,10 +46,6 @@ func (s *Service) GetContentsData(ctx context.Context, contentType string) ([]Co
 		return nil, fmt.Errorf("list content by type error: %w", err)
 	}
 
-	if dbRows == nil {
-		dbRows = []sqlc.ListContentByTypeRow{}
-	}
-
 	contents := make([]Content, len(dbRows))
 
 	for i, row := range dbRows {

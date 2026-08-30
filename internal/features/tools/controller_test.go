@@ -1,7 +1,7 @@
 package tools_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net"
 	"net/http"
@@ -85,7 +85,7 @@ func TestController_GetIPInfo(t *testing.T) {
 
 		var res map[string]any
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
@@ -149,7 +149,7 @@ func TestController_GetHTTPHeaders(t *testing.T) {
 
 		var res map[string]string
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 

@@ -1,7 +1,7 @@
 package jellyfin_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -26,7 +26,7 @@ func TestClient_GetSessions(t *testing.T) {
 
 			id := "1"
 
-			if err := json.NewEncoder(w).Encode([]jellyfin.SessionInfo{{ID: &id}}); err != nil {
+			if err := json.MarshalWrite(w, []jellyfin.SessionInfo{{ID: &id}}); err != nil {
 				t.Fatalf("failed to write response: %v", err)
 			}
 		}))

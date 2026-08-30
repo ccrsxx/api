@@ -124,10 +124,6 @@ func (s *Service) ListGuestbook(ctx context.Context) ([]Guestbook, error) {
 		return nil, fmt.Errorf("list guestbook error: %w", err)
 	}
 
-	if dbRows == nil {
-		dbRows = []sqlc.ListGuestbookRow{}
-	}
-
 	guestbooks := make([]Guestbook, len(dbRows))
 
 	for i, row := range dbRows {

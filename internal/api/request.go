@@ -1,14 +1,14 @@
 package api
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"net/http"
 
 	"github.com/ccrsxx/api/internal/utils"
 )
 
 func DecodeJSON[T any](r *http.Request, v *T) error {
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+	if err := json.UnmarshalRead(r.Body, v); err != nil {
 		return &HTTPError{
 			Message:    "Invalid body",
 			StatusCode: http.StatusBadRequest,

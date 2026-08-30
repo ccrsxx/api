@@ -1,7 +1,7 @@
 package home_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -29,7 +29,7 @@ func TestController_Ping(t *testing.T) {
 
 		var res api.SuccessResponse[home.Ping]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 

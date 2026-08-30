@@ -3,7 +3,7 @@ package spotify
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -109,7 +109,7 @@ func (c *Client) GetCurrentlyPlaying(ctx context.Context) (SpotifyCurrentlyPlayi
 
 	var data SpotifyCurrentlyPlaying
 
-	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
+	if err := json.UnmarshalRead(res.Body, &data); err != nil {
 		return SpotifyCurrentlyPlaying{}, fmt.Errorf("spotify currently playing decode error: %w", err)
 	}
 
@@ -171,7 +171,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 		var tokenRes spotifyTokenResponse
 
-		if err := json.NewDecoder(res.Body).Decode(&tokenRes); err != nil {
+		if err := json.UnmarshalRead(res.Body, &tokenRes); err != nil {
 			return tokenResponse{}, fmt.Errorf("spotify access token decode error: %w", err)
 		}
 

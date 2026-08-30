@@ -2,7 +2,7 @@ package auth_test
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -460,7 +460,7 @@ func TestService_ValidateOauthState(t *testing.T) {
 		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
-			err := json.NewEncoder(w).Encode(map[string]any{
+			err := json.MarshalWrite(w, map[string]any{
 				"access_token": "test-access-token",
 				"token_type":   "bearer",
 				"expires_in":   3600,
@@ -559,7 +559,7 @@ func TestService_ValidateOauthState(t *testing.T) {
 		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
-			err := json.NewEncoder(w).Encode(map[string]any{
+			err := json.MarshalWrite(w, map[string]any{
 				"access_token": "test-token",
 				"token_type":   "bearer",
 				"expires_in":   -3600,

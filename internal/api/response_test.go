@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -229,6 +229,10 @@ func TestNewErrorResponse(t *testing.T) {
 
 		if len(response.Error.Details) != 0 {
 			t.Error("got non-zero length, want empty slice length 0")
+		}
+
+		if !strings.Contains(w.Body.String(), `"details":[]`) {
+			t.Errorf("got %s, want JSON containing \"details\":[]", w.Body.String())
 		}
 	})
 }

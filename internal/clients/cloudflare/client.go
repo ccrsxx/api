@@ -3,7 +3,7 @@ package cloudflare
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -91,7 +91,7 @@ func (c *Client) VerifyTurnstile(ctx context.Context, token string, remoteIP str
 
 	var response Turnstile
 
-	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+	if err := json.UnmarshalRead(res.Body, &response); err != nil {
 		return fmt.Errorf("cloudflare verify turnstile decode response error: %w", err)
 	}
 

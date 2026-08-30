@@ -1,7 +1,7 @@
 package pixiv
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
 	"fmt"
 	"time"
 )
@@ -13,27 +13,32 @@ type Response struct {
 }
 
 type Body struct {
-	Works []json.RawMessage `json:"works"`
-	Total int               `json:"total"`
+	Works []jsontext.Value `json:"works"`
+	Total int              `json:"total"`
 }
 
+// FlexibleID represents an ID that may be encoded as either a JSON string or JSON number.
 type FlexibleID string
 
-func (f *FlexibleID) UnmarshalJSON(data []byte) error {
-	var s string
+// UnmarshalJSONFrom decodes a FlexibleID directly from the JSON stream with zero heap allocations.
+// Unlike v1 (which pre-buffered a []byte before calling UnmarshalJSON), v2 streams directly from the network.
+// We must call dec.ReadToken() and handle errors first to catch stream/network failures (e.g. timeouts,
+// unexpected EOF) before inspecting the token kind; otherwise, a network drop would be masked as a validation error.
+func (f *FlexibleID) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	// Read the next token directly from the stream (blocks on I/O without extra heap allocations).
+	tok, err := dec.ReadToken()
 
-	if err := json.Unmarshal(data, &s); err == nil {
-		*f = FlexibleID(s)
-		return nil
+	if err != nil {
+		return fmt.Errorf("flexible id read token error: %w", err)
 	}
 
-	var n json.Number
-
-	if err := json.Unmarshal(data, &n); err != nil {
-		return fmt.Errorf("invalid id: %s", data)
+	// Inspect the token kind immediately while it is valid in the decoder's scratch buffer.
+	switch tok.Kind() {
+	case jsontext.KindString, jsontext.KindNumber:
+		*f = FlexibleID(tok.String())
+	default:
+		return fmt.Errorf("invalid id: expected string or number, got %v", tok.Kind())
 	}
-
-	*f = FlexibleID(n.String())
 
 	return nil
 }

@@ -2,7 +2,7 @@ package auth_test
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -39,7 +39,7 @@ func TestController_GetCurrentUser(t *testing.T) {
 
 		var res api.SuccessResponse[auth.User]
 
-		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		if err := json.UnmarshalRead(w.Body, &res); err != nil {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
@@ -225,7 +225,7 @@ func TestController_LoginGithubCallback(t *testing.T) {
 		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
-			err := json.NewEncoder(w).Encode(map[string]any{
+			err := json.MarshalWrite(w, map[string]any{
 				"access_token": "github-access-token",
 				"token_type":   "bearer",
 				"expires_in":   3600,
@@ -328,7 +328,7 @@ func TestController_LoginGithubCallback(t *testing.T) {
 		mockServer := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
-			err := json.NewEncoder(w).Encode(map[string]any{
+			err := json.MarshalWrite(w, map[string]any{
 				"access_token": "github-access-token",
 				"token_type":   "bearer",
 				"expires_in":   3600,

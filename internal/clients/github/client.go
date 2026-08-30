@@ -2,7 +2,7 @@ package github
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -71,7 +71,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, accessToken string) (User, 
 
 	var githubUser User
 
-	if err := json.NewDecoder(res.Body).Decode(&githubUser); err != nil {
+	if err := json.UnmarshalRead(res.Body, &githubUser); err != nil {
 		return User{}, fmt.Errorf("github profile decode response error: %w", err)
 	}
 

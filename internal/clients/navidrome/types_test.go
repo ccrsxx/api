@@ -1,7 +1,7 @@
 package navidrome_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"encoding/xml"
 	"testing"
 
@@ -70,9 +70,9 @@ func TestItemDate_MarshalXML(t *testing.T) {
 	})
 }
 
-func TestArray_MarshalJSON(t *testing.T) {
+func TestSlice_MarshalJSON(t *testing.T) {
 	t.Run("Empty", func(t *testing.T) {
-		a := navidrome.Array[string]{}
+		a := []string{}
 
 		data, err := json.Marshal(a)
 
@@ -86,7 +86,7 @@ func TestArray_MarshalJSON(t *testing.T) {
 	})
 
 	t.Run("With Values", func(t *testing.T) {
-		a := navidrome.Array[string]{"a", "b"}
+		a := []string{"a", "b"}
 
 		data, err := json.Marshal(a)
 
