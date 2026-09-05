@@ -27,7 +27,7 @@ USER 10001:10001
 
 ENTRYPOINT [ "/main" ]
 
-EXPOSE 4000
+EXPOSE 2112 4000
 
 LABEL org.opencontainers.image.authors="ami@ccrsxx.com" \
     org.opencontainers.image.source="https://github.com/ccrsxx/api" \

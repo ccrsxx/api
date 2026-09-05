@@ -28,6 +28,7 @@ func (e *EnvironmentApp) UnmarshalText(text []byte) error {
 
 type AppConfig struct {
 	Port             int            `env:"PORT,required"`
+	MonitoringPort   int            `env:"MONITORING_PORT,required"`
 	OgURL            string         `env:"OG_URL,required"`
 	AppEnv           EnvironmentApp `env:"APP_ENV,required"`
 	SecretKey        string         `env:"SECRET_KEY,required"`

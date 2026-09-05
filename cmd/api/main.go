@@ -6,7 +6,9 @@ import (
 	_ "golang.org/x/crypto/x509roots/fallback"
 
 	"context"
+	"errors"
 	"log/slog"
+	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
@@ -27,13 +29,22 @@ func main() {
 
 	defer pool.Close()
 
-	server := server.New(shutdownCtx, cfg, pool, db)
+	mainServer := server.New(shutdownCtx, cfg, pool, db)
+	monitoringServer := server.NewMonitoringServer(cfg)
 
 	go func() {
-		slog.Info("server start listening", "port", server.Addr, "env", cfg.AppEnv)
+		slog.Info("main server start listening", "port", mainServer.Addr, "env", cfg.AppEnv)
 
-		if err := server.ListenAndServe(); err != nil {
-			slog.Error("server stop listening", "error", err)
+		if err := mainServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("main server stop listening", "error", err)
+		}
+	}()
+
+	go func() {
+		slog.Info("monitoring server start listening", "port", monitoringServer.Addr, "env", cfg.AppEnv)
+
+		if err := monitoringServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("monitoring server stop listening", "error", err)
 		}
 	}()
 
@@ -54,8 +65,12 @@ func main() {
 
 	defer cancelShutdownTimeout()
 
-	if err := server.Shutdown(shutdownTimeoutCtx); err != nil {
-		slog.Error("server shutdown failed", "error", err)
+	if err := mainServer.Shutdown(shutdownTimeoutCtx); err != nil {
+		slog.Error("main server shutdown failed", "error", err)
+	}
+
+	if err := monitoringServer.Shutdown(shutdownTimeoutCtx); err != nil {
+		slog.Error("monitoring server shutdown failed", "error", err)
 	}
 
 	slog.Info("server stopped gracefully")

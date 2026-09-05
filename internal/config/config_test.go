@@ -10,6 +10,7 @@ import (
 // Helper to quickly set all required env vars for a successful parse
 func setValidEnv(t *testing.T, appEnv string) {
 	t.Setenv("PORT", "8080")
+	t.Setenv("MONITORING_PORT", "2112")
 	t.Setenv("OG_URL", "http://localhost")
 	t.Setenv("APP_ENV", appEnv)
 	t.Setenv("BACKEND_PUBLIC_URL", "http://localhost:8080")
@@ -55,6 +56,10 @@ func TestLoad_Success(t *testing.T) {
 
 		if cfg.Port != 8080 {
 			t.Errorf("got port %d, want 8080", cfg.Port)
+		}
+
+		if cfg.MonitoringPort != 2112 {
+			t.Errorf("got monitoring port %d, want 2112", cfg.MonitoringPort)
 		}
 
 		if len(cfg.AllowedOrigins) != 2 {

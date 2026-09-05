@@ -39,10 +39,21 @@ jobs:
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@${{ needs.extract-tools-version.outputs.goose-version }}
 
+      - name: Create monitoring network if not exists
+        run: |
+          network_name="monitoring"
+
+          if [ -z "$(docker network ls --filter name=${network_name} --format '{{.Name}}')" ]; then
+            docker network create "$network_name"
+          else
+            echo "Network '$network_name' already exists."
+          fi
+
       - name: Start PostgreSQL before migration
         env:
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-        run: docker compose up -d --wait db
+        run: |
+          docker compose up -d --wait db
 
       - name: Run migration
         env:
