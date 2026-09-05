@@ -20,23 +20,23 @@ type MessageRequest struct {
 	Message string `json:"message"`
 
 	// Optional fields
-	Title     string          `json:"title,omitempty"`
-	Device    string          `json:"device,omitempty"`
-	URL       string          `json:"url,omitempty"`
-	URLTitle  string          `json:"url_title,omitempty"`
-	Priority  MessagePriority `json:"priority,omitempty"`
-	Sound     string          `json:"sound,omitempty"`
-	Timestamp int64           `json:"timestamp,omitempty"`
-	TTL       int             `json:"ttl,omitempty"`
+	Title     string          `json:"title,omitzero"`
+	Device    string          `json:"device,omitzero"`
+	URL       string          `json:"url,omitzero"`
+	URLTitle  string          `json:"url_title,omitzero"`
+	Priority  MessagePriority `json:"priority,omitzero"`
+	Sound     string          `json:"sound,omitzero"`
+	Timestamp int64           `json:"timestamp,omitzero"`
+	TTL       int             `json:"ttl,omitzero"`
 
 	// HTML and Monospace are mutually exclusive; set one or neither (not both).
-	HTML      int `json:"html,omitempty"`
-	Monospace int `json:"monospace,omitempty"`
+	HTML      int `json:"html,omitzero"`
+	Monospace int `json:"monospace,omitzero"`
 
 	// Required only when Priority == MessagePriorityEmergency
-	Retry    int    `json:"retry,omitempty"`
-	Expire   int    `json:"expire,omitempty"`
-	Callback string `json:"callback,omitempty"`
+	Retry    int    `json:"retry,omitzero"`
+	Expire   int    `json:"expire,omitzero"`
+	Callback string `json:"callback,omitzero"`
 }
 
 // MessageResponse represents the response returned by the Pushover messages API.
