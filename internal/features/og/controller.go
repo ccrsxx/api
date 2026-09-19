@@ -9,18 +9,18 @@ import (
 )
 
 type Controller struct {
-	service      *Service
-	isProduction bool
+	service       *Service
+	isDevelopment bool
 }
 
 type ControllerConfig struct {
-	IsProduction bool
+	IsDevelopment bool
 }
 
 func NewController(svc *Service, cfg ControllerConfig) *Controller {
 	return &Controller{
-		service:      svc,
-		isProduction: cfg.IsProduction,
+		service:       svc,
+		isDevelopment: cfg.IsDevelopment,
 	}
 }
 
@@ -42,7 +42,7 @@ func (c *Controller) GetOg(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/png")
 
-	if c.isProduction {
+	if !c.isDevelopment {
 		w.Header().Set("Cache-Control", api.CacheControlImmutable)
 	}
 

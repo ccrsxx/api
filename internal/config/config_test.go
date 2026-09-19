@@ -69,10 +69,6 @@ func TestLoad_Success(t *testing.T) {
 		if !cfg.IsDevelopment {
 			t.Error("want IsDevelopment to be true")
 		}
-
-		if cfg.IsProduction {
-			t.Error("want IsProduction to be false")
-		}
 	})
 
 	t.Run("Production Mode", func(t *testing.T) {
@@ -83,10 +79,6 @@ func TestLoad_Success(t *testing.T) {
 		setValidEnv(t, string(config.EnvironmentProduction))
 
 		cfg := config.Load()
-
-		if !cfg.IsProduction {
-			t.Error("want IsProduction to be true")
-		}
 
 		if cfg.IsDevelopment {
 			t.Error("want IsDevelopment to be false")

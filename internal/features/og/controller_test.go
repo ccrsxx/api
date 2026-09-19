@@ -29,8 +29,8 @@ func TestController_GetOg(t *testing.T) {
 			HTTPClient: mockServer.Client(),
 		})
 
-		// Inject false for isProduction
-		ctrl := og.NewController(svc, og.ControllerConfig{IsProduction: false})
+		// Inject true for isDevelopment
+		ctrl := og.NewController(svc, og.ControllerConfig{IsDevelopment: true})
 
 		r := httptest.NewRequest(http.MethodGet, "/og?title=test", nil)
 		w := httptest.NewRecorder()
@@ -69,8 +69,8 @@ func TestController_GetOg(t *testing.T) {
 			HTTPClient: mockServer.Client(),
 		})
 
-		// Inject true for isProduction
-		ctrl := og.NewController(svc, og.ControllerConfig{IsProduction: true})
+		// Inject false for isDevelopment (production behavior)
+		ctrl := og.NewController(svc, og.ControllerConfig{IsDevelopment: false})
 
 		r := httptest.NewRequest(http.MethodGet, "/og", nil)
 		w := httptest.NewRecorder()

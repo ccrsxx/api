@@ -153,7 +153,7 @@ func LoadHandlers(ctx context.Context, cfg config.AppConfig, pool *pgxpool.Pool,
 				OgURL: cfg.OgURL,
 			}),
 			ControllerConfig: og.ControllerConfig{
-				IsProduction: cfg.IsProduction,
+				IsDevelopment: cfg.IsDevelopment,
 			},
 		},
 	)

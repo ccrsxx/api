@@ -76,7 +76,6 @@ type AppConfig struct {
 	SpotifyRefreshToken string `env:"SPOTIFY_REFRESH_TOKEN,required"`
 
 	// Computed fields for convenience
-	IsProduction  bool
 	IsDevelopment bool
 }
 
@@ -106,7 +105,6 @@ func Load() AppConfig {
 		panic(fmt.Errorf("env parse error: %w", err))
 	}
 
-	appConfig.IsProduction = appConfig.AppEnv == EnvironmentProduction
 	appConfig.IsDevelopment = appConfig.AppEnv == EnvironmentDevelopment
 
 	return appConfig
