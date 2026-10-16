@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.24.1
-	golang.org/x/crypto/x509roots/fallback v0.0.0-20260929172509-b39ff6d641ec
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20261016151342-0ae6809b7559
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/time v0.16.0
 )
