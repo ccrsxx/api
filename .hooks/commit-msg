@@ -1,3 +1,6 @@
 #!/bin/sh
 
-commitlint --edit "$1"
+# Pass npm's actual prefix so config lookup follows the selected runtime.
+# Needed due to missing node global path when using Mise, after migrating from Volta
+commitlint_npm_prefix="$(npm prefix -g)" || exit 1
+npm_config_prefix="$commitlint_npm_prefix" commitlint --edit "$1"
